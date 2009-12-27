@@ -1,8 +1,8 @@
-soundkonverter (0.3.10-2) unstable; urgency=low
+soundkonverter (1.0.0~alpha1-1) experimental; urgency=low
 
-  * Build depend against automake1.10 instead of automake. (Closes: #541445)
+  * New upstream version for KDEr.
 
- -- Fathi Boudra <fabo@debian.org>  Sun, 16 Aug 2009 10:51:55 +0200
+ -- Michael Meskes <meskes@debian.org>  Sun, 27 Dec 2009 12:07:20 +0100
 
 soundkonverter (0.3.10-1) unstable; urgency=low
 
