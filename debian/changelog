@@ -1,8 +1,9 @@
 soundkonverter (1.0.0~alpha1-1) experimental; urgency=low
 
   * New upstream version for KDEr.
+  * Added information about git repository.
 
- -- Michael Meskes <meskes@debian.org>  Sun, 27 Dec 2009 12:07:20 +0100
+ -- Michael Meskes <meskes@debian.org>  Sun, 27 Dec 2009 15:36:02 +0100
 
 soundkonverter (0.3.10-1) unstable; urgency=low
 
