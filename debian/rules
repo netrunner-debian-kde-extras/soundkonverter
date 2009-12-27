@@ -8,3 +8,9 @@ install/soundkonverter::
 	    debian/soundkonverter/usr/share/lintian/overrides/soundkonverter
 	find debian -type f -name userscript.sh | xargs rm -f
 	rm -rf debian/soundkonverter/usr/share/apps/soundkonverter/amarokscript
+	install -m 644 *plugin.desktop debian/soundkonverter/usr/share/kde4/servicetypes
+	mv debian/soundkonverter/usr/lib/kde4/libsoundkonverter_codec_ffmpeg.so debian/soundkonverter/usr/lib/kde4/soundkonverter_codec_ffmpeg.so
+	mv debian/soundkonverter/usr/lib/kde4/libsoundkonverter_codec_lame.so debian/soundkonverter/usr/lib/kde4/soundkonverter_codec_lame.so
+	mv debian/soundkonverter/usr/lib/kde4/libsoundkonverter_codec_ogg.so debian/soundkonverter/usr/lib/kde4/soundkonverter_codec_ogg.so
+	mv debian/soundkonverter/usr/lib/kde4/libsoundkonverter_replaygain_vorbisgain.so debian/soundkonverter/usr/lib/kde4/soundkonverter_replaygain_vorbisgain.so
+	mv debian/soundkonverter/usr/lib/kde4/libsoundkonverter_ripper_cdparanoia.so debian/soundkonverter/usr/lib/kde4/soundkonverter_ripper_cdparanoia.so
