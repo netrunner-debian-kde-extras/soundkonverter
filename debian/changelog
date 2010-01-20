@@ -1,6 +1,13 @@
+soundkonverter (1.0.0~alpha1-2) experimental; urgency=low
+
+  * Added watch file.
+  * Added build dependency on libcdparanoia-dev. (Closes: #565850)
+
+ -- Michael Meskes <meskes@debian.org>  Wed, 20 Jan 2010 10:31:07 +0100
+
 soundkonverter (1.0.0~alpha1-1) experimental; urgency=low
 
-  * New upstream version for KDEr.
+  * New upstream version for KDE4.
   * Added information about git repository.
 
  -- Michael Meskes <meskes@debian.org>  Sun, 27 Dec 2009 15:36:02 +0100
