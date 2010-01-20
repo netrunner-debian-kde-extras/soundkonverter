@@ -26,5 +26,5 @@ Description: audio converter frontend for KDE
  soundKonverter supports reading and writing tags for many formats, so the tags
  are preserved when converting files.
  .
- See README.Debian for more informations on supported formats.
+ See README.Debian for more information on supported formats.
 
