@@ -5,7 +5,7 @@
 #include "config.h"
 #include "logger.h"
 #include "combobutton.h"
-#include "dirdialog.h"
+#include "opener/diropener.h"
 
 #include <qlayout.h>
 #include <qstringlist.h>
@@ -20,6 +20,7 @@
 #include <QProgressBar>
 #include <KIcon>
 #include <QTreeWidget>
+#include <QMessageBox>
 
 // FIXME file name encoding !!!
 
@@ -34,7 +35,7 @@ ReplayGainScanner::ReplayGainScanner( Config* _config, Logger* _logger, QWidget 
 
     setCaption( i18n("Replay Gain Tool") );
     resize( 600, 400 );
-    setWindowIcon( KIcon("soundkonverter_replaygain") );
+    setWindowIcon( KIcon("soundkonverter-replaygain") );
 
     QWidget *widget = new QWidget( this );
     setMainWidget( widget );
@@ -45,8 +46,8 @@ ReplayGainScanner::ReplayGainScanner( Config* _config, Logger* _logger, QWidget 
     grid->addLayout( filterBox, 0, 0 );
 
     cAdd = new ComboButton( widget );
-    cAdd->insertItem( KIcon("folder"), i18n("Add Folder ...") );
-    cAdd->insertItem( KIcon("audio-x-generic"), i18n("Add Files ...") );
+    cAdd->insertItem( KIcon("folder"), i18n("Add folder...") );
+    cAdd->insertItem( KIcon("audio-x-generic"), i18n("Add files...") );
     filterBox->addWidget( cAdd );
     connect( cAdd, SIGNAL(clicked(int)), this, SLOT(addClicked(int)) );
 
@@ -97,7 +98,6 @@ ReplayGainScanner::ReplayGainScanner( Config* _config, Logger* _logger, QWidget 
     pClose->setFocus();
     buttonBox->addWidget( pClose );
     connect( pClose, SIGNAL(clicked()), this, SLOT(accept()) );
-
 }
 
 ReplayGainScanner::~ReplayGainScanner()
@@ -130,12 +130,60 @@ void ReplayGainScanner::showFileDialog()
     }
     filterList.prepend( allFilter.join(" ") + "|" + i18n("All supported files") );
     filterList += "*.*|" + i18n("All files");
-    lList->addFiles( KFileDialog::getOpenUrls( KUrl(QDir::homePath()), filterList.join("\n"), this, i18n("Open files") ) );
+    
+    // add the control elements
+    QLabel *formatHelp = new QLabel( i18n("<a href=\"format-help\">Are you missing some file formats?</a>"), this );
+    connect( formatHelp, SIGNAL(linkActivated(const QString&)), this, SLOT(showHelp()) );
+
+    fileDialog = new KFileDialog( KUrl(QDir::homePath()), filterList.join("\n"), this, formatHelp );
+    fileDialog->setWindowTitle( i18n("Add Files") );
+    fileDialog->setMode( KFile::Files | KFile::ExistingOnly );
+    connect( fileDialog, SIGNAL(accepted()), this, SLOT(fileDialogAccepted()) );
+    fileDialog->show();
+
+//     lList->addFiles( KFileDialog::getOpenUrls( KUrl(QDir::homePath()), filterList.join("\n"), this, i18n("Open files") ) );
+}
+
+void ReplayGainScanner::fileDialogAccepted()
+{
+    lList->addFiles( fileDialog->selectedUrls() );
+}
+
+void ReplayGainScanner::showHelp()
+{
+    QStringList messageList;
+    QString codecName;
+    
+    QMap<QString,QStringList> problems = config->pluginLoader()->replaygainProblems();
+    for( int i=0; i<problems.count(); i++ )
+    {
+        codecName = problems.keys().at(i);
+        if( codecName != "wav" )
+        {
+            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).join("\n<b>or</b>\n");
+        }
+    }
+    
+    if( messageList.isEmpty() )
+    {
+        messageList += i18n("soundKonverter couldn't find any missing packages.\nMaybe you need to install an additional plugin via the packagemanager of your distribution.");
+    }
+    else
+    {
+        messageList.prepend( i18n("Some of the installed plugins aren't working because they are missing additional programs.\nPossible solutions are listed below.") );
+    }
+    
+    QMessageBox *messageBox = new QMessageBox( this );
+    messageBox->setIcon( QMessageBox::Information );
+    messageBox->setWindowTitle( i18n("Missing backends") );
+    messageBox->setText( messageList.join("\n\n").replace("\n","<br>") );
+    messageBox->setTextFormat( Qt::RichText );
+    messageBox->exec();
 }
 
 void ReplayGainScanner::showDirDialog()
 {
-    DirDialog *dialog = new DirDialog( config, DirDialog::ReplayGain, this );
+    DirOpener *dialog = new DirOpener( config, DirOpener::ReplayGain, this );
     
     connect( dialog, SIGNAL(done(const KUrl&,bool,const QStringList&)), lList, SLOT(addDir(const KUrl&,bool,const QStringList&)) );
 
@@ -146,11 +194,9 @@ void ReplayGainScanner::showDirDialog()
     delete dialog;
 }
 
-void ReplayGainScanner::addFiles( QStringList files )
+void ReplayGainScanner::addFiles( KUrl::List urls )
 {
-    for( QStringList::Iterator it = files.begin(); it != files.end(); ++it ) {
-        emit addFile( *it );
-    }
+    lList->addFiles( urls );
 }
 
 void ReplayGainScanner::calcReplayGainClicked()
@@ -162,11 +208,13 @@ void ReplayGainScanner::calcReplayGainClicked()
 void ReplayGainScanner::removeReplayGainClicked()
 {
 //     emit removeAllReplayGain();
+    lList->removeAllReplayGain();
 }
 
 void ReplayGainScanner::cancelClicked()
 {
 //     emit cancelProcess();
+    lList->cancelProcess();
 }
 
 void ReplayGainScanner::processStarted()
@@ -181,21 +229,19 @@ void ReplayGainScanner::processStopped()
     pTagVisible->show();
     pRemoveTag->show();
     pCancel->hide();
-//     pProgressBar->setProgress( 100 );
-//     pProgressBar->setTotalSteps( 100 );
-//     setCaption( i18n("Finished") + " - " + i18n("Replay Gain Tool") );
+    pProgressBar->setMaximum( 100 );
+    pProgressBar->setValue( 100 );
+    setCaption( i18n("Finished") + " - " + i18n("Replay Gain Tool") );
 }
 
 void ReplayGainScanner::updateProgress( int progress, int totalSteps )
 {
-/*    pProgressBar->setProgress( progress );
-    pProgressBar->setTotalSteps( totalSteps );
-    float fPercent;
-    if( pProgressBar->totalSteps() > 0 ) fPercent = pProgressBar->progress() * 100 / pProgressBar->totalSteps();
-    else fPercent = 0;
+    pProgressBar->setMaximum( totalSteps );
+    pProgressBar->setValue( progress );
+    float fPercent = totalSteps > 0 ? progress * 100 / totalSteps : 0;
 
     QString percent;
     percent.sprintf( "%i%%", (int)fPercent );
-    setCaption( percent + " - " + i18n("Replay Gain Tool") );*/
+    setCaption( percent + " - " + i18n("Replay Gain Tool") );
 }
 

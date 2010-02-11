@@ -43,7 +43,8 @@ public:
 // 
     void setCurrentProfile( const QString& profile );
     void setCurrentFormat( const QString& format );
-//     void setCurrentOutputDirectory( const QString& directory );
+    void setCurrentOutputDirectory( const QString& directory );
+    void setCurrentOutputDirectoryMode( int mode );
     void setReplayGainEnabled( bool enabled, const QString& toolTip = "" );
     void setReplayGainChecked( bool enabled );
 //     void setBpmChecked( bool enabled ) { return cBpm->setChecked( enabled ); }

@@ -48,14 +48,14 @@ public:
             QString specifyOutputDirectory;
             QString metaDataOutputDirectory;
             QString copyStructureOutputDirectory;
-            int priority;
+//             int priority;
             bool useVFATNames;
             int conflictHandling;
             int numFiles;
             int updateDelay;
-            bool executeUserScript;
-            bool showToolBar;
-            int outputFilePermissions;
+//             bool executeUserScript;
+//             bool showToolBar;
+//             int outputFilePermissions;
         } general;
         struct Backends {
             QStringList rippers;

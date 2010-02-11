@@ -9,8 +9,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef OPENER_H
-#define OPENER_H
+#ifndef URLOPENER_H
+#define URLOPENER_H
 
 #include <KDialog>
 
@@ -28,7 +28,7 @@ class KUrlRequester;
 /**
 	@author Daniel Faust <hessijames@gmail.com>
 */
-class Opener : public KDialog
+class UrlOpener : public KDialog
 {
     Q_OBJECT
 public:
@@ -36,22 +36,15 @@ public:
         FileOpenPage,
         ConversionOptionsPage
     };
-    enum OpenMode {
-        Files,
-        Url,
-        Playlist
-    };
 
-    Opener( Config *_config, OpenMode _openMode, QWidget *parent=0, Qt::WFlags f=0 );
-    ~Opener();
+    UrlOpener( Config *_config, QWidget *parent=0, Qt::WFlags f=0 );
+    ~UrlOpener();
 
     DialogPage currentPage() { return page; }
 
 private:
     Config *config;
-    OpenMode openMode;
   
-    KFileWidget *fileWidget;
     KUrlRequester *urlRequester;
     Options *options;
     DialogPage page;
@@ -61,16 +54,13 @@ private:
     KPushButton *pProceed;
     KPushButton *pAdd;
     KPushButton *pCancel;
-    QLabel *formatHelp;
 
 private slots:
     void proceedClickedSlot();
     void okClickedSlot();
-    void showHelp();
 
 signals:
     void done( const KUrl::List& files, ConversionOptions *conversionOptions );
-
 
 };
 

@@ -1,6 +1,6 @@
 
 #include "cdopener.h"
-#include "cdmanager.h"
+#include "../audiocd/cdmanager.h"
 #include "../metadata/tagengine.h"
 #include "../config.h"
 #include "../options.h"

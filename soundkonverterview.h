@@ -7,10 +7,12 @@
 #define _SOUNDKONVERTERVIEW_H_
 
 #include <QWidget>
+#include <KUrl>
 
 class KPushButton;
 class QMenu;
-class QAction;
+class KAction;
+class KActionMenu;
 class QToolButton;
 
 class ProgressIndicator;
@@ -19,6 +21,7 @@ class Config;
 class Logger;
 class CDManager;
 class FileList;
+class OptionsLayer;
 
 // class QPainter;
 // class KUrl;
@@ -38,11 +41,16 @@ class soundKonverterView : public QWidget
     Q_OBJECT
 public:
     /** Default constructor */
-    soundKonverterView( Logger *_logger, Config *_config, CDManager *_cdManager, QWidget *parent);
+    soundKonverterView( Logger *_logger, Config *_config, CDManager *_cdManager, QWidget *parent );
 
     /** Destructor */
     virtual ~soundKonverterView();
+    
+    void addConvertFiles( const KUrl::List& urls, QString _profile, QString _format, const QString& directory );
 
+    KAction *start() { return startAction; }
+    KActionMenu *stopMenu() { return stopActionMenu; }
+    
 signals:
     /** Use this signal to change the content of the statusbar */
 //     void signalChangeStatusbar(const QString& text);
@@ -50,14 +58,15 @@ signals:
     /** Use this signal to change the content of the caption */
 //     void signalChangeCaption( const QString& text );
 
+public slots:
+    void showCdDialog( const QString& device = "", bool intern = true );
+
 private slots:
     void addClicked( int index );
     void showFileDialog();
     void showDirDialog();
-    void showCdDialog( bool intern = true );
     void showUrlDialog();
     void showPlaylistDialog();
-    void settingsChanged();
 
     // connected to fileList
     /** The count of items in the file list has changed to @p count */
@@ -75,28 +84,23 @@ private:
     CDManager *cdManager;
 
     FileList *fileList;
+    OptionsLayer *optionsLayer;
 
     /** The combobutton for adding files */
     ComboButton *cAdd;
-    QToolButton *pAdd;
-    /** The menu for the add button */
-    QMenu *addActionMenu;
-    QAction *addFilesAction;
-    QAction *addDirectoryAction;
-    QAction *addAudioCdAction;
-    QAction *addUrlAction;
-    QAction *addPlaylistAction;
 
     /** The button to start the conversion */
     KPushButton *pStart;
+    /** Tha start action */
+    KAction *startAction;
 
     /** The button to stop the conversion */
     KPushButton *pStop;
     /** The menu for the stop button */
-    QMenu *stopActionMenu;
-    QAction *stopAction;
-    QAction *continueAction;
-    QAction *killAction;
+    KActionMenu *stopActionMenu;
+    KAction *killAction;
+    KAction *stopAction;
+    KAction *continueAction;
 
     /** Displays the current progress */
     ProgressIndicator *progressIndicator;
@@ -107,6 +111,8 @@ public slots:
 
 signals:
     void progressChanged( const QString& progress );
+    void signalConversionStarted();
+    void signalConversionStopped();
 };
 
 #endif // _soundKonverterVIEW_H_

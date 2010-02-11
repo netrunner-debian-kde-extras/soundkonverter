@@ -7,7 +7,7 @@ set(soundkonverter_replaygain_vorbisgain_SRCS
    soundkonverter_replaygain_vorbisgain.cpp
  )
 
-kde4_add_plugin(soundkonverter_replaygain_vorbisgain WITH_PREFIX ${soundkonverter_replaygain_vorbisgain_SRCS})
+kde4_add_plugin(soundkonverter_replaygain_vorbisgain ${soundkonverter_replaygain_vorbisgain_SRCS})
 
 # kde4_add_library(soundkonverter_replaygain_vorbisgain SHARED ${soundkonverter_replaygain_vorbisgain_SRCS})
 

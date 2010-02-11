@@ -51,7 +51,7 @@ public:
     /** Destructor */
     virtual ~Logger();
 
-    void cleanUp();
+//     void cleanUp();
 
     /** Creates a new logger item and returns the id of it, @p filename is added to the new logger item */
     int registerProcess( const KUrl& filename );

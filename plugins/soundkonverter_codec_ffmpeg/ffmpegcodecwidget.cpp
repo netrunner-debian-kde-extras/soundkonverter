@@ -129,12 +129,16 @@ void FFmpegCodecWidget::setCurrentFormat( const QString& format )
 {
     if( currentFormat == format ) return;
     currentFormat = format;
-    setEnabled( currentFormat != "wav" );
+    setEnabled( currentFormat != "wav" && currentFormat != "flac" );
 }
 
 QString FFmpegCodecWidget::currentProfile()
 {
-    if( iBitrate->value() == 64 && chChannels->isChecked() && chSamplerate->isChecked() && cSamplerate->currentIndex() == 4 )
+    if( currentFormat == "wav" || currentFormat == "flac" )
+    {
+        return i18n("Lossless");
+    }
+    else if( iBitrate->value() == 64 && chChannels->isChecked() && chSamplerate->isChecked() && cSamplerate->currentIndex() == 4 )
     {
         return i18n("Very low");
     }
@@ -242,15 +246,26 @@ int FFmpegCodecWidget::currentDataRate()
 {
     int dataRate;
     
-    dataRate = iBitrate->value()/8*60*1000;
-    
-    if( chChannels->isChecked() )
+    if( currentFormat == "wav" )
     {
-        dataRate *= 0.9f;
+        dataRate = 10590000;
     }
-    if( chSamplerate->isChecked() && cSamplerate->currentText().replace(" Hz","").toInt() <= 22050 )
+    else if( currentFormat == "flac" )
     {
-        dataRate *= 0.9f;
+        dataRate = 6520000;
+    }
+    else
+    {
+        dataRate = iBitrate->value()/8*60*1000;
+        
+        if( chChannels->isChecked() )
+        {
+            dataRate *= 0.9f;
+        }
+        if( chSamplerate->isChecked() && cSamplerate->currentText().replace(" Hz","").toInt() <= 22050 )
+        {
+            dataRate *= 0.9f;
+        }
     }
     
     return dataRate;

@@ -12,7 +12,7 @@
 #ifndef CONFIGADVANCEDPAGE_H
 #define CONFIGADVANCEDPAGE_H
 
-#include <configpagebase.h>
+#include "configpagebase.h"
 
 class Config;
 class QCheckBox;

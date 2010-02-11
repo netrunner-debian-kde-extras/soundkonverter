@@ -5,7 +5,9 @@
 
 #include "pluginloader.h"
 
-#include <kio/jobclasses.h>
+//#include <kio/jobclasses.h>
+#include <kio/job.h>
+#include <kio/copyjob.h>
 
 #include <QObject>
 #include <QList>
@@ -61,8 +63,9 @@ public:
         replaygain        = 0x0020, // Apply replaygain
         bpm               = 0x0040, // Apply replaygain
         write_tags        = 0x0080, // Write the tags to the file
-        execute_userscript= 0x0100, // Run the user script
-        remove_temp       = 0x0200  // Remove the downloaded temp file
+        put               = 0x0100, // Copy the file to the destination directory
+        execute_userscript= 0x0200 // Run the user script
+        //remove_temp       = 0x0400  // Remove the downloaded temp file
     };
 
     /** Default Constructor */
@@ -87,7 +90,7 @@ public:
     /** for the conversion and moving the file to a temporary place */
     KProcess *process;
     /** for moving the file to the temporary directory */
-    KIO::Job *kioJob;
+    KIO::Job *kioCopyJob;
     /** the id from the plugin (-1 if false) */
     int convertID;
     /** the id from the plugin (-1 if false) */
@@ -105,8 +108,12 @@ public:
     KUrl inputUrl;
     /** the path and the name of the output file */
     KUrl outputUrl;
-    /** the fifo buffer for the pipe */
-    KUrl fifo;
+    /** the downloaded input file */
+    KUrl tempInputUrl;
+    /** the temp file for the pipe */
+    KUrl tempUrl;
+    
+    void generateTempUrl( const QString& extension );
 
     /** what shall we do with the file? */
     Mode mode;
@@ -153,7 +160,7 @@ public:
     void cleanUp();
 
 private:
-    /** Copy the file with the file list item @p item to a temporary directory and download or rip, when necessary */
+    /** Copy the file with the file list item @p item to a temporary directory and download if necessary */
     void get( ConvertItem *item );
 
     /** Convert the file */
@@ -167,6 +174,9 @@ private:
 
     /** Write the tags of the file with the convert item @p item */
     void writeTags( ConvertItem *item );
+
+    /** Copy the file with the convert item @p item to it's destination directory */
+    void put( ConvertItem *item );
 
     /** Run the userscript for the convert item @p item */
     void executeUserScript( ConvertItem *item );
@@ -191,15 +201,23 @@ private:
     FileList *fileList;
     Logger* logger;
     KProcess notify;
+    
+    struct LogQueue {
+        int id;
+        BackendPlugin *plugin;
+        QStringList messages;
+    };
+    
+    QList<LogQueue> pluginLogQueue;
 
     QTimer updateTimer;
 
 private slots:
     /** The file is being moved */
-    void kioJobProgress( KIO::Job *job, unsigned long percent );
+    void kioJobProgress( KJob *job, unsigned long percent );
 
     /** The file has been moved */
-    void kioJobFinished( KIO::Job *job );
+    void kioJobFinished( KJob *job );
 
     /** Get the process' output */
     void processOutput();

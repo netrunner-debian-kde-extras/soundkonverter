@@ -1,9 +1,17 @@
+soundkonverter (1.0.0~alpha2-1) UNRELEASED; urgency=low
+
+  * Imported Upstream version 1.0.0alpha2
+
+ -- Michael Meskes <meskes@debian.org>  Thu, 11 Feb 2010 10:34:21 +0100
+
 soundkonverter (1.0.0~alpha1-2) experimental; urgency=low
 
   * Added watch file.
   * Added build dependency on libcdparanoia-dev. (Closes: #565850)
+  * Fixed typo
+  * Imported Upstream version 1.0.0alpha2
 
- -- Michael Meskes <meskes@debian.org>  Wed, 20 Jan 2010 10:31:07 +0100
+ -- Michael Meskes <meskes@debian.org>  Thu, 11 Feb 2010 10:33:06 +0100
 
 soundkonverter (1.0.0~alpha1-1) experimental; urgency=low
 

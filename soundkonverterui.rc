@@ -11,17 +11,24 @@
             <Action name="load" />
             <Action name="save" />
         </Menu>
-        <Menu name="conversion"><Text>&amp;Conversion</Text>
+        <Menu name="conversion"><Text>Conversion</Text>
             <Action name="start" />
-            <Action name="stopMenu" />
+            <Action name="stop_menu" />
+            <Separator />
             <Action name="logviewer" />
         </Menu>
-        <Menu name="tools"><Text>&amp;Tools</Text>
+        <Menu name="tools"><Text>Tools</Text>
             <Action name="replaygainscanner" />
-            <Action name="cuesheeteditor" />
         </Menu>
-        <!--<Menu name="help">
-            <Action name="about_plugins" />
-        </Menu>-->
     </MenuBar>
+    <ToolBar name="toolbar" hidden="true" >
+        <text>Main Toolbar</text>
+        <Action name="add_files" />
+        <Action name="add_audiocd" />
+        <Separator />
+        <Action name="start" />
+        <Action name="stop_menu" />
+        <Separator />
+        <Action name="replaygainscanner" />
+    </ToolBar>
 </kpartgui>

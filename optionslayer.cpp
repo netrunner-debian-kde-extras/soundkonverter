@@ -56,21 +56,13 @@ OptionsLayer::OptionsLayer( Config *config, QWidget *parent )
 
     palette = options->palette();
     brush = palette.window();
-//     brush.setColor( QColor(231,223,230) );  // FIXME color can't be set
     palette.setBrush( QPalette::Window, brush );
-//     palette.setBrush( QPalette::Window, oldBrush );
     options->setPalette( palette );
 
     setAutoFillBackground( true );
 
     connect( &fadeTimer, SIGNAL(timeout()), this, SLOT(fadeAnim()) );
     fadeAlpha = 0.0f;
-
-//     QPalette newPalette = palette();
-//     newPalette.setBrush( QPalette::Window, brushSetAlpha( newPalette.window(), 192 ) );
-//     newPalette.setBrush( QPalette::Shadow, brushSetAlpha( newPalette.shadow(), 192 ) );
-//     newPalette.setBrush( QPalette::Base, brushSetAlpha( newPalette.base(), 192 ) );
-//     setPalette( newPalette );
 }
 
 OptionsLayer::~OptionsLayer()
@@ -92,6 +84,8 @@ void OptionsLayer::fadeIn()
 
 void OptionsLayer::fadeOut()
 {
+    urls.clear();
+    
     fadeTimer.start( 50 );
     fadeMode = 2;
     frame->hide();
@@ -113,27 +107,11 @@ void OptionsLayer::fadeAnim()
     newPalette = frame->palette();
     newPalette.setBrush( QPalette::Window, brushSetAlpha( newPalette.window(), 230.0f/255.0f*fadeAlpha ) );
     frame->setPalette( newPalette );
-
-/*    newPalette = tab->palette();
-    newPalette.setBrush( QPalette::Base, brushSetAlpha( newPalette.base(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::Window, brushSetAlpha( newPalette.window(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::WindowText, brushSetAlpha( newPalette.windowText(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::AlternateBase, brushSetAlpha( newPalette.alternateBase(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::Text, brushSetAlpha( newPalette.text(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::Button, brushSetAlpha( newPalette.button(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::ButtonText, brushSetAlpha( newPalette.buttonText(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::BrightText, brushSetAlpha( newPalette.brightText(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::Light, brushSetAlpha( newPalette.light(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::Midlight, brushSetAlpha( newPalette.midlight(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::Dark, brushSetAlpha( newPalette.dark(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::Mid, brushSetAlpha( newPalette.mid(), fadeAlpha ) );
-    newPalette.setBrush( QPalette::Shadow, brushSetAlpha( newPalette.shadow(), fadeAlpha ) );
-    tab->setPalette( newPalette );*/
 }
 
-void OptionsLayer::setUrls( const KUrl::List& _urls )
+void OptionsLayer::addUrls( const KUrl::List& _urls )
 {
-    urls = _urls;
+    urls += _urls;
 }
 
 void OptionsLayer::abort()
@@ -143,12 +121,22 @@ void OptionsLayer::abort()
 
 void OptionsLayer::ok()
 {
-//     emit conversionOptionsSelected( options->currentConversionOptions() );
-    fadeOut();
     emit done( urls, options->currentConversionOptions() );
+    fadeOut();
 }
 
-ConversionOptions *OptionsLayer::currentConversionOptions()
+void OptionsLayer::setProfile( const QString& profile )
 {
-    return options->currentConversionOptions();
+    options->setProfile( profile );
 }
+
+void OptionsLayer::setFormat( const QString& format )
+{
+    options->setFormat( format );
+}
+
+void OptionsLayer::setOutputDirectory( const QString& directory )
+{
+    options->setOutputDirectory( directory );
+}
+

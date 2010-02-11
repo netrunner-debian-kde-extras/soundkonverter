@@ -11,7 +11,7 @@
 //
 #include "configgeneralpage.h"
 
-#include "config.h"
+#include "../config.h"
 
 #include <klocale.h>
 #include <kcombobox.h>
@@ -80,19 +80,19 @@ ConfigGeneralPage::ConfigGeneralPage( Config *_config, QWidget *parent )
 
     box->addSpacing( 5 );
 
-    QHBoxLayout *priorityBox = new QHBoxLayout( 0 );
-    box->addLayout( priorityBox );
-    QLabel *lPriority = new QLabel( i18n("Process priority of the backends")+":", this );
-    priorityBox->addWidget( lPriority );
-    cPriority = new KComboBox( this );
-    sPriority += i18n("Normal");
-    sPriority += i18n("Low");
-    cPriority->addItems( sPriority );
-    cPriority->setCurrentIndex( config->data.general.priority / 10 ); // NOTE that just works for 'normal' and 'low'
-    priorityBox->addWidget( cPriority );
-    connect( cPriority, SIGNAL(activated(int)), this, SIGNAL(configChanged()) );
-
-    box->addSpacing( 5 );
+//     QHBoxLayout *priorityBox = new QHBoxLayout( 0 );
+//     box->addLayout( priorityBox );
+//     QLabel *lPriority = new QLabel( i18n("Process priority of the backends")+":", this );
+//     priorityBox->addWidget( lPriority );
+//     cPriority = new KComboBox( this );
+//     sPriority += i18n("Normal");
+//     sPriority += i18n("Low");
+//     cPriority->addItems( sPriority );
+//     cPriority->setCurrentIndex( config->data.general.priority / 10 ); // NOTE that just works for 'normal' and 'low'
+//     priorityBox->addWidget( cPriority );
+//     connect( cPriority, SIGNAL(activated(int)), this, SIGNAL(configChanged()) );
+// 
+//     box->addSpacing( 5 );
 
     QHBoxLayout *useVFATNamesBox = new QHBoxLayout( 0 );
     box->addLayout( useVFATNamesBox );
@@ -125,6 +125,8 @@ ConfigGeneralPage::ConfigGeneralPage( Config *_config, QWidget *parent )
     QLabel *lNumFiles = new QLabel( i18n("Number of files to convert at once")+":", this );
     numFilesBox->addWidget( lNumFiles );
     iNumFiles = new KIntSpinBox( 1, 100, 1, 3, this );
+    QList<Solid::Device> processors = Solid::Device::listFromType(Solid::DeviceInterface::Processor, QString());
+    iNumFiles->setToolTip( i18n("You shouldn't set this number higher then the amount of installed processor cores.\nThere have been %1 processor cores detected.").arg(processors.count()) );
     iNumFiles->setValue( config->data.general.numFiles );
     numFilesBox->addWidget( iNumFiles );
     connect( iNumFiles, SIGNAL(valueChanged(int)), this, SIGNAL(configChanged()) );
@@ -133,10 +135,11 @@ ConfigGeneralPage::ConfigGeneralPage( Config *_config, QWidget *parent )
 
     QHBoxLayout *updateDelayBox = new QHBoxLayout( 0 );
     box->addLayout( updateDelayBox );
-    QLabel* lUpdateDelay = new QLabel( i18n("Status update delay (time in msec.)")+":", this );
+    QLabel* lUpdateDelay = new QLabel( i18n("Status update delay")+":", this );
     updateDelayBox->addWidget( lUpdateDelay );
     iUpdateDelay = new KIntSpinBox( 50, 1000, 50, 100, parent );
     iUpdateDelay->setToolTip( i18n("Update the progress bar in this interval (time in milliseconds)") );
+    iUpdateDelay->setSuffix( i18n("ms") );
     iUpdateDelay->setValue( config->data.general.updateDelay );
     updateDelayBox->addWidget( iUpdateDelay );
     connect( iUpdateDelay, SIGNAL(valueChanged(int)), this, SIGNAL(configChanged()) );
@@ -152,7 +155,7 @@ void ConfigGeneralPage::resetDefaults()
     cStartTab->setCurrentIndex( 0 );
     cDefaultProfile->setCurrentIndex( 0 );
     cDefaultFormat->setCurrentIndex( 0 );
-    cPriority->setCurrentIndex( 1 );
+//     cPriority->setCurrentIndex( 1 );
     cUseVFATNames->setChecked( true );
     cConflictHandling->setCurrentIndex( 0 );
     QList<Solid::Device> processors = Solid::Device::listFromType(Solid::DeviceInterface::Processor, QString());
@@ -167,7 +170,7 @@ void ConfigGeneralPage::saveSettings()
     config->data.general.startTab = cStartTab->currentIndex();
     config->data.general.defaultProfile = cDefaultProfile->currentText();
     config->data.general.defaultFormat = cDefaultFormat->currentText();
-    config->data.general.priority = cPriority->currentIndex() * 10; // NOTE that just works for 'normal' and 'low'
+//     config->data.general.priority = cPriority->currentIndex() * 10; // NOTE that just works for 'normal' and 'low'
     config->data.general.useVFATNames = cUseVFATNames->isChecked();
     config->data.general.conflictHandling = cConflictHandling->currentIndex();
     config->data.general.numFiles = iNumFiles->value();

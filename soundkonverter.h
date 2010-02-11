@@ -8,6 +8,7 @@
 
 
 #include <KXmlGuiWindow>
+#include <KUrl>
 
 class soundKonverterView;
 class KToggleAction;
@@ -17,6 +18,7 @@ class Logger;
 class LogViewer;
 class CDManager;
 class ReplayGainScanner;
+class KStatusNotifierItem;
 
 /**
  * This class serves as the main window for soundKonverter.  It handles the
@@ -30,22 +32,29 @@ class soundKonverter : public KXmlGuiWindow
 {
     Q_OBJECT
 public:
-    /**
-     * Default Constructor
-     */
+    /** Default Constructor */
     soundKonverter();
 
-    /**
-     * Default Destructor
-     */
+    /** Default Destructor */
     virtual ~soundKonverter();
+    
+    void showSystemTray();
+    void addConvertFiles( const KUrl::List& urls, const QString& profile, const QString& format, const QString& directory );
+    void addReplayGainFiles( const KUrl::List& urls );
+    void ripCd( const QString& device );
+    void setAutoClose( bool enabled ) { autoclose = enabled; }
 
 private slots:
     void showConfigDialog();
     void showLogViewer();
     void showReplayGainScanner();
-    void progressChanged(const QString& progress);
+    void progressChanged( const QString& progress );
 
+    /** The conversion has started */
+    void conversionStarted();
+    /** The conversion has stopped */
+    void conversionStopped();
+    
 private:
     Config *config;
     Logger *logger;
@@ -54,6 +63,10 @@ private:
 
     soundKonverterView *m_view;
     LogViewer *logViewer;
+    
+    KStatusNotifierItem *systemTray;
+    
+    bool autoclose;
 
 //     KToggleAction *m_toolbarAction;
 

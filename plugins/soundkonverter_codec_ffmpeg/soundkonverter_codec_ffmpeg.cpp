@@ -64,39 +64,6 @@ QList<ConversionPipeTrunk> soundkonverter_codec_ffmpeg::codecTable()
     codecs += QSet<QString>::fromList(toCodecs);
     allCodecs = codecs.toList();
     
-/*
-    newTrunk.codecFrom = "wav";
-    newTrunk.codecTo = "ogg vorbis";
-    newTrunk.rating = 90;
-    newTrunk.enabled = ( binaries["ffmpeg"] != "" );
-    newTrunk.problemInfo = i18n("In order to encode ogg vorbis files, you need to install 'ffmpeg'.\nSince ffmpeg inludes many patented codecs, it may not be included in the default installation of your distribution.\nMany distributions offer ffmpeg in an additional software repository.");
-    newTrunk.data.hasInternalReplayGain = false;
-    table.append( newTrunk );
-
-    newTrunk.codecFrom = "ogg vorbis";
-    newTrunk.codecTo = "wav";
-    newTrunk.rating = 90;
-    newTrunk.enabled = ( binaries["ffmpeg"] != "" );
-    newTrunk.problemInfo = i18n("In order to decode ogg vorbis files, you need to install 'ffmpeg'.\nSince ffmpeg inludes many patented codecs, it may not be included in the default installation of your distribution.\nMany distributions offer ffmpeg in an additional software repository.");
-    newTrunk.data.hasInternalReplayGain = false;
-    table.append( newTrunk );
-
-    newTrunk.codecFrom = "wav";
-    newTrunk.codecTo = "mp3";
-    newTrunk.rating = 90;
-    newTrunk.enabled = ( binaries["ffmpeg"] != "" );
-    newTrunk.problemInfo = i18n("In order to encode mp3 files, you need to install 'ffmpeg'.\nSince ffmpeg inludes many patented codecs, it may not be included in the default installation of your distribution.\nMany distributions offer ffmpeg in an additional software repository.");
-    newTrunk.data.hasInternalReplayGain = false;
-    table.append( newTrunk );
-
-    newTrunk.codecFrom = "mp3";
-    newTrunk.codecTo = "wav";
-    newTrunk.rating = 90;
-    newTrunk.enabled = ( binaries["ffmpeg"] != "" );
-    newTrunk.problemInfo = i18n("In order to decode mp3 files, you need to install 'ffmpeg'.\nSince ffmpeg inludes many patented codecs, it may not be included in the default installation of your distribution.\nMany distributions offer ffmpeg in an additional software repository.");
-    newTrunk.data.hasInternalReplayGain = false;
-    table.append( newTrunk );
-*/
     return table;
 }
 
@@ -176,32 +143,6 @@ QString soundkonverter_codec_ffmpeg::getCodecFromFile( const KUrl& filename, con
         }
     }
         
-/*    
-    if( formatInfo("ogg vorbis").mimeTypes.indexOf(mimeType) != -1 )
-    {
-        return "ogg vorbis";
-    }
-    else if( formatInfo("mp3").mimeTypes.indexOf(mimeType) != -1 )
-    {
-        return "mp3";
-    }
-    else if( formatInfo("wav").mimeTypes.indexOf(mimeType) != -1 )
-    {
-        return "wav";
-    }
-    else if( mimeType == "application/octet-stream" )
-    {
-        extension = filename.url().right( filename.url().length() - filename.url().lastIndexOf(".") - 1 );
-        if( formatInfo("ogg vorbis").extensions.indexOf(extension) != -1 ) return "ogg vorbis";
-        else if( formatInfo("mp3").extensions.indexOf(extension) != -1 ) return "mp3";
-        else if( formatInfo("flac").extensions.indexOf(extension) != -1 ) return "flac";
-        else if( formatInfo("wma").extensions.indexOf(extension) != -1 ) return "wma";
-        else if( formatInfo("wav").extensions.indexOf(extension) != -1 ) return "wav";
-//         if( filename.url().endsWith(".ogg") ) return "ogg vorbis";
-//         if( filename.url().endsWith(".mp3") ) return "mp3";
-//         if( filename.url().endsWith(".wav") ) return "wav";
-    }
-*/
     return "";
 }
 
@@ -277,7 +218,7 @@ int soundkonverter_codec_ffmpeg::convert( const KUrl& inputFile, const KUrl& out
     newItem->process->setShellCommand( command.join(" ") );
     newItem->process->start();
 
-    emit log( 1000, command.join(" ") );
+    emit log( newItem->id, command.join(" ") );
 
     backendItems.append( newItem );
     return newItem->id;

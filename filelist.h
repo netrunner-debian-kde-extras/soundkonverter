@@ -43,8 +43,8 @@ public:
 
     void setOptionsLayer( OptionsLayer *_optionsLayer ) { optionsLayer = _optionsLayer; }
     
-    void load();
-    void save();
+    void load( bool user = false );
+    void save( bool user = false );
 
 private:
     /** Lists all file in a directory and adds them to the file list, if fast is false. The number of listed files is returned */

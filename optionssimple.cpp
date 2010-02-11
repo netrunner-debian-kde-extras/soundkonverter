@@ -392,6 +392,18 @@ void OptionsSimple::setCurrentFormat( const QString& format )
 //     formatChanged();
 }
 
+void OptionsSimple::setCurrentOutputDirectory( const QString& directory )
+{
+    outputDirectory->setDirectory( directory );
+    outputDirectoryChanged();
+}
+
+void OptionsSimple::setCurrentOutputDirectoryMode( int mode )
+{
+    outputDirectory->setMode( (OutputDirectory::Mode)mode );
+    outputDirectoryChanged();
+}
+
 void OptionsSimple::showHelp()
 {
     QStringList messageList;
@@ -403,7 +415,7 @@ void OptionsSimple::showHelp()
         codecName = problems.keys().at(i);
         if( codecName != "wav" )
         {
-            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).join("\n");
+            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).join("\n<b>or</b>\n");
         }
     }
     

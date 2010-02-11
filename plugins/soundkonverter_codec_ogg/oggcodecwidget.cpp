@@ -193,7 +193,11 @@ void OggCodecWidget::setCurrentFormat( const QString& format )
 
 QString OggCodecWidget::currentProfile()
 {
-    if( cMode->currentIndex() == 0 && dQuality->value() == 2.0 && chChannels->isChecked() && chSamplerate->isChecked() && cSamplerate->currentIndex() == 4 )
+    if( currentFormat == "wav" )
+    {
+        return i18n("Lossless");
+    }
+    else if( cMode->currentIndex() == 0 && dQuality->value() == 2.0 && chChannels->isChecked() && chSamplerate->isChecked() && cSamplerate->currentIndex() == 4 )
     {
         return i18n("Very low");
     }
@@ -319,24 +323,31 @@ int OggCodecWidget::currentDataRate()
 {
     int dataRate;
     
-    if( cMode->currentIndex() == 0 )
+    if( currentFormat == "wav" )
     {
-        dataRate = 500000 + dQuality->value()*150000;
-        if( dQuality->value() > 7 ) dataRate += (dQuality->value()-7)*250000;
-        if( dQuality->value() > 9 ) dataRate += (dQuality->value()-9)*800000;
+        dataRate = 10590000;
     }
     else
     {
-        dataRate = dQuality->value()/8*60*1000;
-    }
-    
-    if( chChannels->isChecked() )
-    {
-        dataRate *= 0.9f;
-    }
-    if( chSamplerate->isChecked() && cSamplerate->currentText().replace(" Hz","").toInt() <= 22050 )
-    {
-        dataRate *= 0.9f;
+        if( cMode->currentIndex() == 0 )
+        {
+            dataRate = 500000 + dQuality->value()*150000;
+            if( dQuality->value() > 7 ) dataRate += (dQuality->value()-7)*250000;
+            if( dQuality->value() > 9 ) dataRate += (dQuality->value()-9)*800000;
+        }
+        else
+        {
+            dataRate = dQuality->value()/8*60*1000;
+        }
+        
+        if( chChannels->isChecked() )
+        {
+            dataRate *= 0.9f;
+        }
+        if( chSamplerate->isChecked() && cSamplerate->currentText().replace(" Hz","").toInt() <= 22050 )
+        {
+            dataRate *= 0.9f;
+        }
     }
     
     return dataRate;

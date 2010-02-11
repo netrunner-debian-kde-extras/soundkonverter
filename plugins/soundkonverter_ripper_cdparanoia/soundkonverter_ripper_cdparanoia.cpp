@@ -92,7 +92,7 @@ int soundkonverter_ripper_cdparanoia::rip( const QString& device, int track, int
         (*newItem->process) << QString::number(track);
         (*newItem->process) << outputFile.toLocalFile();
         newItem->process->start();
-        emit log( 1000, "cdparanoia -e -d " + device + " " + QString::number(track) + " " + outputFile.toLocalFile() );
+        emit log( newItem->id, "cdparanoia -e -d " + device + " " + QString::number(track) + " " + outputFile.toLocalFile() );
     }
     else
     {
@@ -103,7 +103,7 @@ int soundkonverter_ripper_cdparanoia::rip( const QString& device, int track, int
         (*newItem->process) << "0:" + QString::number(tracks);
         (*newItem->process) << outputFile.toLocalFile();
         newItem->process->start();
-        emit log( 1000, "cdparanoia -e -d " + device + " 0:" + QString::number(tracks) + " " + outputFile.toLocalFile() );
+        emit log( newItem->id, "cdparanoia -e -d " + device + " 0:" + QString::number(tracks) + " " + outputFile.toLocalFile() );
     }
 
     backendItems.append( newItem );

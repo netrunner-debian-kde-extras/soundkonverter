@@ -11,7 +11,7 @@
 //
 #include "configdialog.h"
 
-#include "config.h"
+#include "../config.h"
 #include "configgeneralpage.h"
 #include "configadvancedpage.h"
 #include "configbackendspage.h"
