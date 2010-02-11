@@ -25,7 +25,7 @@ LogViewer::LogViewer( Logger* _logger, QWidget *parent, Qt::WFlags f )
     setButtonText( KDialog::User1, i18n("Update") );
     setButtonIcon( KDialog::User1, KIcon("view-refresh") );
     connect( this, SIGNAL(user1Clicked()), this, SLOT(refillLogs()) );
-    setButtonText( KDialog::User2, i18n("Save to file ...") );
+    setButtonText( KDialog::User2, i18n("Save to file...") );
     setButtonIcon( KDialog::User2, KIcon("document-save") );
     connect( this, SIGNAL(user2Clicked()), this, SLOT(save()) );
     setButtonFocus( KDialog::Close );
@@ -52,12 +52,16 @@ LogViewer::~LogViewer()
 
 void LogViewer::refillLogs()
 {
+    QString name;
     QString currentProcess = cItem->currentText();
     cItem->clear();
     QList<LoggerItem*> logs = logger->getLogs();
     for( QList<LoggerItem*>::Iterator a = logs.begin(); a != logs.end(); ++a )
     {
-        cItem->addItem( (*a)->filename.pathOrUrl() + " - " + QString::number((*a)->id), QVariant((*a)->id) );
+        name = (*a)->filename.pathOrUrl();
+        // TODO make the string width dependend on the window width
+        if( name.length() > 73 ) name = name.left(35) + "..." + name.right(35);
+        cItem->addItem( name + " - " + QString::number((*a)->id), QVariant((*a)->id) );
     }
     if( cItem->findText(currentProcess) != -1 ) cItem->setCurrentIndex( cItem->findText(currentProcess) );
     else cItem->setCurrentIndex( 0 );

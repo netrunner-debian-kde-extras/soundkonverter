@@ -12,7 +12,7 @@
 #ifndef CONFIGGENERALPAGE_H
 #define CONFIGGENERALPAGE_H
 
-#include <configpagebase.h>
+#include "configpagebase.h"
 
 class Config;
 class QCheckBox;
@@ -40,8 +40,8 @@ private:
     QStringList sDefaultProfile;
     KComboBox *cDefaultFormat;
     QStringList sDefaultFormat;
-    KComboBox *cPriority;
-    QStringList sPriority;
+//     KComboBox *cPriority;
+//     QStringList sPriority;
     QCheckBox *cUseVFATNames;
     KComboBox *cConflictHandling;
     QStringList sConflictHandling;

@@ -8,7 +8,7 @@ set(soundkonverter_codec_ffmpeg_SRCS
    ffmpegcodecwidget.cpp
  )
 
-kde4_add_plugin(soundkonverter_codec_ffmpeg WITH_PREFIX ${soundkonverter_codec_ffmpeg_SRCS})
+kde4_add_plugin(soundkonverter_codec_ffmpeg ${soundkonverter_codec_ffmpeg_SRCS})
 
 # kde4_add_library(soundkonverter_codec_ffmpeg SHARED ${soundkonverter_codec_ffmpeg_SRCS})
 

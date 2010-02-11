@@ -71,6 +71,7 @@ Options::Options( Config *_config, const QString& text, QWidget *parent )
     {
         profile = config->data.general.defaultProfile;
     }
+    
     if( config->customProfiles().indexOf(profile) != -1 )
     {
         optionsDetailed->loadCustomProfile( profile );
@@ -79,9 +80,14 @@ Options::Options( Config *_config, const QString& text, QWidget *parent )
     {
         optionsDetailed->setCurrentProfile( profile );
     }
+    
+    int startTab = ( config->data.general.startTab == 0 ) ? config->data.general.lastTab : config->data.general.startTab - 1;
 
     tab->addTab( optionsSimple, i18n("Simple") );
     tab->addTab( optionsDetailed, i18n("Detailed") );
+    
+    tab->setCurrentIndex( startTab );
+
 
 //     KTabWidget *tab2 = new KTabWidget( this );
 //     gridLayout->addWidget( tab2, 0, 1 );
@@ -175,24 +181,29 @@ void Options::tabChanged( int pageIndex )
 //     {
         //pAdvancedOptionsToggle->show();
 //     }
-    //config->data.general.lastTab = tab->currentPageIndex();
+    config->data.general.lastTab = tab->currentIndex();
 }
 
-// void Options::setProfile( const QString& profile )
-// {
-//     optionsSimple->setCurrentProfile( profile );
-// }
-// 
-// void Options::setFormat( const QString& format )
-// {
-//     optionsSimple->setCurrentFormat( format );
-// }
-// 
-// void Options::setOutputDirectory( const QString& directory )
-// {
-//     optionsSimple->setCurrentOutputDirectory( directory );
-// }
-// 
+void Options::setProfile( const QString& profile )
+{
+    optionsSimple->setCurrentProfile( profile );
+    simpleOptionsChanged();
+}
+
+void Options::setFormat( const QString& format )
+{
+    optionsSimple->setCurrentFormat( format );
+    simpleOptionsChanged();
+}
+
+void Options::setOutputDirectory( const QString& directory )
+{
+    optionsSimple->setCurrentOutputDirectoryMode( OutputDirectory::Specify );
+    optionsSimple->setCurrentOutputDirectory( directory );
+    simpleOutputDirectoryModeChanged( OutputDirectory::Specify );
+    simpleOutputDirectoryChanged( directory );
+}
+
 // void Options::somethingChanged()
 // {
 //     emit optionsChanged();

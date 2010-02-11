@@ -69,6 +69,7 @@ public:
     virtual bool pause( int id );
     virtual bool resume( int id );
     virtual bool kill( int id );
+//     virtual void setPriority( int _priority );
     virtual float progress( int id );
     virtual float parseOutput( const QString& output ) = 0;
 
@@ -80,6 +81,7 @@ public:
 protected:
     QList<BackendPluginItem*> backendItems;
     int lastId;
+//     int priority;
 
 signals:
     void log( int id, const QString& message );
@@ -90,7 +92,7 @@ private slots:
     virtual void processOutput();
 
     /** The process has exited */
-    virtual void processExit( int exitCode, QProcess::ExitStatus exitStatus );
+    virtual void processExit( int exitCode, QProcess::ExitStatus /*exitStatus*/ );
 };
 
 #endif // BACKENDPLUGIN_H

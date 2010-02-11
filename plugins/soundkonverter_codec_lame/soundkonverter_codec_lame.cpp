@@ -194,7 +194,7 @@ int soundkonverter_codec_lame::convert( const KUrl& inputFile, const KUrl& outpu
     newItem->process->setShellCommand( command.join(" ") );
     newItem->process->start();
 
-    emit log( 1000, command.join(" ") );
+    emit log( newItem->id, command.join(" ") );
 
     backendItems.append( newItem );
     return newItem->id;

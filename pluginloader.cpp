@@ -200,7 +200,8 @@ void PluginLoader::load()
 
 QStringList PluginLoader::formatList( Possibilities possibilities, CompressionType compressionType )
 {
-    QSet<QString> list;
+    QSet<QString> set;
+    QStringList list;
 
     for( int i=0; i<conversionPipeTrunks.count(); i++ )
     {
@@ -208,15 +209,15 @@ QStringList PluginLoader::formatList( Possibilities possibilities, CompressionTy
       
         if( possibilities & Encode )
         {
-            if( compressionType & Lossy && !isCodecLossless(conversionPipeTrunks.at(i).codecTo) ) list += conversionPipeTrunks.at(i).codecTo;
-            if( compressionType & Lossless && isCodecLossless(conversionPipeTrunks.at(i).codecTo) ) list += conversionPipeTrunks.at(i).codecTo;
-            if( compressionType & Hybrid && isCodecHybrid(conversionPipeTrunks.at(i).codecTo) ) list += conversionPipeTrunks.at(i).codecTo;
+            if( compressionType & Lossy && !isCodecLossless(conversionPipeTrunks.at(i).codecTo) ) set += conversionPipeTrunks.at(i).codecTo;
+            if( compressionType & Lossless && isCodecLossless(conversionPipeTrunks.at(i).codecTo) ) set += conversionPipeTrunks.at(i).codecTo;
+            if( compressionType & Hybrid && isCodecHybrid(conversionPipeTrunks.at(i).codecTo) ) set += conversionPipeTrunks.at(i).codecTo;
         }
         if( possibilities & Decode )
         {
-            if( compressionType & Lossy && !isCodecLossless(conversionPipeTrunks.at(i).codecFrom) ) list += conversionPipeTrunks.at(i).codecFrom;
-            if( compressionType & Lossless && isCodecLossless(conversionPipeTrunks.at(i).codecFrom) ) list += conversionPipeTrunks.at(i).codecFrom;
-            if( compressionType & Hybrid && isCodecHybrid(conversionPipeTrunks.at(i).codecFrom) ) list += conversionPipeTrunks.at(i).codecFrom;
+            if( compressionType & Lossy && !isCodecLossless(conversionPipeTrunks.at(i).codecFrom) ) set += conversionPipeTrunks.at(i).codecFrom;
+            if( compressionType & Lossless && isCodecLossless(conversionPipeTrunks.at(i).codecFrom) ) set += conversionPipeTrunks.at(i).codecFrom;
+            if( compressionType & Hybrid && isCodecHybrid(conversionPipeTrunks.at(i).codecFrom) ) set += conversionPipeTrunks.at(i).codecFrom;
         }
     }
 
@@ -226,11 +227,13 @@ QStringList PluginLoader::formatList( Possibilities possibilities, CompressionTy
         {
             if( !replaygainPipes.at(i).enabled ) continue;
           
-            list += replaygainPipes.at(i).codecName;
+            set += replaygainPipes.at(i).codecName;
         }
     }
 
-    return list.toList();
+    list = set.toList();
+    list.sort();
+    return list;
 }
 
 QList<CodecPlugin*> PluginLoader::encodersForCodec( const QString& codecName )
@@ -529,7 +532,21 @@ QMap<QString,QStringList> PluginLoader::encodeProblems()
     return problems;
 }
 
-// TODO QMap<QString,QStringList> PluginLoader::replaygainProblems()
+QMap<QString,QStringList> PluginLoader::replaygainProblems()
+{
+    QMap<QString,QStringList> problems;
+    QStringList errorList;
+  
+    for( int i=0; i<replaygainPipes.size(); i++ )
+    {
+        if( !replaygainPipes.at(i).enabled && !replaygainPipes.at(i).problemInfo.isEmpty() && !problems.value(replaygainPipes.at(i).codecName).contains(replaygainPipes.at(i).problemInfo) )
+        {
+              problems[replaygainPipes.at(i).codecName] += replaygainPipes.at(i).problemInfo;
+        }
+    }
+
+    return problems;
+}
 
 bool PluginLoader::isCodecLossless( const QString& codecName )
 {

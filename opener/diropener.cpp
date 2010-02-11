@@ -1,7 +1,7 @@
 
-#include "dirdialog.h"
-#include "config.h"
-#include "options.h"
+#include "diropener.h"
+#include "../config.h"
+#include "../options.h"
 
 #include <QLayout>
 #include <QLabel>
@@ -13,11 +13,13 @@
 #include <KIcon>
 #include <KListWidget>
 #include <KUrlRequester>
+#include <QMessageBox>
 
 
-DirDialog::DirDialog( Config *config, Mode _mode, QWidget *parent, Qt::WFlags f )
+DirOpener::DirOpener( Config *_config, Mode _mode, QWidget *parent, Qt::WFlags f )
     : KDialog( parent, f ),
-    mode( _mode )
+    mode( _mode ),
+    config( _config )
 {
     setCaption( i18n("Add folder") );
     setWindowIcon( KIcon("folder") );
@@ -106,7 +108,14 @@ DirDialog::DirDialog( Config *config, Mode _mode, QWidget *parent, Qt::WFlags f 
         newItem->setFlags( Qt::ItemIsEnabled | Qt::ItemIsUserCheckable );
         newItem->setCheckState( Qt::Checked );
     }
-    fileTypesBox->addWidget( fileTypes );
+    
+    QVBoxLayout *fileTypesFormatsBox = new QVBoxLayout();
+    fileTypesBox->addLayout( fileTypesFormatsBox );
+
+    fileTypesFormatsBox->addWidget( fileTypes );
+    QLabel *formatHelp = new QLabel( i18n("<a href=\"format-help\">Are you missing some file formats?</a>"), this );
+    connect( formatHelp, SIGNAL(linkActivated(const QString&)), this, SLOT(showHelp()) );
+    fileTypesFormatsBox->addWidget( formatHelp );
 
     QVBoxLayout *fileTypesButtonsBox = new QVBoxLayout();
     fileTypesBox->addLayout( fileTypesButtonsBox );
@@ -138,12 +147,13 @@ DirDialog::DirDialog( Config *config, Mode _mode, QWidget *parent, Qt::WFlags f 
     
     KUrl url = KFileDialog::getExistingDirectoryUrl( uDirectory->url(), this );
     if( !url.isEmpty() ) uDirectory->setUrl( url );
+    else emit reject(); // TODO reject properly
 }
 
-DirDialog::~DirDialog()
+DirOpener::~DirOpener()
 {}
 
-void DirDialog::proceedClicked()
+void DirOpener::proceedClicked()
 {
     if( page == DirOpenPage )
     {
@@ -159,7 +169,7 @@ void DirDialog::proceedClicked()
     }
 }
 
-void DirDialog::addClicked()
+void DirOpener::addClicked()
 {
     QStringList selectedCodecs;
     for( int i = 0; i < fileTypes->count(); i++ )
@@ -178,7 +188,7 @@ void DirDialog::addClicked()
     }
 }
 
-void DirDialog::selectAllClicked()
+void DirOpener::selectAllClicked()
 {
     for( int i = 0; i < fileTypes->count(); i++ )
     {
@@ -186,11 +196,44 @@ void DirDialog::selectAllClicked()
     }
 }
 
-void DirDialog::selectNoneClicked()
+void DirOpener::selectNoneClicked()
 {
     for( int i = 0; i < fileTypes->count(); i++ )
     {
         fileTypes->item(i)->setCheckState( Qt::Unchecked );
     }
 }
+
+void DirOpener::showHelp()
+{
+    QStringList messageList;
+    QString codecName;
+    
+    QMap<QString,QStringList> problems = ( mode == Convert ) ? config->pluginLoader()->decodeProblems() : config->pluginLoader()->replaygainProblems();
+    for( int i=0; i<problems.count(); i++ )
+    {
+        codecName = problems.keys().at(i);
+        if( codecName != "wav" )
+        {
+            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).join("\n<b>or</b>\n");
+        }
+    }
+    
+    if( messageList.isEmpty() )
+    {
+        messageList += i18n("soundKonverter couldn't find any missing packages.\nMaybe you need to install an additional plugin via the packagemanager of your distribution.");
+    }
+    else
+    {
+        messageList.prepend( i18n("Some of the installed plugins aren't working because they are missing additional programs.\nPossible solutions are listed below.") );
+    }
+    
+    QMessageBox *messageBox = new QMessageBox( this );
+    messageBox->setIcon( QMessageBox::Information );
+    messageBox->setWindowTitle( i18n("Missing backends") );
+    messageBox->setText( messageList.join("\n\n").replace("\n","<br>") );
+    messageBox->setTextFormat( Qt::RichText );
+    messageBox->exec();
+}
+
 

@@ -10,8 +10,8 @@
 //
 //
 #include "configbackendspage.h"
-#include "config.h"
-#include "core/codecplugin.h"
+#include "../config.h"
+#include "../core/codecplugin.h"
 
 #include <QLayout>
 #include <QLabel>

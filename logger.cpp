@@ -43,20 +43,20 @@ Logger::~Logger()
     }
 }
 
-void Logger::cleanUp()
-{
-    for( QList<LoggerItem*>::Iterator it = processes.begin(); it != processes.end(); ++it )
-    {
-        if( (*it)->id != 1000 )
-        {
-            emit removedProcess( (*it)->id );
-            (*it)->file.close();
-            (*it)->file.remove();
-            delete *it;
-        }
-    }
-    processes.clear();
-}
+// void Logger::cleanUp()
+// {
+//     for( QList<LoggerItem*>::Iterator it = processes.begin(); it != processes.end(); ++it )
+//     {
+//         if( (*it)->id != 1000 )
+//         {
+//             emit removedProcess( (*it)->id );
+//             (*it)->file.close();
+//             (*it)->file.remove();
+//             delete *it;
+//         }
+//     }
+//     processes.clear();
+// }
 
 int Logger::registerProcess( const KUrl& filename )
 {
@@ -84,13 +84,14 @@ void Logger::log( int id, const QString& data )
 {
     for( QList<LoggerItem*>::Iterator it = processes.begin(); it != processes.end(); ++it )
     {
-        if( (*it)->id == id ) {
+        if( (*it)->id == id )
+        {
             (*it)->data.append( data );
             if( (*it)->data.count() > 10000 ) (*it)->data.removeFirst();
             (*it)->textStream << data;
             (*it)->textStream << "\n";
-//             (*it)->file.flush(); // TODO make file saving configureable
-            if( id == 1000 ) emit updateProcess( 1000 );
+            (*it)->textStream.flush(); // TODO make file saving configureable
+            if( id == 1000 ) emit updateProcess( id );
             return;
         }
     }

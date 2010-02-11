@@ -133,7 +133,7 @@ int soundkonverter_codec_ogg::convert( const KUrl& inputFile, const KUrl& output
     newItem->process->setShellCommand( command.join(" ") );
     newItem->process->start();
 
-    emit log( 1000, command.join(" ") );
+    emit log( newItem->id, command.join(" ") );
 
     backendItems.append( newItem );
     return newItem->id;

@@ -75,6 +75,7 @@ public:
     bool canRipEntireCd( QStringList *errorList = 0 );
     QMap<QString,QStringList> decodeProblems();
     QMap<QString,QStringList> encodeProblems();
+    QMap<QString,QStringList> replaygainProblems();
     bool isCodecLossless( const QString& codecName );
     bool isCodecHybrid( const QString& codecName );
     bool hasCodecInternalReplayGain( const QString& codecName );

@@ -43,9 +43,7 @@ public:
 
     void fadeIn();
     void fadeOut(); // should be private
-    void setUrls( const KUrl::List& _urls );
-
-    ConversionOptions *currentConversionOptions(); // HACK unneeded
+    void addUrls( const KUrl::List& _urls );
 
 private:
     QFrame *frame;
@@ -66,6 +64,16 @@ private:
         brush.setColor( color );
         return brush;
     }
+    
+public slots:
+    /** Set the current profile */
+    void setProfile( const QString& profile );
+
+    /** Set the current format */
+    void setFormat( const QString& format );
+
+    /** Set the current output directory */
+    void setOutputDirectory( const QString& directory );
 
 private slots:
     void fadeAnim();

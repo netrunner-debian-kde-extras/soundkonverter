@@ -47,7 +47,7 @@ void Config::load()
     data.general.copyStructureOutputDirectory = group.readEntry( "copyStructureOutputDirectory", QDir::homePath() + "/soundKonverter" );
     data.general.useVFATNames = group.readEntry( "useVFATNames", true );
     data.general.conflictHandling = group.readEntry( "conflictHandling", 0 );
-    data.general.priority = group.readEntry( "priority", 10 );
+//     data.general.priority = group.readEntry( "priority", 10 );
     data.general.numFiles = group.readEntry( "numFiles", 0 );
     if( data.general.numFiles == 0 )
     {
@@ -55,9 +55,9 @@ void Config::load()
         data.general.numFiles = ( processors.count() > 0 ) ? processors.count() : 1;
     }
     data.general.updateDelay = group.readEntry( "updateDelay", 100 );
-    data.general.executeUserScript = group.readEntry( "executeUserScript", false );
-    data.general.showToolBar = group.readEntry( "showToolBar", false );
-    data.general.outputFilePermissions = group.readEntry( "outputFilePermissions", 644 );
+//     data.general.executeUserScript = group.readEntry( "executeUserScript", false );
+//     data.general.showToolBar = group.readEntry( "showToolBar", false );
+//     data.general.outputFilePermissions = group.readEntry( "outputFilePermissions", 644 );
     
     group = conf->group( "Backends" );
     data.backends.rippers = group.readEntry( "rippers", QStringList() );
@@ -375,12 +375,12 @@ void Config::save()
     group.writeEntry( "copyStructureOutputDirectory", data.general.copyStructureOutputDirectory );
     group.writeEntry( "useVFATNames", data.general.useVFATNames );
     group.writeEntry( "conflictHandling", data.general.conflictHandling );
-    group.writeEntry( "priority", data.general.priority );
+//     group.writeEntry( "priority", data.general.priority );
     group.writeEntry( "numFiles", data.general.numFiles );
     group.writeEntry( "updateDelay", data.general.updateDelay );
-    group.writeEntry( "executeUserScript", data.general.executeUserScript );
-    group.writeEntry( "showToolBar", data.general.showToolBar );
-    group.writeEntry( "outputFilePermissions", data.general.outputFilePermissions );
+//     group.writeEntry( "executeUserScript", data.general.executeUserScript );
+//     group.writeEntry( "showToolBar", data.general.showToolBar );
+//     group.writeEntry( "outputFilePermissions", data.general.outputFilePermissions );
 
     group = conf->group( "Backends" );
     group.writeEntry( "rippers", data.backends.rippers );

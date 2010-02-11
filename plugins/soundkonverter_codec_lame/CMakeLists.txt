@@ -9,7 +9,7 @@ set(soundkonverter_codec_lame_SRCS
    lamecodecwidget.cpp
  )
 
-kde4_add_plugin(soundkonverter_codec_lame WITH_PREFIX ${soundkonverter_codec_lame_SRCS})
+kde4_add_plugin(soundkonverter_codec_lame ${soundkonverter_codec_lame_SRCS})
 
 # kde4_add_library(soundkonverter_codec_lame SHARED ${soundkonverter_codec_lame_SRCS})
 

@@ -8,7 +8,7 @@ set(soundkonverter_codec_ogg_SRCS
    oggcodecwidget.cpp
  )
 
-kde4_add_plugin(soundkonverter_codec_ogg WITH_PREFIX ${soundkonverter_codec_ogg_SRCS})
+kde4_add_plugin(soundkonverter_codec_ogg ${soundkonverter_codec_ogg_SRCS})
 
 # kde4_add_library(soundkonverter_codec_ogg SHARED ${soundkonverter_codec_ogg_SRCS})
 

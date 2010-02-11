@@ -1,17 +1,22 @@
-#include "soundkonverter.h"
-#include <kapplication.h>
+
+
+#include "soundkonverterapp.h"
+
+#include <kuniqueapplication.h>
 #include <kaboutdata.h>
 #include <kcmdlineargs.h>
 #include <KLocale>
 
-static const char description[] =
-    I18N_NOOP("soundKonverter is a frontend to various audio encoders and decoders.");
 
-static const char version[] = "1.0.0";
+static const char description[] =
+    //I18N_NOOP("soundKonverter is a frontend to various audio encoders and decoders.\n\nsoundKonverter needs other programs that are converting the files in the background called backends.\n\nIf you find a bug, please don't hesitate to report it to me.\nYou can either report it at https://bugs.launchpad.net/soundkonverter or you can send me an email to hessijames@gmail.com.\nPlease keep in mind that it may take some time until I get to fix it.");
+    I18N_NOOP("soundKonverter is a frontend to various audio converters, Replay Gain tools and CD rippers.\n\nPlease file bug reports at https://bugs.launchpad.net/ubuntu/+source/soundkonverter\nor simply send me a mail to hessijames@gmail.com");
+
+static const char version[] = "1.0.0 beta1";
 
 int main(int argc, char **argv)
 {
-    KAboutData about("soundkonverter", 0, ki18n("soundKonverter"), version, ki18n(description), KAboutData::License_GPL, ki18n("(C) 2007 Daniel Faust"), KLocalizedString(), 0, "hessijames@gmail.com");
+    KAboutData about("soundkonverter", 0, ki18n("soundKonverter"), version, ki18n(description), KAboutData::License_GPL, ki18n("(C) 2010 Daniel Faust"), KLocalizedString(), 0, "hessijames@gmail.com");
     about.addAuthor( ki18n("Daniel Faust"), KLocalizedString(), "hessijames@gmail.com" );
     about.addCredit( ki18n("David Vignoni"), ki18n("Nuvola icon theme"), 0, "http://www.icon-king.com" );
     about.addCredit( ki18n("Scott Wheeler"), ki18n("TagLib"), "wheeler@kde.org", "http://ktown.kde.org/~wheeler" );
@@ -32,35 +37,17 @@ int main(int argc, char **argv)
     options.add( "command <command>", ki18n("Execute <command> after each file has been converted") );
     options.add( "+[files]", ki18n("Audio file(s) to append to the file list") );
     KCmdLineArgs::addCmdLineOptions(options);
-    KApplication app;
-
-    soundKonverter *widget = new soundKonverter;
-
-    // see if we are starting with session management
-    if (app.isSessionRestored())
+    
+    soundKonverterApp::addCmdLineOptions();
+    if( !soundKonverterApp::start() )
     {
-        RESTORE(soundKonverter);
-    }
-    else
-    {
-        // no session.. just start up normally
-        KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
-        if (args->count() == 0)
-        {
-            //soundkonverter *widget = new soundkonverter;
-            widget->show();
-        }
-        else
-        {
-            int i = 0;
-            for (; i < args->count(); i++)
-            {
-                //soundkonverter *widget = new soundkonverter;
-                widget->show();
-            }
-        }
-        args->clear();
+        return 0;
     }
 
+    soundKonverterApp app;
+
+//     registerTaglibPlugins();
+
+    // mainWin has WDestructiveClose flag by default, so it will delete itself.
     return app.exec();
 }

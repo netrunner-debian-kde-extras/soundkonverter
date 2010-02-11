@@ -1,1 +1,39 @@
+### Prio 1 ###
+
+ReplayGainScanner: Drag'n'Drop
+Dateien aus dem Netzwerk laden (KIO)
+Kommandozeilenparameter
+processID/convertID/... eindeutig berechnen
+
+
+
+### Prio 2 ###
+
 edit ripper parameters
+ReplayGainScanner: parallele Berechnung
+
+
+### Code ###
+
+KShell::quoteArg
+
+KStandardDirs::findExe("mplayer");
+
+
+### main.cpp ###
+
+signal( SIGQUIT, cleanup );
+signal( SIGINT, cleanup );
+
+namespace
+{
+  const char* description = I18N_NOOP("KDE Time tracker tool");
+
+  void cleanup( int )
+  {
+    kDebug(5970) << i18n("Just caught a software interrupt.");
+    kapp->exit();
+  }
+}
+
+###

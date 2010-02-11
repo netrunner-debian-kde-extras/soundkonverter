@@ -36,59 +36,45 @@ class Options : public QWidget
 {
     Q_OBJECT
 public:
-    /**
-     * Constructor
-     */
+    /** Constructor */
     Options( Config *_config, const QString& text, QWidget *parent=0 );
 
-    /**
-     * Destructor
-     */
+    /** Destructor */
     virtual ~Options();
 
-    /**
-     * Return the current options
-     */
+    /** Return the current options */
     ConversionOptions *currentConversionOptions();
 
-    /**
-     * Set the current options
-     */
+    /** Set the current options */
     bool setCurrentConversionOptions( ConversionOptions *options );
 
 public slots:
-    /**
-     * Set the current profile
-     */
-//     void setProfile( const QString& );
+    /** Set the current profile */
+    void setProfile( const QString& profile );
 
-    /**
-     * Set the current format
-     */
-//     void setFormat( const QString& );
+    /** Set the current format */
+    void setFormat( const QString& format );
 
-    /**
-     * Set the current output directory
-     */
-//     void setOutputDirectory( const QString& );
+    /** Set the current output directory */
+    void setOutputDirectory( const QString& directory );
 
 private:
     Config *config;
 
     /** Toggle between normal and advanced options in the detailed tab */
-    KPushButton* pAdvancedOptionsToggle;
+    KPushButton *pAdvancedOptionsToggle;
 
     //** Notify the user about new plugins */
 //     KPushButton* pPluginsNotify;
     /** Notify the user about new / lost backends */
-    KPushButton* pBackendsNotify;
+    KPushButton *pBackendsNotify;
 
-    KTabWidget* tab;
+    KTabWidget *tab;
 
 //     OutputDirectory* outputDirectory;
 
-    OptionsSimple* optionsSimple;
-    OptionsDetailed* optionsDetailed;
+    OptionsSimple *optionsSimple;
+    OptionsDetailed *optionsDetailed;
 
 //     Config *config;
 

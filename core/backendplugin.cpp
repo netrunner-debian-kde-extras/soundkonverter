@@ -19,7 +19,7 @@ BackendPluginItem::~BackendPluginItem()
 BackendPlugin::BackendPlugin( QObject *parent )
     : QObject( parent )
 {
-    lastId = 10;
+    lastId = 0;
 }
 
 BackendPlugin::~BackendPlugin()
@@ -64,7 +64,7 @@ bool BackendPlugin::kill( int id )
 
 float BackendPlugin::progress( int id )
 {
-    for( int i = 0; i < backendItems.size(); i++ )
+    for( int i=0; i<backendItems.size(); i++ )
     {
         if( backendItems.at(i)->id == id )
         {
@@ -74,10 +74,20 @@ float BackendPlugin::progress( int id )
     return 0.0f;
 }
 
+// void BackendPlugin::setPriority( int _priority )
+// {
+//     priority = _priority;
+//     
+//     for( int i=0; i<backendItems.size(); i++ )
+//     {
+//         backendItems.at(i)->process->setPriority( priority );
+//     }    
+// }
+
 void BackendPlugin::processOutput()
 {
     float progress;
-    for( int i = 0; i < backendItems.size(); i++ )
+    for( int i=0; i<backendItems.size(); i++ )
     {
         if( backendItems.at(i)->process == QObject::sender() )
         {
@@ -90,9 +100,9 @@ void BackendPlugin::processOutput()
     }
 }
 
-void BackendPlugin::processExit( int exitCode, QProcess::ExitStatus exitStatus )
+void BackendPlugin::processExit( int exitCode, QProcess::ExitStatus /*exitStatus*/ )
 {
-    for( int i = 0; i < backendItems.size(); i++ )
+    for( int i=0; i<backendItems.size(); i++ )
     {
         if( backendItems.at(i)->process == QObject::sender() )
         {

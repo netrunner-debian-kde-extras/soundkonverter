@@ -61,9 +61,6 @@ public:
 //     virtual QString applyCommand( const KUrl::List& fileList, ApplyMode mode = Add ) = 0;
 //     virtual bool pipesSupported() = 0;
 
-signals:
-    void applyFinished( int id, int exitCode );
-
 protected:
     int lastId;
 };

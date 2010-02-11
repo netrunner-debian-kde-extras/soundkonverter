@@ -118,26 +118,25 @@ int soundkonverter_replaygain_vorbisgain::apply( const KUrl::List& fileList, Rep
     connect( newItem->process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(processExit(int,QProcess::ExitStatus)) );
 
 //     newItem->mode = mode;
+    (*newItem->process) << "vorbisgain";
     if( mode == ReplayGainPlugin::Add )
     {
-        (*newItem->process) << "vorbisgain";
         (*newItem->process) << "--album";
-        for( int i = 0; i < fileList.count(); i++ )
-        {
-            (*newItem->process) << fileList.at(i).toLocalFile();
-        }
-        newItem->process->start();
+        (*newItem->process) << "--fast";
+    }
+    else if( mode == ReplayGainPlugin::Force )
+    {
+        (*newItem->process) << "--album";
     }
     else
     {
-        (*newItem->process) << "vorbisgain";
         (*newItem->process) << "--clean";
-        for( int i = 0; i < fileList.count(); i++ )
-        {
-            (*newItem->process) << fileList.at(i).toLocalFile();
-        }
-        newItem->process->start();
     }
+    for( int i=0; i<fileList.count(); i++ )
+    {
+        (*newItem->process) << fileList.at(i).toLocalFile();
+    }
+    newItem->process->start();
 
     backendItems.append( newItem );
     return newItem->id;

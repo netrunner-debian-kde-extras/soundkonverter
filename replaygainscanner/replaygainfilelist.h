@@ -7,11 +7,14 @@
 
 #include <KUrl>
 #include <QTime>
+#include <QTimer>
 
 class Config;
 class Logger;
 class ConversionOptions;
 class QProgressBar;
+class KAction;
+// class QMenu;
 
 
 /**
@@ -40,6 +43,8 @@ public:
 private:
     Config *config;
     Logger *logger;
+    
+    QTimer updateTimer;
 
     /** Lists all file in a directory and adds them to the file list, if fast is false. The number of listed files is returned */
     int listDir( const QString& directory, const QStringList& filter, bool recursive, bool fast = false, int count = 0 );
@@ -48,15 +53,33 @@ private:
     /** Update timer for the scan status */
     QTime tScanStatus;
 
+    void dragEnterEvent( QDragEnterEvent *event );
+    void dropEvent( QDropEvent *event );
+
     void resizeEvent( QResizeEvent *event );
 
 //     bool processing;        // true, if the progress is active (hide some options in the context menu)
-    bool queue;
-    
+
+    bool queue;             // NOTE currently always true
+    bool killed;
     ReplayGainPlugin::ApplyMode mode;
+    ReplayGainPlugin *currentPlugin;
+    int currentId;
+    int currentTime;
     
-    QList<ReplayGainFileListItem*> processedItems;
+    int totalTime;
+    int processedTime;
     
+//     QList<ReplayGainFileListItem*> processedItems;
+    
+    QMenu *contextMenu;
+    KAction *collapseAction;
+    KAction *expandAction;
+//     KAction *startAction;
+//     KAction *stopAction;
+    KAction *removeAction;
+//     KAction* paste;
+
     void processNextFile();
     int processingCount();
     void processItems( const QList<ReplayGainFileListItem*>& itemList );
@@ -66,8 +89,11 @@ public slots:
     void addDir( const KUrl& directory, bool recursive, const QStringList& codecList );
     
 private slots:
+    void removeSelectedItems();
+    void showContextMenu( const QPoint& point );
     void pluginProcessFinished( int id, int exitCode );
     void pluginLog( int id, const QString& message );
+    void updateProgress();
 
 signals:
     void processStarted();

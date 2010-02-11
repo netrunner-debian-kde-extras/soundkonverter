@@ -7,7 +7,7 @@ set(soundkonverter_ripper_cdparanoia_SRCS
    soundkonverter_ripper_cdparanoia.cpp
  )
 
-kde4_add_plugin(soundkonverter_ripper_cdparanoia WITH_PREFIX ${soundkonverter_ripper_cdparanoia_SRCS})
+kde4_add_plugin(soundkonverter_ripper_cdparanoia ${soundkonverter_ripper_cdparanoia_SRCS})
 
 # kde4_add_library(soundkonverter_ripper_cdparanoia SHARED ${soundkonverter_ripper_cdparanoia_SRCS})
 

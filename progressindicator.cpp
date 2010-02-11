@@ -29,6 +29,7 @@ ProgressIndicator::ProgressIndicator( /*KSystemTrayIcon* _systemTrayIcon,*/ QWid
     pBar->setRange( 0, 1 );
     pBar->setValue( 0 );
 //     pBar->setFormat( "%v / %m" );
+    box->addSpacing( 4 );
 
     QGridLayout *statusChildGrid = new QGridLayout();
     statusChildGrid->setContentsMargins( 0, 0, 0, 0 );
@@ -37,7 +38,7 @@ ProgressIndicator::ProgressIndicator( /*KSystemTrayIcon* _systemTrayIcon,*/ QWid
     QLabel *lSpeedText = new QLabel( i18n("Speed")+":", this );
     statusChildGrid->addWidget( lSpeedText, 0, 0, Qt::AlignVCenter );
 
-    lSpeed = new QLabel( "0.0x", this );
+    lSpeed = new QLabel( " 0.0x", this );
     lSpeed->setFont( QFont( "Courier" ) );
     statusChildGrid->addWidget( lSpeed, 0, 1, Qt::AlignVCenter | Qt::AlignRight );
     speedTime.setHMS( 24, 0, 0 );
@@ -45,7 +46,7 @@ ProgressIndicator::ProgressIndicator( /*KSystemTrayIcon* _systemTrayIcon,*/ QWid
     QLabel *lTimeText = new QLabel( i18n("Remaining time")+":", this );
     statusChildGrid->addWidget( lTimeText, 1, 0, Qt::AlignVCenter );
 
-    lTime = new QLabel( "00:00", this );
+    lTime = new QLabel( " 0s", this );
     lTime->setFont( QFont( "Courier" ) );
     statusChildGrid->addWidget( lTime, 1, 1, Qt::AlignVCenter | Qt::AlignRight );
     elapsedTime.setHMS( 24, 0, 0 );
@@ -76,9 +77,9 @@ void ProgressIndicator::finished( float time )
     pBar->setRange( 0, (totalTime>0) ? (int)totalTime : 1 );
     pBar->setValue( (totalTime>0) ? 0 : 1 );
     elapsedTime.setHMS( 24, 0, 0 );
-    lTime->setText( "00:00" );
+    lTime->setText( " 0s" );
     speedTime.setHMS( 24, 0, 0 );
-    lSpeed->setText( "0.0x" );
+    lSpeed->setText( " 0.0x" );
 //     QToolTip::add( systemTrayIcon, i18n("Finished") );
     emit progressChanged( i18n("Finished") );
 }
@@ -120,11 +121,13 @@ void ProgressIndicator::update( float time )
         {
             QString actSpeed;
             actSpeed.sprintf( "%.1fx", speed );
+            if( speed < 10 ) actSpeed = " " + actSpeed;
             lSpeed->setText( actSpeed );
         }
     }
 
-    emit progressChanged( Global::prettyNumber(fPercent,"%",2) );
+//     emit progressChanged( Global::prettyNumber(fPercent,"%",2) );
+    emit progressChanged( QString::number((int)fPercent) + "%" );
 //     QToolTip::add( systemTrayIcon, percent );
 }
 

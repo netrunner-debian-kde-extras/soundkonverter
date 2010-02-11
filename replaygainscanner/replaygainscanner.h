@@ -16,6 +16,7 @@ class QCheckBox;
 class KPushButton;
 class QProgressBar;
 class QTreeWidget;
+class KFileDialog;
 
 
 /**
@@ -27,22 +28,20 @@ class ReplayGainScanner : public KDialog
 {
     Q_OBJECT
 public:
-    /**
-     * Constructor
-     */
+    /** Constructor */
     ReplayGainScanner( Config*, Logger*, QWidget *parent=0, Qt::WFlags f=0 );
 
-    /**
-     * Destructor
-     */
+    /** Destructor */
     virtual ~ReplayGainScanner();
 
-    void addFiles( QStringList );
+    void addFiles( KUrl::List urls );
 
 private slots:
     void addClicked( int );
     void showDirDialog();
     void showFileDialog();
+    void fileDialogAccepted();
+    void showHelp();
     void calcReplayGainClicked();
     void removeReplayGainClicked();
     void cancelClicked();
@@ -59,6 +58,7 @@ private:
     KPushButton* pRemoveTag;
     KPushButton* pCancel;
     KPushButton* pClose;
+    KFileDialog *fileDialog;
 
 //     TagEngine* tagEngine;
     Config* config;

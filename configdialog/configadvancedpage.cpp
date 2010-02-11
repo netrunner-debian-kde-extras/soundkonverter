@@ -11,7 +11,7 @@
 //
 #include "configadvancedpage.h"
 
-#include "config.h"
+#include "../config.h"
 
 #include <klocale.h>
 

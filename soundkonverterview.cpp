@@ -4,31 +4,34 @@
  * Copyright (C) 2007 Daniel Faust <hessijames@gmail.com>
  */
 #include "soundkonverterview.h"
-#include "filelistmodel.h"
 #include "filelist.h"
 #include "filelistitem.h"
 #include "combobutton.h"
 #include "progressindicator.h"
 #include "optionslayer.h"
 #include "config.h"
-#include "opener.h"
-#include "dirdialog.h"
+#include "opener/fileopener.h"
+#include "opener/diropener.h"
+#include "opener/cdopener.h"
+#include "opener/urlopener.h"
+#include "opener/playlistopener.h"
 #include "convert.h"
-#include "audiocd/cdopener.h"
 #include "audiocd/cdmanager.h"
+#include "options.h"
 
 #include <KLocale>
 #include <KPushButton>
 #include <KIcon>
 #include <KFileDialog>
+#include <KMenu>
+#include <KAction>
+#include <KActionMenu>
 
 #include <QLabel>
 #include <QLayout>
 #include <QHBoxLayout>
 #include <QFont>
 #include <QTreeView>
-#include <QMenu>
-#include <QAction>
 #include <QToolButton>
 // #include <QMessageBox>
 #include <KMessageBox>
@@ -54,7 +57,7 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     connect( fileList, SIGNAL(conversionStopped()), this, SLOT(conversionStopped()) );
     connect( fileList, SIGNAL(queueModeChanged(bool)), this, SLOT(queueModeChanged(bool)) );
 
-    OptionsLayer *optionsLayer = new OptionsLayer( config, this );
+    optionsLayer = new OptionsLayer( config, this );
     fileList->setOptionsLayer( optionsLayer );
     optionsLayer->hide();
 //     optionsLayer->fadeIn();
@@ -74,53 +77,48 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     //font.setWeight( QFont::DemiBold );
     font.setPointSize( font.pointSize() + 3 );
     cAdd->setFont( font );
-    cAdd->insertItem( KIcon("audio-x-generic"), i18n("Add files ...") );
-    cAdd->insertItem( KIcon("folder"), i18n("Add folder ...") );
-    cAdd->insertItem( KIcon("media-optical-audio"), i18n("Add CD tracks ...") );
-    cAdd->insertItem( KIcon("network-workgroup"), i18n("Add URL ...") );
-    cAdd->insertItem( KIcon("view-media-playlist"), i18n("Add playlist ...") );
+    cAdd->insertItem( KIcon("audio-x-generic"), i18n("Add files...") );
+    cAdd->insertItem( KIcon("folder"), i18n("Add folder...") );
+    cAdd->insertItem( KIcon("media-optical-audio"), i18n("Add CD tracks...") );
+    cAdd->insertItem( KIcon("network-workgroup"), i18n("Add Url...") );
+    cAdd->insertItem( KIcon("view-media-playlist"), i18n("Add playlist...") );
     cAdd->increaseHeight( 6 );
     addBox->addWidget( cAdd );
     connect( cAdd, SIGNAL(clicked(int)), this, SLOT(addClicked(int)) );
     cAdd->setFocus();
 
-//     addActionMenu = new QMenu();
-//     addFilesAction = addActionMenu->addAction( KIcon("audio-x-generic"), i18n("Add files ...") );
-//     addDirectoryAction = addActionMenu->addAction( KIcon("folder"), i18n("Add folder ...") );
-//     addAudioCdAction = addActionMenu->addAction( KIcon("media-optical-audio"), i18n("Add CD tracks ...") );
-//     addUrlAction = addActionMenu->addAction( KIcon("network-workgroup"), i18n("Add URL ...") );
-//     addPlaylistAction = addActionMenu->addAction( KIcon("view-media-playlist"), i18n("Add playlist ...") );
-    
-//     pAdd = new QToolButton( this );
-//     pAdd->setMenu( addActionMenu );
-//     pAdd->setPopupMode( QToolButton::MenuButtonPopup );
-//     pAdd->setDefaultAction( addFilesAction );
-//     addBox->addWidget( pAdd );
-    
-    addBox->addSpacing( 18 );
+    addBox->addSpacing( 10 );
+
+    startAction = new KAction( KIcon("system-run"), i18n("Start"), this );
+    connect( startAction, SIGNAL(triggered()), fileList, SLOT(startConversion()) );
 
     pStart = new KPushButton( KIcon("system-run"), i18n("Start"), this );
     pStart->setFixedHeight( pStart->size().height() );
     pStart->setEnabled( false );
+    startAction->setEnabled( false );
     addBox->addWidget( pStart );
     connect( pStart, SIGNAL(clicked()), fileList, SLOT(startConversion()) );
 
-    stopActionMenu = new QMenu();
-    killAction = stopActionMenu->addAction( KIcon("flag-red"), i18n("Stop imediatelly") );
+    stopActionMenu = new KActionMenu( KIcon("process-stop"), i18n("Stop"), this );
+    killAction = new KAction( KIcon("flag-red"), i18n("Stop imediatelly"), this );
+    stopActionMenu->addAction( killAction );
     connect( killAction, SIGNAL(triggered()), fileList, SLOT(killConversion()) );
-    stopAction = stopActionMenu->addAction( KIcon("flag-yellow"), i18n("Stop after current conversions are completed") );
+    stopAction = new KAction( KIcon("flag-yellow"), i18n("Stop after current conversions are completed"), this );
+    stopActionMenu->addAction( stopAction );
     connect( stopAction, SIGNAL(triggered()), fileList, SLOT(stopConversion()) );
-    continueAction = stopActionMenu->addAction( KIcon("flag-green"), i18n("Continue after current conversions are completed") );
+    continueAction = new KAction( KIcon("flag-green"), i18n("Continue after current conversions are completed"), this );
+    stopActionMenu->addAction( continueAction );
     connect( continueAction, SIGNAL(triggered()), fileList, SLOT(continueConversion()) );
-    queueModeChanged( false );
+    queueModeChanged( true );
 
     pStop = new KPushButton( KIcon("process-stop"), i18n("Stop"), this );
     pStop->setFixedHeight( pStop->size().height() );
     pStop->hide();
-    pStop->setMenu( stopActionMenu );
+    stopActionMenu->setEnabled( false );
+    pStop->setMenu( stopActionMenu->menu() );
     addBox->addWidget( pStop );
 
-    addBox->addSpacing( 8 );
+    addBox->addSpacing( 10 );
 
     progressIndicator = new ProgressIndicator( /*systemTrayIcon,*/ this );
     addBox->addWidget( progressIndicator );
@@ -173,8 +171,8 @@ void soundKonverterView::addClicked( int index )
 
 void soundKonverterView::showFileDialog()
 {
-    Opener *dialog = new Opener( config, Opener::Files, this );
-    dialog->resize( size().width() - 10, size().height() );
+    FileOpener *dialog = new FileOpener( config, this );
+//     dialog->resize( size().width() - 10, size().height() );
 
     connect( dialog, SIGNAL(done(const KUrl::List&,ConversionOptions*)), fileList, SLOT(addFiles(const KUrl::List&,ConversionOptions*)) );
 
@@ -187,7 +185,7 @@ void soundKonverterView::showFileDialog()
 
 void soundKonverterView::showDirDialog()
 {
-    DirDialog *dialog = new DirDialog( config, DirDialog::Convert, this );
+    DirOpener *dialog = new DirOpener( config, DirOpener::Convert, this );
     
     connect( dialog, SIGNAL(done(const KUrl&,bool,const QStringList&,ConversionOptions*)), fileList, SLOT(addDir(const KUrl&,bool,const QStringList&,ConversionOptions*)) );
 
@@ -198,7 +196,7 @@ void soundKonverterView::showDirDialog()
     delete dialog;
 }
 
-void soundKonverterView::showCdDialog( bool intern )
+void soundKonverterView::showCdDialog( const QString& device, bool intern )
 {
     /*
     ConversionOptions conversionOptions = options->getCurrentOptions();
@@ -261,7 +259,7 @@ void soundKonverterView::showCdDialog( bool intern )
     {
         if( !errorList.isEmpty() )
         {
-            message = i18n("Ripping audio CDs is currently not supported because there are missing bakends.\nPossible solutions are listed below.");
+            message = i18n("Ripping audio CDs is currently not supported because of missing backends.\nPossible solutions are listed below.");
         }
         else
         {
@@ -276,12 +274,8 @@ void soundKonverterView::showCdDialog( bool intern )
         return;
     }
 
-    QString device = "";
-
     // create a new CDOpener object for letting the user add some tracks from a CD
     CDOpener *dialog = new CDOpener( config, cdManager, device, this );
-
-    device = "";
 
     if( !dialog->noCD )
     {
@@ -306,7 +300,7 @@ void soundKonverterView::showCdDialog( bool intern )
 
 void soundKonverterView::showUrlDialog()
 {
-    Opener *dialog = new Opener( config, Opener::Url, this );
+    UrlOpener *dialog = new UrlOpener( config, this );
 
     connect( dialog, SIGNAL(done(const KUrl::List&,ConversionOptions*)), fileList, SLOT(addFiles(const KUrl::List&,ConversionOptions*)) );
 
@@ -319,8 +313,8 @@ void soundKonverterView::showUrlDialog()
 
 void soundKonverterView::showPlaylistDialog()
 {
-    Opener *dialog = new Opener( config, Opener::Playlist, this );
-    dialog->resize( size().width() - 10, size().height() );
+    PlaylistOpener *dialog = new PlaylistOpener( config, this );
+//     dialog->resize( size().width() - 10, size().height() );
 
     connect( dialog, SIGNAL(done(const KUrl::List&,ConversionOptions*)), fileList, SLOT(addFiles(const KUrl::List&,ConversionOptions*)) );
 
@@ -331,26 +325,184 @@ void soundKonverterView::showPlaylistDialog()
     delete dialog;
 }
 
-void soundKonverterView::settingsChanged()
+void soundKonverterView::addConvertFiles( const KUrl::List& urls, QString _profile, QString _format, const QString& directory )
 {
-//     QPalette pal;
-//     pal.setColor( QPalette::Window, Settings::col_background());
-//     pal.setColor( QPalette::WindowText, Settings::col_foreground());
-//     ui_soundkonverterview_base.kcfg_sillyLabel->setPalette( pal );
+    KUrl::List k_urls;
+    QString codecName;
+    QStringList errorList;
+    QMap< QString, QList<QStringList> > problems;
+    QStringList messageList;
+    QString fileName;
+    QStringList affectedFiles;
+    
+    for( int i=0; i<urls.size(); i++ )
+    {
+        codecName = config->pluginLoader()->getCodecFromFile( urls.at(i) );
 
-    // i18n : internationalization
-//     ui_soundkonverterview_base.kcfg_sillyLabel->setText( i18n("This project is %1 days old",Settings::val_time()) );
-//     emit signalChangeStatusbar( i18n("Settings changed") );
+        if( codecName == "inode/directory" || config->pluginLoader()->canDecode(codecName,&errorList) )
+        {
+            k_urls += urls.at(i);
+        }
+        else
+        {
+            fileName = urls.at(i).pathOrUrl();
+            if( codecName.isEmpty() ) codecName = fileName.right(fileName.length()-fileName.lastIndexOf(".")-1);
+            if( problems.value(codecName).count() < 2 )
+            {
+                problems[codecName] += QStringList();
+                problems[codecName] += QStringList();
+            }
+            problems[codecName][0] += fileName;
+            if( !errorList.isEmpty() )
+            {
+                problems[codecName][1] += errorList;
+            }
+            else
+            {
+                problems[codecName][1] += i18n("This file type is unknown to soundKonverter.\nMaybe you need to install an additional soundKonverter plugin.\nYou should have a look at your distribution's package manager for this.");
+            }
+        }
+    }
+
+    for( int i=0; i<problems.count(); i++ )
+    {
+        codecName = problems.keys().at(i);
+        if( codecName != "wav" )
+        {
+            problems[codecName][1].removeDuplicates();
+            affectedFiles.clear();
+            if( problems.value(codecName).at(0).count() <= 3 )
+            {
+                affectedFiles = problems.value(codecName).at(0);
+            }
+            else
+            {
+                affectedFiles += problems.value(codecName).at(0).at(0);
+                affectedFiles += problems.value(codecName).at(0).at(1);
+                affectedFiles += i18n("... and %1 more files",problems.value(codecName).at(0).count()-3);
+            }
+            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).at(1).join("\n<b>or</b>\n") + i18n("\n\nAffected files:\n") + affectedFiles.join("\n");
+        }
+    }
+    
+    if( !messageList.isEmpty() )
+    {
+        messageList.prepend( i18n("Some files can't be decoded.\nPossible solutions are listed below.") );
+        QMessageBox *messageBox = new QMessageBox( this );
+        messageBox->setIcon( QMessageBox::Information );
+        messageBox->setWindowTitle( i18n("Missing backends") );
+        messageBox->setText( messageList.join("\n\n").replace("\n","<br>") );
+        messageBox->setTextFormat( Qt::RichText );
+        messageBox->exec();
+    }
+
+    if( k_urls.count() > 0 )
+    {
+        QString profile;
+        QString format;
+        QStringList formatList = config->pluginLoader()->formatList( PluginLoader::Encode, PluginLoader::CompressionType(PluginLoader::Lossy|PluginLoader::Lossless|PluginLoader::Hybrid) );
+        for( int i=0; i<formatList.count(); i++ )
+        {
+            if( _format == formatList.at(i) || config->pluginLoader()->codecExtensions(formatList.at(i)).contains(_format) )
+            {
+                format = formatList.at(i);
+                break;
+            }
+        }
+        bool lossy = false;
+        if( _profile.toLower() == i18n("Very low").toLower() || _profile.toLower() == "very low" || _profile.toLower() == "very_low" )
+        {
+            profile = i18n("Very low");
+            lossy = true;
+        }
+        else if( _profile.toLower() == i18n("Low").toLower() || _profile.toLower() == "low" )
+        {
+            profile = i18n("Low");
+            lossy = true;
+        }
+        else if( _profile.toLower() == i18n("Medium").toLower() || _profile.toLower() == "medium" )
+        {
+            profile = i18n("Medium");
+            lossy = true;
+        }
+        else if( _profile.toLower() == i18n("High").toLower() || _profile.toLower() == "high" )
+        {
+            profile = i18n("High");
+            lossy = true;
+        }
+        else if( _profile.toLower() == i18n("Very high").toLower() || _profile.toLower() == "very high" || _profile.toLower() == "very_high" )
+        {
+            profile = i18n("Very high");
+            lossy = true;
+        }
+        else if( _profile.toLower() == i18n("Lossless").toLower() || _profile.toLower() == "lossless" )
+        {
+            profile = i18n("Lossless");
+            format = config->pluginLoader()->formatList(PluginLoader::Encode,PluginLoader::Lossless).contains(format) ? format : "";
+        }
+        else if( _profile.toLower() == i18n("Hybrid").toLower() || _profile.toLower() == "hybrid" )
+        {
+            profile = i18n("Hybrid");
+            format = config->pluginLoader()->formatList(PluginLoader::Encode,PluginLoader::Hybrid).contains(format) ? format : "";
+        }
+        else
+        {
+            for( int i=0; i<config->data.profiles.count(); i++ )
+            {
+                if( config->data.profiles.at(i).profileName == _profile )
+                {
+                    profile = _profile;
+                    format = config->data.profiles.at(i).codecName;
+                }
+            }
+        }
+        
+        if( lossy )
+        {
+            format = "";
+            QStringList formatList = config->pluginLoader()->formatList( PluginLoader::Encode, PluginLoader::Lossy );
+            for( int i=0; i<formatList.count(); i++ )
+            {
+                if( _format == formatList.at(i) || config->pluginLoader()->codecExtensions(formatList.at(i)).contains(_format) )
+                {
+                    format = formatList.at(i);
+                    break;
+                }
+            }
+        }
+
+        if( !profile.isEmpty() && !format.isEmpty() && !directory.isEmpty() )
+        {
+            Options *options = new Options( config, "", 0 );
+            options->hide();
+            options->setProfile( profile );
+            options->setFormat( format );
+            options->setOutputDirectory( directory );
+            ConversionOptions *conversionOptions = options->currentConversionOptions();
+            delete options;
+            fileList->addFiles( k_urls, conversionOptions );
+        }
+        else
+        {
+            optionsLayer->addUrls( k_urls );
+            if( !profile.isEmpty() ) optionsLayer->setProfile( profile );
+            if( !format.isEmpty() ) optionsLayer->setFormat( format );
+            if( !directory.isEmpty() ) optionsLayer->setOutputDirectory( directory );
+            optionsLayer->fadeIn();
+        }
+    }
 }
 
 void soundKonverterView::fileCountChanged( int count )
 {
     pStart->setEnabled( count > 0 );
+    startAction->setEnabled( count > 0 );
 }
 
 void soundKonverterView::conversionStarted()
 {
     pStart->hide();
+    startAction->setEnabled( false );
     pStop->show();
     stopActionMenu->setEnabled( true );
 }
@@ -358,6 +510,7 @@ void soundKonverterView::conversionStarted()
 void soundKonverterView::conversionStopped()
 {
     pStart->show();
+    startAction->setEnabled( true );
     pStop->hide();
     stopActionMenu->setEnabled( false );
 
@@ -372,12 +525,12 @@ void soundKonverterView::queueModeChanged( bool enabled )
 
 void soundKonverterView::loadFileList()
 {
-    fileList->load();
+    fileList->load( true );
 }
 
 void soundKonverterView::saveFileList()
 {
-    fileList->save();
+    fileList->save( true );
 }
 
 #include "soundkonverterview.moc"

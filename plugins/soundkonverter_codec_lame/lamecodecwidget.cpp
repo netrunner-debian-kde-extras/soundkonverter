@@ -270,7 +270,11 @@ void LameCodecWidget::setCurrentFormat( const QString& format )
 
 QString LameCodecWidget::currentProfile()
 {
-    if( cMode->currentIndex() == 0 && iQuality->value() == 6 && chChannels->isChecked() && cChannels->currentIndex() == 0 && chSamplerate->isChecked() && cSamplerate->currentIndex() == 4 )
+    if( currentFormat == "wav" )
+    {
+        return i18n("Lossless");
+    }
+    else if( cMode->currentIndex() == 0 && iQuality->value() == 6 && chChannels->isChecked() && cChannels->currentIndex() == 0 && chSamplerate->isChecked() && cSamplerate->currentIndex() == 4 )
     {
         return i18n("Very low");
     }
@@ -420,55 +424,62 @@ int LameCodecWidget::currentDataRate()
 {
     int dataRate;
     
-    if( cPreset->currentIndex() == 0 )
+    if( currentFormat == "wav" )
     {
-        dataRate = 1090000;
+        dataRate = 10590000;
     }
-    else if( cPreset->currentIndex() == 1 )
+    else
     {
-        dataRate = 1140000;
-    }
-    else if( cPreset->currentIndex() == 2 )
-    {
-        dataRate = 1400000;
-    }
-    else if( cPreset->currentIndex() == 3 )
-    {
-        dataRate = 2360000;
-    }
-    else if( cPreset->currentIndex() == 4 )
-    {
-        dataRate = iPresetBitrate->value()/8*60*1000;
-    }
-    else if( cPreset->currentIndex() == 5 )
-    {
-        if( cMode->currentIndex() == 0 )
+        if( cPreset->currentIndex() == 0 )
         {
-            dataRate = 1500000 - iQuality->value()*100000;
+            dataRate = 1090000;
         }
-        else
+        else if( cPreset->currentIndex() == 1 )
         {
-            dataRate = iQuality->value()/8*60*1000;
+            dataRate = 1140000;
         }
-        if( chChannels->isChecked() )
+        else if( cPreset->currentIndex() == 2 )
         {
-            if( cChannels->currentIndex() == 0 )
+            dataRate = 1400000;
+        }
+        else if( cPreset->currentIndex() == 3 )
+        {
+            dataRate = 2360000;
+        }
+        else if( cPreset->currentIndex() == 4 )
+        {
+            dataRate = iPresetBitrate->value()/8*60*1000;
+        }
+        else if( cPreset->currentIndex() == 5 )
+        {
+            if( cMode->currentIndex() == 0 )
+            {
+                dataRate = 1500000 - iQuality->value()*100000;
+            }
+            else
+            {
+                dataRate = iQuality->value()/8*60*1000;
+            }
+            if( chChannels->isChecked() )
+            {
+                if( cChannels->currentIndex() == 0 )
+                {
+                    dataRate *= 0.9f;
+                }
+                else if( cChannels->currentIndex() == 4 )
+                {
+                    dataRate *= 1.5f;
+                }
+            }
+            if( chSamplerate->isChecked() && cSamplerate->currentText().replace(" Hz","").toInt() <= 22050 )
             {
                 dataRate *= 0.9f;
             }
-            else if( cChannels->currentIndex() == 4 )
-            {
-                dataRate *= 1.5f;
-            }
         }
-        if( chSamplerate->isChecked() && cSamplerate->currentText().replace(" Hz","").toInt() <= 22050 )
+        if( cPresetFast->isEnabled() && cPresetFast->isChecked() )
         {
-            dataRate *= 0.9f;
+            dataRate *= 1.1f;
         }
-    }
-    if( cPresetFast->isEnabled() && cPresetFast->isChecked() )
-    {
-        dataRate *= 1.1f;
     }
     
     return dataRate;

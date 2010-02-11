@@ -20,7 +20,7 @@ class KListWidget;
  * @author Daniel Faust <hessijames@gmail.com>
  * @version 0.3
  */
-class DirDialog : public KDialog
+class DirOpener : public KDialog
 {
     Q_OBJECT
 public:
@@ -35,25 +35,29 @@ public:
     };
 
     /** Constructor */
-    DirDialog( Config *config, Mode _mode, QWidget *parent=0, Qt::WFlags f=0 );
+    DirOpener( Config *config, Mode _mode, QWidget *parent=0, Qt::WFlags f=0 );
 
     /** Destructor */
-    virtual ~DirDialog();
+    virtual ~DirOpener();
 
 private slots:
     void proceedClicked();
     void addClicked();
     void selectAllClicked();
     void selectNoneClicked();
+    void showHelp();
 
 private:
+    /** config pointer */
+    Config *config;
+    
     /** the widget for selecting the directory */
     QWidget *dirOpenerWidget;
     /** the conversion options editor widget */
     Options *options;
     /** the current page */
     DialogPage page;
-    /** th dialog mode */
+    /** the dialog mode */
     Mode mode;
 
     QLabel *lSelector;

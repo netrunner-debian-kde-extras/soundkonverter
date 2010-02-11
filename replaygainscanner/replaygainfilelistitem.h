@@ -21,16 +21,24 @@ public:
         Track,
         Album
     } type;
-  
+    
+    enum State {
+        Waiting,
+        Processing,
+        Processed,
+        Failed
+    } state;
+    
     KUrl url;
+    QString albumName;
     QString codecName;
+    int samplingRate;
     TagData *tags;
     
     int time;
     
-    bool processing;
-    
     int processId;
+    int take;
 };
 
 #endif // REPLAYGAINFILELISTITEM_H
