@@ -1,6 +1,7 @@
 soundkonverter (1.0.0~alpha2-1) experimental; urgency=low
 
   * Imported Upstream version 1.0.0alpha2
+  * Bump Standards-Version to 3.8.4 (no changes needed).
 
  -- Michael Meskes <meskes@debian.org>  Thu, 11 Feb 2010 10:34:21 +0100
 
