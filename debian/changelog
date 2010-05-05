@@ -1,7 +1,8 @@
 soundkonverter (0.9.90-1) unstable; urgency=low
 
   * Added the word "Copyright" to copyright file to make lintian happy.
-  * Imported Upstream version 0.9.90
+  * Imported Upstream version 0.9.90 which compiles fine with binutils-gold.
+    (Closes: #556353)
 
  -- Michael Meskes <meskes@debian.org>  Wed, 05 May 2010 09:15:31 +0200
 
