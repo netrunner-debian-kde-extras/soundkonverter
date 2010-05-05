@@ -233,6 +233,11 @@ void OptionsDetailed::encoderChanged( const QString& encoder )
     cReplayGain->setEnabled( config->pluginLoader()->canReplayGain(cFormat->currentText(),currentPlugin,&errorList) );
     if( !cReplayGain->isEnabled() )
     {
+        QPalette notificationPalette = cReplayGain->palette();
+//         notificationPalette.setColor( QPalette::Disabled, QPalette::WindowText, QColor(181,96,101) );
+        notificationPalette.setColor( QPalette::Disabled, QPalette::WindowText, QColor(174,127,130) );
+        cReplayGain->setPalette( notificationPalette );
+
         if( !errorList.isEmpty() )
         {
             errorList.prepend( i18n("Replay Gain is not supported for the %1 file format.\nPossible solutions are listed below.",cFormat->currentText()) );
@@ -438,10 +443,8 @@ bool OptionsDetailed::loadCustomProfile( const QString& profile )
             }
         }
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 QString OptionsDetailed::currentProfile()

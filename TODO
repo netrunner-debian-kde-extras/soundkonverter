@@ -1,16 +1,20 @@
 ### Prio 1 ###
 
-ReplayGainScanner: Drag'n'Drop
+if reading tags is not supported for a file, the length will be 0 and therefore the progress bar won't work
 Dateien aus dem Netzwerk laden (KIO)
-Kommandozeilenparameter
-processID/convertID/... eindeutig berechnen
+Kommandozeilenparameter ... testen, wie es sich mit dem cd ripper/invisible verhält
 
+test vfat compatible file names
+processID/convertID/... eindeutig berechnen ... müsste so funktionieren
 
 
 ### Prio 2 ###
 
+ReplayGainScanner: Drag'n'Drop ... verbesserungswürdig, funktioniert aber grundsätzlich
 edit ripper parameters
 ReplayGainScanner: parallele Berechnung
+session management
+temporäre dateien ordentlich erzeugen
 
 
 ### Code ###

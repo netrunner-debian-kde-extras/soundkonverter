@@ -3,6 +3,7 @@
 #include "config.h"
 #include "outputdirectory.h"
 #include "global.h"
+#include "codecproblems.h"
 
 #include <QLayout>
 #include <QLabel>
@@ -114,6 +115,13 @@ void OptionsSimple::setReplayGainEnabled( bool enabled, const QString& toolTip )
 {
     cReplayGain->setEnabled(enabled);
     cReplayGain->setToolTip(toolTip);
+    if( !enabled )
+    {
+        QPalette notificationPalette = cReplayGain->palette();
+//         notificationPalette.setColor( QPalette::Disabled, QPalette::WindowText, QColor(181,96,101) );
+        notificationPalette.setColor( QPalette::Disabled, QPalette::WindowText, QColor(174,127,130) );
+        cReplayGain->setPalette( notificationPalette );
+    }
 }
 
 void OptionsSimple::setReplayGainChecked( bool enabled )
@@ -406,33 +414,18 @@ void OptionsSimple::setCurrentOutputDirectoryMode( int mode )
 
 void OptionsSimple::showHelp()
 {
-    QStringList messageList;
-    QString codecName;
-    
+    QList<CodecProblems::Problem> problemList;
     QMap<QString,QStringList> problems = config->pluginLoader()->encodeProblems();
     for( int i=0; i<problems.count(); i++ )
     {
-        codecName = problems.keys().at(i);
-        if( codecName != "wav" )
+        CodecProblems::Problem problem;
+        problem.codecName = problems.keys().at(i);
+        if( problem.codecName != "wav" )
         {
-            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).join("\n<b>or</b>\n");
+            problem.solutions = problems.value(problem.codecName);
+            problemList += problem;
         }
     }
-    
-    if( messageList.isEmpty() )
-    {
-        messageList += i18n("soundKonverter couldn't find any missing packages.\nMaybe you need to install an additional plugin via the package manager of your distribution.");
-    }
-    else
-    {
-        messageList.prepend( i18n("Some of the installed plugins aren't working because they are missing additional programs.\nSome possible solutions are listed below.") );
-    }
-    
-//     KMessageBox::information( this, messageList.join("\n\n"), i18n("Missing backends") );
-    QMessageBox *messageBox = new QMessageBox( this );
-    messageBox->setIcon( QMessageBox::Information );
-    messageBox->setWindowTitle( i18n("Missing backends") );
-    messageBox->setText( messageList.join("\n\n").replace("\n","<br>") );
-    messageBox->setTextFormat( Qt::RichText );
-    messageBox->exec();
+    CodecProblems *problemsDialog = new CodecProblems( CodecProblems::Debug, problemList, this );
+    problemsDialog->exec();
 }

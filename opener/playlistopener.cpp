@@ -12,6 +12,7 @@
 #include "playlistopener.h"
 #include "../options.h"
 #include "../config.h"
+#include "../codecproblems.h"
 
 #include <KLocale>
 #include <KPushButton>
@@ -63,12 +64,11 @@ PlaylistOpener::~PlaylistOpener()
 
 void PlaylistOpener::fileDialogAccepted()
 {
-    QString codecName;
     QStringList errorList;
+    //    codec    @0 files @1 solutions
     QMap< QString, QList<QStringList> > problems;
-    QStringList messageList;
+//     QStringList messageList;
     QString fileName;
-    QStringList affectedFiles;
     QStringList filesNotFound;
   
     urls.clear();
@@ -96,7 +96,7 @@ void PlaylistOpener::fileDialogAccepted()
 
     for( int i=0; i<urls.count(); i++ )
     {
-        codecName = config->pluginLoader()->getCodecFromFile( urls.at(i) );
+        QString codecName = config->pluginLoader()->getCodecFromFile( urls.at(i) );
 
         if( !config->pluginLoader()->canDecode(codecName,&errorList) )
         {
@@ -121,37 +121,62 @@ void PlaylistOpener::fileDialogAccepted()
         }
     }
 
+    QList<CodecProblems::Problem> problemList;
     for( int i=0; i<problems.count(); i++ )
     {
-        codecName = problems.keys().at(i);
-        if( codecName != "wav" )
+        CodecProblems::Problem problem;
+        problem.codecName = problems.keys().at(i);
+        if( problem.codecName != "wav" )
         {
-            problems[codecName][1].removeDuplicates();
-            affectedFiles.clear();
-            if( problems.value(codecName).at(0).count() <= 3 )
+            #if QT_VERSION >= 0x040500
+                problems[problem.codecName][1].removeDuplicates();
+            #else
+                QStringList found;
+                for( int j=0; j<problems.value(problem.codecName).at(1).count(); j++ )
+                {
+                    if( found.contains(problems.value(problem.codecName).at(1).at(j)) )
+                    {
+                        problems[problem.codecName][1].removeAt(j);
+                        j--;
+                    }
+                    else
+                    {
+                        found += problems.value(problem.codecName).at(1).at(j);
+                    }
+                }
+            #endif
+            problem.solutions = problems.value(problem.codecName).at(1);
+            if( problems.value(problem.codecName).at(0).count() <= 3 )
             {
-                affectedFiles = problems.value(codecName).at(0);
+                problem.affectedFiles = problems.value(problem.codecName).at(0);
             }
             else
             {
-                affectedFiles += problems.value(codecName).at(0).at(0);
-                affectedFiles += problems.value(codecName).at(0).at(1);
-                affectedFiles += i18n("... and %1 more files",problems.value(codecName).at(0).count()-2);
+                problem.affectedFiles += problems.value(problem.codecName).at(0).at(0);
+                problem.affectedFiles += problems.value(problem.codecName).at(0).at(1);
+                problem.affectedFiles += i18n("... and %1 more files",problems.value(problem.codecName).at(0).count()-2);
             }
-            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).at(1).join("\n<b>or</b>\n") + i18n("\n\nAffected files:\n") + affectedFiles.join("\n");
+            problemList += problem;
+//             messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).at(1).join("\n<b>or</b>\n") + i18n("\n\nAffected files:\n") + affectedFiles.join("\n");
         }
     }
     
-    if( !messageList.isEmpty() )
+    if( problemList.count() > 0 )
     {
-        messageList.prepend( i18n("Some files can't be decoded.\nPossible solutions are listed below.") );
-        QMessageBox *messageBox = new QMessageBox( this );
-        messageBox->setIcon( QMessageBox::Information );
-        messageBox->setWindowTitle( i18n("Missing backends") );
-        messageBox->setText( messageList.join("\n\n").replace("\n","<br>") );
-        messageBox->setTextFormat( Qt::RichText );
-        messageBox->exec();
+        CodecProblems *problemsDialog = new CodecProblems( CodecProblems::Decode, problemList, this );
+        problemsDialog->exec();
     }
+    
+//     if( !messageList.isEmpty() )
+//     {
+//         messageList.prepend( i18n("Some files can't be decoded.\nPossible solutions are listed below.") );
+//         QMessageBox *messageBox = new QMessageBox( this );
+//         messageBox->setIcon( QMessageBox::Information );
+//         messageBox->setWindowTitle( i18n("Missing backends") );
+//         messageBox->setText( messageList.join("\n\n").replace("\n","<br>") );
+//         messageBox->setTextFormat( Qt::RichText );
+//         messageBox->exec();
+//     }
     
     if( !filesNotFound.isEmpty() )
     {

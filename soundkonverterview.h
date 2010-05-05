@@ -51,6 +51,8 @@ public:
     KAction *start() { return startAction; }
     KActionMenu *stopMenu() { return stopActionMenu; }
     
+    void startConversion();
+    
 signals:
     /** Use this signal to change the content of the statusbar */
 //     void signalChangeStatusbar(const QString& text);
@@ -60,6 +62,8 @@ signals:
 
 public slots:
     void showCdDialog( const QString& device = "", bool intern = true );
+    void loadFileList( bool user = true );
+    void saveFileList( bool user = true );
 
 private slots:
     void addClicked( int index );
@@ -104,10 +108,6 @@ private:
 
     /** Displays the current progress */
     ProgressIndicator *progressIndicator;
-
-public slots:
-    void loadFileList();
-    void saveFileList();
 
 signals:
     void progressChanged( const QString& progress );

@@ -5,6 +5,6 @@ Exec=soundkonverter %i -caption "%c"
 Icon=soundkonverter
 Type=Application
 DocPath=soundkonverter/soundkonverter.html
-GenericName=A KDE4 Application
-Terminal=0
-
+GenericName=An audio file converter
+Terminal=false
+Categories=AudioVideo;AudioVideoEditing;CD;

@@ -1,11 +1,17 @@
 
-
 #ifndef CDOPENER_H
 #define CDOPENER_H
 
-#include <kdialog.h>
+#include <KDialog>
+#include <QTimer>
 
-class CDManager;
+#include <libkcompactdisc/kcompactdisc.h>
+
+#include <libkcddb/kcddb.h>
+#include <libkcddb/client.h>
+#include <libkcddb/cdinfo.h>
+
+// class CDManager;
 class TagEngine;
 class Config;
 class Options;
@@ -20,6 +26,7 @@ class QGroupBox;
 class QTreeWidgetItem;
 class QLabel;
 class QCheckBox;
+class TagData;
 
 
 /**
@@ -43,17 +50,19 @@ public:
 //     };
 
     /** Constructor */
-    CDOpener( Config *_config, CDManager *_cdManager, const QString& _device, QWidget *parent = 0 /*Mode default_mode = all_tracks, const QString& default_text = "",*/, Qt::WFlags f=0 );
+    CDOpener( Config *_config, /*CDManager *_cdManager,*/ const QString& _device, QWidget *parent = 0 /*Mode default_mode = all_tracks, const QString& default_text = "",*/, Qt::WFlags f=0 );
 
     /** Destructor */
     virtual ~CDOpener();
 
     /** true if no CD was found (don't execute the dialog) */
-    bool noCD;
+    bool noCdFound;
 
 private:
     /** the widget for selecting and editing the cd tracks */
     QWidget *cdOpenerWidget;
+    /** the widget for showing the progress of reading the cd / cddb data */
+    QWidget *cdOpenerOverlayWidget;
     /** the conversion options editor widget */
     Options *options;
     /** the current page */
@@ -101,7 +110,7 @@ private:
     /** A textedit for entering a comment for a track */
     KTextEdit *tTrackComment;
     KPushButton *pTrackCommentEdit;
-
+    
     /** Save the tag information to a cue file */
     KPushButton *pSaveCue;
     /** Rip enitre CD as one track */
@@ -113,17 +122,44 @@ private:
     /** Quit the dialog */
     KPushButton *pCancel;
 
-    CDManager *cdManager;
+//     CDManager *cdManager;
+    KCompactDisc *compact_disc;
+    KCDDB::Client *cddb;
     Config *config;
 
-    QString device;
+    QList<TagData*> tags; // @0 disc tags
+    bool cdTextFound;
+    bool cddbFound;
 
     QList<int> selectedTracks;
     QList<QTreeWidgetItem*> selectedItems;
 
     int columnByName( const QString& name ); // should be obsolete
 
+    /** Show the progress of reading the cd / cddb data */
+    QLabel *lOverlayLabel;
+
+    QTimer fadeTimer;
+    float fadeAlpha;
+    int fadeMode; // 1 = fade in, 2 = fade out
+
+    inline QBrush brushSetAlpha( QBrush brush, const int alpha )
+    {
+        QColor color = brush.color();
+        color.setAlpha( alpha );
+        brush.setColor( color );
+        return brush;
+    }
+    
+    void fadeIn();
+    void fadeOut();
+
 private slots:
+    void slot_disc_changed( unsigned int tracks );
+    void slot_disc_information( KCompactDisc::DiscInfo );
+    void slot_disc_status_changed( KCompactDisc::DiscStatus status );
+    void lookup_cddb_done( KCDDB::Result result );
+    
     void trackChanged();
     void trackUpPressed();
     void trackDownPressed();
@@ -143,8 +179,10 @@ private slots:
 //     void addAsOneTrackClicked();
     void saveCuesheetClicked();
 
+    void fadeAnim();
+    
 signals:
-    void addTracks( const QString& device, QList<int> trackList, ConversionOptions *conversionOptions );
+    void addTracks( const QString& device, QList<int> trackList, int tracks, QList<TagData*> tagList, ConversionOptions *conversionOptions );
     void addDisc( const QString& device, ConversionOptions *conversionOptions );
     //void openCuesheetEditor( const QString& content );
 };

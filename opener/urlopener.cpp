@@ -93,14 +93,6 @@ UrlOpener::~UrlOpener()
 
 void UrlOpener::proceedClickedSlot()
 {
-    QString codecName;
-    QStringList errorList;
-    QMap< QString, QList<QStringList> > problems;
-    QStringList messageList;
-    QString fileName;
-    QStringList affectedFiles;
-    QStringList filesNotFound;
-  
     if( page == FileOpenPage )
     {
         if( !urlRequester->url().isValid() )

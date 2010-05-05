@@ -12,6 +12,7 @@ class ReplayGainFileListItem : public QTreeWidgetItem
 {
 public:
     ReplayGainFileListItem( QTreeWidget *parent );
+    ReplayGainFileListItem( QTreeWidget *parent, QTreeWidgetItem *preceding );
     
     ReplayGainFileListItem( QTreeWidgetItem *parent );
     
@@ -39,6 +40,12 @@ public:
     
     int processId;
     int take;
+    
+// private:
+//     void dragEnterEvent( QDragEnterEvent *event );
+//     void dragMoveEvent( QDragMoveEvent *event );
+//     void dropEvent( QDropEvent *event );
+
 };
 
 #endif // REPLAYGAINFILELISTITEM_H

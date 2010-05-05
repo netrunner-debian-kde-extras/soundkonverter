@@ -45,6 +45,7 @@ public:
             QString lastProfile;
             QString defaultFormat;
             QString lastFormat;
+            int lastOutputDirectoryMode;
             QString specifyOutputDirectory;
             QString metaDataOutputDirectory;
             QString copyStructureOutputDirectory;

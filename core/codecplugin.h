@@ -45,7 +45,7 @@ public:
 
     virtual QList<ConversionPipeTrunk> codecTable() = 0;
     virtual bool isConfigSupported( ActionType action ) = 0;
-    virtual bool showConfigDialog( ActionType action, const QString& format, QWidget *parent ) = 0;
+    virtual void showConfigDialog( ActionType action, const QString& format, QWidget *parent ) = 0;
     virtual QWidget *newCodecWidget() = 0;
     virtual QWidget *deleteCodecWidget( QWidget *codecWidget );
 

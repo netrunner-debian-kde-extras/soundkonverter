@@ -49,7 +49,7 @@ QList<ConversionPipeTrunk> soundkonverter_ripper_cdparanoia::codecTable()
     newTrunk.rating = 100;
     newTrunk.enabled = ( binaries["cdparanoia"] != "" );
     newTrunk.data.canRipEntireCd = true;
-    newTrunk.problemInfo = i18n("In order to rip audio cds per track or to a single file, you need to install cdparanoia.\ncdparanoia is usually shipped with your distribution, the package name can vary.");
+    newTrunk.problemInfo = i18n("In order to rip audio cds per track or to a single file, you need to install cdparanoia. cdparanoia is usually shipped with your distribution, the package name can vary.");
     table.append( newTrunk );
 
     return table;
@@ -155,7 +155,7 @@ float soundkonverter_ripper_cdparanoia::parseOutput( const QString& output, int 
 
 float soundkonverter_ripper_cdparanoia::parseOutput( const QString& output )
 {
-    parseOutput( output, 0, 0 );
+    return parseOutput( output, 0, 0 );
 }
 
 void soundkonverter_ripper_cdparanoia::processOutput()

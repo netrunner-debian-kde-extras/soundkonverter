@@ -107,13 +107,10 @@ TagEngine::~TagEngine()
 
 TagData* TagEngine::readTags( const KUrl& fileName ) // TagLib
 {
-    QString file = fileName.pathOrUrl();
-  
-//     kDebug() << file;
-//     kDebug() << file.toLocal8Bit();
-    TagLib::FileRef fileref( file.toLocal8Bit() );
     TagData *tagData = new TagData();
 
+    TagLib::FileRef fileref( fileName.pathOrUrl().toLocal8Bit() );
+    
     if( !fileref.isNull() )
     {
         TagLib::Tag *tag = fileref.tag();
@@ -290,16 +287,14 @@ TagData* TagEngine::readTags( const KUrl& fileName ) // TagLib
     return 0;
 }
 
-bool TagEngine::writeTags( const KUrl& fileName, TagData* tagData )
+bool TagEngine::writeTags( const KUrl& fileName, TagData *tagData )
 {
-    QString file = fileName.pathOrUrl();
-  
     if( !tagData ) tagData = new TagData();
+
+    TagLib::FileRef fileref( fileName.pathOrUrl().toLocal8Bit(), false );
 
     //Set default codec to UTF-8 (see bugs 111246 and 111232)
     TagLib::ID3v2::FrameFactory::instance()->setDefaultTextEncoding( TagLib::String::UTF8 );
-
-    TagLib::FileRef fileref( QFile::encodeName(file), false );
 
     if ( !fileref.isNull() )
     {

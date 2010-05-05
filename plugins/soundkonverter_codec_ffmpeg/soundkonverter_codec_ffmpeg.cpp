@@ -11,11 +11,19 @@ soundkonverter_codec_ffmpeg::soundkonverter_codec_ffmpeg( QObject *parent, const
 {
     binaries["ffmpeg"] = "";
     
+    // encoders
     codecMap["wav"] = "pcm_s16le";
-    codecMap["ogg vorbis"] = "vorbis";
+    codecMap["ogg vorbis"] = "libvorbis"; // vorbis
     codecMap["mp3"] = "libmp3lame";
     codecMap["flac"] = "flac";
     codecMap["wma"] = "wmav2";
+    codecMap["aac"] = "libfaac"; // aac
+    codecMap["ac3"] = "ac3";
+    codecMap["alac"] = "alac";
+    codecMap["mp2"] = "mp2";
+//     codecMap["sonic"] = "sonic";
+//     codecMap["sonic lossless"] = "sonicls";
+    codecMap["amr nb"] = "libopencore_amrnb";
 }
 
 soundkonverter_codec_ffmpeg::~soundkonverter_codec_ffmpeg()
@@ -30,17 +38,48 @@ QList<ConversionPipeTrunk> soundkonverter_codec_ffmpeg::codecTable()
 {
     QList<ConversionPipeTrunk> table;
     
+    // encode
     fromCodecs += "wav";
     fromCodecs += "ogg vorbis";
     fromCodecs += "mp3";
     fromCodecs += "flac";
     fromCodecs += "wma";
+    fromCodecs += "aac";
+    fromCodecs += "ac3";
+    fromCodecs += "alac";
+    fromCodecs += "mp2";
+//     fromCodecs += "sonic";
+//     fromCodecs += "sonic lossless";
+    fromCodecs += "als";
+    fromCodecs += "amr nb";
+    // decode
+    fromCodecs += "amr wb";
+    fromCodecs += "ape";
+//     fromCodecs += "eac3";
+    fromCodecs += "speex";
+    fromCodecs += "mp1";
+    fromCodecs += "mpc";
+    fromCodecs += "shorten";
+//     fromCodecs += "mlp";
+//     fromCodecs += "truehd";
+//     fromCodecs += "truespeech";
+    fromCodecs += "tta";
+    fromCodecs += "wavpack";
+    // containers
+    fromCodecs += "3gp";
 
     toCodecs += "wav";
     toCodecs += "ogg vorbis";
     toCodecs += "mp3";
     toCodecs += "flac";
     toCodecs += "wma";
+    toCodecs += "aac";
+    toCodecs += "ac3";
+    toCodecs += "alac";
+    toCodecs += "mp2";
+//     toCodecs += "sonic";
+//     toCodecs += "sonic lossless";
+    toCodecs += "amr nb";
     
     for( int i=0; i<fromCodecs.count(); i++ )
     {
@@ -53,7 +92,7 @@ QList<ConversionPipeTrunk> soundkonverter_codec_ffmpeg::codecTable()
             newTrunk.codecTo = toCodecs.at(j);
             newTrunk.rating = 90;
             newTrunk.enabled = ( binaries["ffmpeg"] != "" );
-            newTrunk.problemInfo = i18n("You need to install 'ffmpeg'.\nSince ffmpeg inludes many patented codecs, it may not be included in the default installation of your distribution.\nMany distributions offer ffmpeg in an additional software repository.");
+            newTrunk.problemInfo = i18n("You need to install 'ffmpeg'. Since ffmpeg inludes many patented codecs, it may not be included in the default installation of your distribution. Many distributions offer ffmpeg in an additional software repository.");
             newTrunk.data.hasInternalReplayGain = false;
             table.append( newTrunk );
         }
@@ -72,7 +111,15 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
     BackendPlugin::FormatInfo info;
     info.codecName = codecName;
 
-    if( codecName == "ogg vorbis" )
+    if( codecName == "wav" )
+    {
+        info.lossless = true;
+        info.description = i18n("Wave won't compress the audio stream.");
+        info.mimeTypes.append( "audio/x-wav" );
+        info.mimeTypes.append( "audio/wav" );
+        info.extensions.append( "wav" );
+    }
+    else if( codecName == "ogg vorbis" )
     {
         info.lossless = false;
         info.description = i18n("Ogg Vorbis is a free and lossy high quality audio codec.\nFor more information see: http://www.xiph.org/vorbis/");
@@ -110,13 +157,173 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
         info.mimeTypes.append( "audio/x-ms-wma" );
         info.extensions.append( "wma" );
     }
-    else if( codecName == "wav" )
+    else if( codecName == "aac" )
+    {
+        info.lossless = false;
+        info.description = i18n("Advanced Audio Coding is a lossy and popular audio format."); // http://en.wikipedia.org/wiki/Advanced_Audio_Coding
+        info.mimeTypes.append( "audio/aac" );
+        info.mimeTypes.append( "audio/aacp" );
+        info.extensions.append( "aac" );
+        info.extensions.append( "3gp" );
+        info.extensions.append( "mp4" );
+        info.extensions.append( "m4a" );
+    }
+    else if( codecName == "ac3" ) // TODO description
+    {
+        info.lossless = false;
+        info.description = i18n("Dolby Digital-Audio"); // http://en.wikipedia.org/wiki/Ac3
+        info.mimeTypes.append( "audio/ac3" );
+        info.extensions.append( "ac3" );
+    }
+    else if( codecName == "alac" )
     {
         info.lossless = true;
-        info.description = i18n("Wave won't compress the audio stream.");
-        info.mimeTypes.append( "audio/x-wav" );
-        info.mimeTypes.append( "audio/wav" );
-        info.extensions.append( "wav" );
+        info.description = i18n("Apple Lossless Audio Codec is a lossless audio format from Apple."); // http://en.wikipedia.org/wiki/Alac
+//         info.mimeTypes.append( "audio/x-ms-wma" );
+        info.extensions.append( "m41" );
+    }
+    else if( codecName == "mp2" )
+    {
+        info.lossless = false;
+        info.description = i18n("MPEG-1 Audio Layer II is an old lossy audio format."); // http://en.wikipedia.org/wiki/MPEG-1_Audio_Layer_II
+        info.mimeTypes.append( "audio/mpeg" );
+        info.extensions.append( "mp2" );
+    }
+//     else if( codecName == "sonic" ) // TODO description
+//     {
+//         info.lossless = false;
+//         info.description = i18n("Sonic");
+// //         info.mimeTypes.append( "audio/x-ms-wma" );
+// //         info.extensions.append( "wma" );
+//     }
+//     else if( codecName == "sonicls" ) // TODO description
+//     {
+//         info.lossless = true;
+//         info.description = i18n("Sonic Lossless");
+// //         info.mimeTypes.append( "audio/x-ms-wma" );
+// //         info.extensions.append( "wma" );
+//     }
+    else if( codecName == "als" ) // TODO description
+    {
+        info.lossless = true;
+        info.description = i18n("MPEG-4 Audio Lossless Coding");
+//         info.mimeTypes.append( "audio/x-ms-wma" );
+        info.extensions.append( "mp4" );
+    }
+    else if( codecName == "amr nb" )
+    {
+        info.lossless = false;
+        info.description = i18n("Adaptive Multi-Rate Narrow-Band is based on 3gp and mainly used for speech compression in mobile communication."); // http://en.wikipedia.org/wiki/Adaptive_Multi-Rate_audio_codec
+        info.mimeTypes.append( "audio/amr" );
+        info.mimeTypes.append( "audio/3gpp" );
+        info.mimeTypes.append( "audio/3gpp2" );
+        info.extensions.append( "amr" );
+    }
+    else if( codecName == "amr wb" )
+    {
+        info.lossless = false;
+        info.description = i18n("Adaptive Multi-Rate Wide-Band is an advanced version of amr nb which uses a higher data rate resulting in a higher quality."); // http://en.wikipedia.org/wiki/Adaptive_Multi-Rate_Wideband
+        info.mimeTypes.append( "audio/amr-wb" );
+        info.mimeTypes.append( "audio/3gpp" );
+        info.extensions.append( "awb" );
+    }
+    else if( codecName == "ape" )
+    {
+        info.lossless = true;
+        info.description = i18n("Monkey's Audio is a propritary lossless audio format."); // http://en.wikipedia.org/wiki/Monkey's_Audio
+        info.mimeTypes.append( "audio/x-ape" );
+        info.extensions.append( "ape" );
+        info.extensions.append( "apl" );
+    }
+//     else if( codecName == "eac3" ) // TODO description
+//     {
+//         info.lossless = false;
+//         info.description = i18n("Dolby Digital Plus (Enhanced AC-3) is an advanced version of AC-3 for use on Blu-Ray discs.");
+// //         info.mimeTypes.append( "audio/x-ms-wma" );
+// //         info.extensions.append( "wma" );
+//     }
+    else if( codecName == "speex" )
+    {
+        info.lossless = false;
+        info.description = i18n("Speex is a free and lossy audio codec designed for encoding speech."); // http://en.wikipedia.org/wiki/Speex
+        info.mimeTypes.append( "audio/speex" );
+        info.mimeTypes.append( "audio/ogg" );
+        info.extensions.append( "spx" );
+    }
+    else if( codecName == "mp1" )
+    {
+        info.lossless = false;
+        info.description = i18n("MPEG-1 Audio Layer I very old and lossy file format."); // http://en.wikipedia.org/wiki/MP1
+        info.mimeTypes.append( "audio/mpeg" );
+        info.extensions.append( "mp1" );
+    }
+    else if( codecName == "mpc" )
+    {
+        info.lossless = false;
+        info.description = i18n("Musepack is a free and lossy file format based on mp2 and optimized for high quality."); // http://en.wikipedia.org/wiki/Musepack
+        info.mimeTypes.append( "audio/x-musepack" );
+        info.mimeTypes.append( "audio/musepack" );
+        info.extensions.append( "mpc" );
+        info.extensions.append( "mp+" );
+        info.extensions.append( "mpp" );
+    }
+    else if( codecName == "shorten" )
+    {
+        info.lossless = true;
+        info.description = i18n("Shorten is an old lossless audio format."); // http://en.wikipedia.org/wiki/Shorten
+        info.mimeTypes.append( "audio/x-ms-wma" );
+        info.extensions.append( "wma" );
+    }
+//     else if( codecName == "mlp" ) // TODO description
+//     {
+//         info.lossless = true;
+//         info.description = i18n("Meridian Lossless Packing is an old propritary lossless audio format."); // http://en.wikipedia.org/wiki/Meridian_Lossless_Packing
+// //         info.mimeTypes.append( "audio/x-ms-wma" );
+// //         info.extensions.append( "wma" );
+//     }
+//     else if( codecName == "truehd" ) // TODO description
+//     {
+//         info.lossless = true;
+//         info.description = i18n("Dolby TrueHD is a lossless audio format based on mlp for use on Blu-Ray discs."); // http://en.wikipedia.org/wiki/Dolby_TrueHD
+// //         info.mimeTypes.append( "audio/x-ms-wma" );
+// //         info.extensions.append( "wma" );
+//     }
+//     else if( codecName == "truespeech" )
+//     {
+//         info.lossless = false;
+//         info.description = i18n("Truespeech is a propritary speech codec for low bitrates."); // http://en.wikipedia.org/wiki/Truespeech
+// //         info.mimeTypes.append( "audio/x-ms-wma" );
+// //         info.extensions.append( "wma" );
+//     }
+    else if( codecName == "tta" )
+    {
+        info.lossless = true;
+        info.description = i18n("True Audio is a free lossless audio format."); // http://en.wikipedia.org/wiki/TTA_(codec)
+        info.mimeTypes.append( "audio/x-tta" );
+        info.extensions.append( "tta" );
+    }
+    else if( codecName == "wavpack" )
+    {
+        info.lossless = true;
+        info.description = i18n("WavPack is a free lossless audio format."); // http://en.wikipedia.org/wiki/WavPack
+        info.mimeTypes.append( "audio/x-wavpack" );
+        info.extensions.append( "wv" );
+        info.extensions.append( "wvp" );
+    }
+    else if( codecName == "3gp" )
+    {
+        info.lossless = false;
+        info.description = i18n("3GP is a audio/video container format for mobile devices."); // http://de.wikipedia.org/wiki/3gp
+        info.mimeTypes.append( "video/3gpp" );
+        info.mimeTypes.append( "audio/3gpp" );
+        info.mimeTypes.append( "video/3gpp2" );
+        info.mimeTypes.append( "audio/3gpp2" );
+        info.extensions.append( "3gp" );
+        info.extensions.append( "3g2" );
+        info.extensions.append( "3gpp" );
+        info.extensions.append( "3ga" );
+        info.extensions.append( "3gp2" );
+        info.extensions.append( "3gpp2" );
     }
 
     return info;
@@ -151,7 +358,7 @@ bool soundkonverter_codec_ffmpeg::isConfigSupported( ActionType action )
     return false;
 }
 
-bool soundkonverter_codec_ffmpeg::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
+void soundkonverter_codec_ffmpeg::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
 {}
 
 bool soundkonverter_codec_ffmpeg::hasInfo()

@@ -42,10 +42,12 @@ void BackendPlugin::scanForBackends( const QStringList& directoryList )
 
 bool BackendPlugin::pause( int id )
 {
+    return false;
 }
 
 bool BackendPlugin::resume( int id )
 {
+    return false;
 }
 
 bool BackendPlugin::kill( int id )

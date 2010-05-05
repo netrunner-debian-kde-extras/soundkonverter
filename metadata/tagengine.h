@@ -17,18 +17,14 @@
 class TagData
 {
 public:
-    /**
-     * Constructor
-     */
+    /** Constructor */
     TagData( const QString& _artist = QString::null, const QString& _composer = QString::null,
              const QString& _album = QString::null, const QString& _title = QString::null,
              const QString& _genre = QString::null, const QString& _comment = QString::null,
              int _track = 0, int _disc = 0, int _year = 0,
              int _length = 0, int _fileSize = 0, int _bitrate = 0, int _samplingRate = 0 );
 
-    /**
-     * Destructor
-     */
+    /** Destructor */
     virtual ~TagData();
 
     /** The tags */
@@ -60,14 +56,10 @@ public:
 class TagEngine
 {
 public:
-    /**
-     * Constructor
-     */
+    /** Constructor */
     TagEngine();
 
-    /**
-     * Destructor
-     */
+    /** Destructor */
     virtual ~TagEngine();
 
     /** A list of all genre */
@@ -76,7 +68,7 @@ public:
 //     MediaInfoLib::MediaInfo* MI;
 
     TagData* readTags( const KUrl& fileName );
-    bool writeTags( const KUrl& fileName, TagData* tagData );
+    bool writeTags( const KUrl& fileName, TagData *tagData );
 
 //     bool canWrite( QString format ); // NOTE no const because this string is being modyfied
 };

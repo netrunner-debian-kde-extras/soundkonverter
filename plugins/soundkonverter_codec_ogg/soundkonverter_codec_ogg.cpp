@@ -94,7 +94,7 @@ bool soundkonverter_codec_ogg::isConfigSupported( ActionType action )
     return false;
 }
 
-bool soundkonverter_codec_ogg::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
+void soundkonverter_codec_ogg::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
 {}
 
 bool soundkonverter_codec_ogg::hasInfo()
