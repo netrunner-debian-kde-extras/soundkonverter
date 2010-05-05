@@ -16,8 +16,9 @@
 #include "opener/urlopener.h"
 #include "opener/playlistopener.h"
 #include "convert.h"
-#include "audiocd/cdmanager.h"
+// #include "audiocd/cdmanager.h"
 #include "options.h"
+#include "codecproblems.h"
 
 #include <KLocale>
 #include <KPushButton>
@@ -49,7 +50,7 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     gridLayout->setContentsMargins( 6, 6, 6, 6 );
 //     gridLayout->setSpacing( 0 );
 
-    fileList = new FileList( config, cdManager, this );
+    fileList = new FileList( config, /*cdManager,*/ this );
     gridLayout->addWidget( fileList, 1, 0 );
     gridLayout->setRowStretch( 1, 1 );
     connect( fileList, SIGNAL(fileCountChanged(int)), this, SLOT(fileCountChanged(int)) );
@@ -143,8 +144,6 @@ soundKonverterView::~soundKonverterView()
 
 void soundKonverterView::addClicked( int index )
 {
-    fileList->save();
-
     if( index == 0 )
     {
         showFileDialog();
@@ -165,8 +164,6 @@ void soundKonverterView::addClicked( int index )
     {
         showPlaylistDialog();
     }
-
-    fileList->save();
 }
 
 void soundKonverterView::showFileDialog()
@@ -181,6 +178,8 @@ void soundKonverterView::showFileDialog()
     disconnect( dialog, SIGNAL(done(const KUrl::List&,ConversionOptions*)), 0, 0 );
 
     delete dialog;
+
+    fileList->save( false );
 }
 
 void soundKonverterView::showDirDialog()
@@ -194,6 +193,8 @@ void soundKonverterView::showDirDialog()
     disconnect( dialog, SIGNAL(done(const KUrl&,bool,const QStringList&,ConversionOptions*)), 0, 0 );
 
     delete dialog;
+
+    fileList->save( false );
 }
 
 void soundKonverterView::showCdDialog( const QString& device, bool intern )
@@ -257,37 +258,31 @@ void soundKonverterView::showCdDialog( const QString& device, bool intern )
     QStringList errorList;
     if( !config->pluginLoader()->canDecode("audio cd",&errorList) )
     {
-        if( !errorList.isEmpty() )
-        {
-            message = i18n("Ripping audio CDs is currently not supported because of missing backends.\nPossible solutions are listed below.");
-        }
-        else
-        {
-            message = i18n("Ripping audio CDs is not supported by any installed plugin.\nPlease have a look at your distributions package manager in order to get a cd ripper plugin for soundKonverter.");
-        }
-        QMessageBox *messageBox = new QMessageBox( this );
-        messageBox->setIcon( QMessageBox::Information );
-        messageBox->setWindowTitle( i18n("Missing backends") );
-        messageBox->setText( message + "<br><br>" + errorList.join("\n\n").replace("\n","<br>") );
-        messageBox->setTextFormat( Qt::RichText );
-        messageBox->exec();
+        QList<CodecProblems::Problem> problemList;
+        CodecProblems::Problem problem;
+        problem.codecName = "audio cd";
+        problem.solutions = errorList;
+        problemList += problem;
+        CodecProblems *problemsDialog = new CodecProblems( CodecProblems::AudioCd, problemList, this );
+        problemsDialog->exec();
         return;
     }
 
     // create a new CDOpener object for letting the user add some tracks from a CD
-    CDOpener *dialog = new CDOpener( config, cdManager, device, this );
+    CDOpener *dialog = new CDOpener( config, device, this );
 
-    if( !dialog->noCD )
+    if( !dialog->noCdFound )
     {
-        connect( dialog, SIGNAL(addTracks(const QString&,QList<int>,ConversionOptions*)), fileList, SLOT(addTracks(const QString&,QList<int>,ConversionOptions*)) );
+        connect( dialog, SIGNAL(addTracks(const QString&,QList<int>,int,QList<TagData*>,ConversionOptions*)), fileList, SLOT(addTracks(const QString&,QList<int>,int,QList<TagData*>,ConversionOptions*)) );
 
         dialog->exec();
 
-        disconnect( dialog, SIGNAL(addTracks(const QString&,QList<int>,ConversionOptions*)), 0, 0 );
+        disconnect( dialog, SIGNAL(addTracks(const QString&,QList<int>,int,QList<TagData*>,ConversionOptions*)), 0, 0 );
     }
     else
     {
-        KMessageBox::information( this, i18n("No audio CD found.") );
+//         KMessageBox::information( this, i18n("No audio CD found.") );
+        KMessageBox::error( this, i18n("No CD device found") );
     }
     
     delete dialog;
@@ -296,6 +291,8 @@ void soundKonverterView::showCdDialog( const QString& device, bool intern )
 
     options->setCurrentOptions( conversionOptions );
 */
+
+    fileList->save( false );
 }
 
 void soundKonverterView::showUrlDialog()
@@ -309,6 +306,8 @@ void soundKonverterView::showUrlDialog()
     disconnect( dialog, SIGNAL(done(const KUrl::List&,ConversionOptions*)), 0, 0 );
 
     delete dialog;
+
+    fileList->save( false );
 }
 
 void soundKonverterView::showPlaylistDialog()
@@ -323,21 +322,21 @@ void soundKonverterView::showPlaylistDialog()
     disconnect( dialog, SIGNAL(done(const KUrl::List&,ConversionOptions*)), 0, 0 );
 
     delete dialog;
+
+    fileList->save( false );
 }
 
 void soundKonverterView::addConvertFiles( const KUrl::List& urls, QString _profile, QString _format, const QString& directory )
 {
     KUrl::List k_urls;
-    QString codecName;
     QStringList errorList;
+    //    codec    @0 files @1 solutions
     QMap< QString, QList<QStringList> > problems;
-    QStringList messageList;
     QString fileName;
-    QStringList affectedFiles;
     
     for( int i=0; i<urls.size(); i++ )
     {
-        codecName = config->pluginLoader()->getCodecFromFile( urls.at(i) );
+        QString codecName = config->pluginLoader()->getCodecFromFile( urls.at(i) );
 
         if( codecName == "inode/directory" || config->pluginLoader()->canDecode(codecName,&errorList) )
         {
@@ -364,36 +363,49 @@ void soundKonverterView::addConvertFiles( const KUrl::List& urls, QString _profi
         }
     }
 
+    QList<CodecProblems::Problem> problemList;
     for( int i=0; i<problems.count(); i++ )
     {
-        codecName = problems.keys().at(i);
-        if( codecName != "wav" )
+        CodecProblems::Problem problem;
+        problem.codecName = problems.keys().at(i);
+        if( problem.codecName != "wav" )
         {
-            problems[codecName][1].removeDuplicates();
-            affectedFiles.clear();
-            if( problems.value(codecName).at(0).count() <= 3 )
+            #if QT_VERSION >= 0x040500
+                problems[problem.codecName][1].removeDuplicates();
+            #else
+                QStringList found;
+                for( int j=0; j<problems.value(problem.codecName).at(1).count(); j++ )
+                {
+                    if( found.contains(problems.value(problem.codecName).at(1).at(j)) )
+                    {
+                        problems[problem.codecName][1].removeAt(j);
+                        j--;
+                    }
+                    else
+                    {
+                        found += problems.value(problem.codecName).at(1).at(j);
+                    }
+                }
+            #endif
+            problem.solutions = problems.value(problem.codecName).at(1);
+            if( problems.value(problem.codecName).at(0).count() <= 3 )
             {
-                affectedFiles = problems.value(codecName).at(0);
+                problem.affectedFiles = problems.value(problem.codecName).at(0);
             }
             else
             {
-                affectedFiles += problems.value(codecName).at(0).at(0);
-                affectedFiles += problems.value(codecName).at(0).at(1);
-                affectedFiles += i18n("... and %1 more files",problems.value(codecName).at(0).count()-3);
+                problem.affectedFiles += problems.value(problem.codecName).at(0).at(0);
+                problem.affectedFiles += problems.value(problem.codecName).at(0).at(1);
+                problem.affectedFiles += i18n("... and %1 more files",problems.value(problem.codecName).at(0).count()-3);
             }
-            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).at(1).join("\n<b>or</b>\n") + i18n("\n\nAffected files:\n") + affectedFiles.join("\n");
+            problemList += problem;
         }
     }
-    
-    if( !messageList.isEmpty() )
+
+    if( problemList.count() > 0 )
     {
-        messageList.prepend( i18n("Some files can't be decoded.\nPossible solutions are listed below.") );
-        QMessageBox *messageBox = new QMessageBox( this );
-        messageBox->setIcon( QMessageBox::Information );
-        messageBox->setWindowTitle( i18n("Missing backends") );
-        messageBox->setText( messageList.join("\n\n").replace("\n","<br>") );
-        messageBox->setTextFormat( Qt::RichText );
-        messageBox->exec();
+        CodecProblems *problemsDialog = new CodecProblems( CodecProblems::Decode, problemList, this );
+        problemsDialog->exec();
     }
 
     if( k_urls.count() > 0 )
@@ -491,6 +503,13 @@ void soundKonverterView::addConvertFiles( const KUrl::List& urls, QString _profi
             optionsLayer->fadeIn();
         }
     }
+
+    fileList->save( false );
+}
+
+void soundKonverterView::startConversion()
+{
+    fileList->startConversion();
 }
 
 void soundKonverterView::fileCountChanged( int count )
@@ -505,6 +524,7 @@ void soundKonverterView::conversionStarted()
     startAction->setEnabled( false );
     pStop->show();
     stopActionMenu->setEnabled( true );
+    emit signalConversionStarted();
 }
 
 void soundKonverterView::conversionStopped()
@@ -513,8 +533,7 @@ void soundKonverterView::conversionStopped()
     startAction->setEnabled( true );
     pStop->hide();
     stopActionMenu->setEnabled( false );
-
-//     if( autoclose ) kapp->quit(); // NOTE close app on conversion stop (may irritate the user when stopping the conversion)
+    emit signalConversionStopped();
 }
 
 void soundKonverterView::queueModeChanged( bool enabled )
@@ -523,14 +542,14 @@ void soundKonverterView::queueModeChanged( bool enabled )
     continueAction->setVisible( !enabled );    
 }
 
-void soundKonverterView::loadFileList()
+void soundKonverterView::loadFileList( bool user )
 {
-    fileList->load( true );
+    fileList->load( user );
 }
 
-void soundKonverterView::saveFileList()
+void soundKonverterView::saveFileList( bool user )
 {
-    fileList->save( true );
+    fileList->save( user );
 }
 
 #include "soundkonverterview.moc"

@@ -54,6 +54,7 @@ private:
     QTime tScanStatus;
 
     void dragEnterEvent( QDragEnterEvent *event );
+    void dragMoveEvent( QDragMoveEvent *event );
     void dropEvent( QDropEvent *event );
 
     void resizeEvent( QResizeEvent *event );
@@ -71,6 +72,8 @@ private:
     int processedTime;
     
 //     QList<ReplayGainFileListItem*> processedItems;
+
+    QTreeWidgetItem *lastAlbumItem;
     
     QMenu *contextMenu;
     KAction *collapseAction;
@@ -79,6 +82,7 @@ private:
 //     KAction *stopAction;
     KAction *removeAction;
 //     KAction* paste;
+    KAction *newAction;
 
     void processNextFile();
     int processingCount();

@@ -30,9 +30,7 @@ public:
         CopyStructure = 3
     };
 
-    /**
-     * Constructor
-     */
+    /** Constructor */
     OutputDirectory( Config *_config, QWidget *parent = 0 );
 
     Mode mode();
@@ -41,14 +39,12 @@ public:
     void setDirectory( const QString& );
 
     static KUrl calcPath( FileListItem *fileListItem, Config *config, QString extension = "" );
-    static QString changeExtension( const QString& filename, const QString& extension );
-    static QString uniqueFileName( const QString& filename );
-    static QString makePath( const QString& path );
+    static KUrl changeExtension( const KUrl& url, const QString& extension );
+    static KUrl uniqueFileName( const KUrl& url );
+    static KUrl makePath( const KUrl& url );
     static QString vfatPath( const QString& path );
 
-    /**
-     * Destructor
-     */
+    /** Destructor */
     virtual ~OutputDirectory();
 
 public slots:

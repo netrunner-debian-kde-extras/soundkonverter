@@ -233,6 +233,27 @@ QStringList PluginLoader::formatList( Possibilities possibilities, CompressionTy
 
     list = set.toList();
     list.sort();
+    
+    QStringList importantCodecs;
+    importantCodecs += "ogg vorbis";
+    importantCodecs += "mp3";
+    importantCodecs += "flac";
+    importantCodecs += "aac";
+    importantCodecs += "wma";
+    importantCodecs += "speex";
+    int listIterator = 0;
+    for( int i=0; i<importantCodecs.count(); i++ )
+    {
+        if( list.contains(importantCodecs.at(i)) )
+        {
+            list.move( list.indexOf(importantCodecs.at(i)), listIterator++ );
+        }
+    }
+    if( list.contains("wav") )
+    {
+        list.move( list.indexOf("wav"), list.count()-1 );
+    }
+    
     return list;
 }
 
@@ -504,12 +525,21 @@ QMap<QString,QStringList> PluginLoader::decodeProblems()
 {
     QMap<QString,QStringList> problems;
     QStringList errorList;
-  
+    QStringList enabledCodecs;
+    
     for( int i=0; i<conversionPipeTrunks.size(); i++ )
     {
-        if( !conversionPipeTrunks.at(i).enabled && !conversionPipeTrunks.at(i).problemInfo.isEmpty() && !problems.value(conversionPipeTrunks.at(i).codecFrom).contains(conversionPipeTrunks.at(i).problemInfo) )
+        if( conversionPipeTrunks.at(i).enabled )
         {
-              problems[conversionPipeTrunks.at(i).codecFrom] += conversionPipeTrunks.at(i).problemInfo;
+            enabledCodecs += conversionPipeTrunks.at(i).codecFrom;
+        }
+    }
+
+    for( int i=0; i<conversionPipeTrunks.size(); i++ )
+    {
+        if( !conversionPipeTrunks.at(i).enabled && !conversionPipeTrunks.at(i).problemInfo.isEmpty() && !problems.value(conversionPipeTrunks.at(i).codecFrom).contains(conversionPipeTrunks.at(i).problemInfo) && !enabledCodecs.contains(conversionPipeTrunks.at(i).codecFrom) )
+        {
+            problems[conversionPipeTrunks.at(i).codecFrom] += conversionPipeTrunks.at(i).problemInfo;
         }
     }
 
@@ -520,10 +550,19 @@ QMap<QString,QStringList> PluginLoader::encodeProblems()
 {
     QMap<QString,QStringList> problems;
     QStringList errorList;
-  
+    QStringList enabledCodecs;
+    
     for( int i=0; i<conversionPipeTrunks.size(); i++ )
     {
-        if( !conversionPipeTrunks.at(i).enabled && !conversionPipeTrunks.at(i).problemInfo.isEmpty() && !problems.value(conversionPipeTrunks.at(i).codecTo).contains(conversionPipeTrunks.at(i).problemInfo) )
+        if( conversionPipeTrunks.at(i).enabled )
+        {
+            enabledCodecs += conversionPipeTrunks.at(i).codecTo;
+        }
+    }
+
+    for( int i=0; i<conversionPipeTrunks.size(); i++ )
+    {
+        if( !conversionPipeTrunks.at(i).enabled && !conversionPipeTrunks.at(i).problemInfo.isEmpty() && !problems.value(conversionPipeTrunks.at(i).codecTo).contains(conversionPipeTrunks.at(i).problemInfo) && !enabledCodecs.contains(conversionPipeTrunks.at(i).codecTo) )
         {
               problems[conversionPipeTrunks.at(i).codecTo] += conversionPipeTrunks.at(i).problemInfo;
         }

@@ -31,14 +31,10 @@ class OptionsLayer : public QWidget
 {
     Q_OBJECT
 public:
-    /**
-     * Constructor
-     */
+    /** Constructor */
     OptionsLayer( Config *config, QWidget *parent );
 
-    /**
-     * Destructor
-     */
+    /** Destructor */
     virtual ~OptionsLayer();
 
     void fadeIn();

@@ -71,7 +71,6 @@ Options::Options( Config *_config, const QString& text, QWidget *parent )
     {
         profile = config->data.general.defaultProfile;
     }
-    
     if( config->customProfiles().indexOf(profile) != -1 )
     {
         optionsDetailed->loadCustomProfile( profile );
@@ -113,6 +112,7 @@ bool Options::setCurrentConversionOptions( ConversionOptions *options )
 void Options::simpleOutputDirectoryModeChanged( int mode )
 {
     if(optionsDetailed && optionsDetailed->outputDirectory) optionsDetailed->outputDirectory->setMode( (OutputDirectory::Mode)mode );
+    config->data.general.lastOutputDirectoryMode = mode;
 }
 
 void Options::simpleOutputDirectoryChanged( const QString& directory )
@@ -144,6 +144,7 @@ void Options::simpleOptionsChanged()
 void Options::detailedOutputDirectoryModeChanged( int mode )
 {
 //     if(optionsSimple && optionsSimple->outputDirectory) optionsSimple->outputDirectory->setMode( (OutputDirectory::Mode)mode );
+    config->data.general.lastOutputDirectoryMode = mode;
 }
 
 void Options::detailedOutputDirectoryChanged( const QString& directory )

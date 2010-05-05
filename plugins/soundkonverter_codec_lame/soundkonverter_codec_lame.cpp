@@ -56,7 +56,7 @@ QList<ConversionPipeTrunk> soundkonverter_codec_lame::codecTable()
     newTrunk.codecTo = "mp3";
     newTrunk.rating = 100;
     newTrunk.enabled = ( binaries["lame"] != "" );
-    newTrunk.problemInfo = i18n("In order to encode mp3 files, you need to install 'lame'.\nSince mp3 is a patented file format, lame may not be included in the default installation of your distribution.\nMany distributions offer lame in an additional software repository.");
+    newTrunk.problemInfo = i18n("In order to encode/decode mp3 files, you need to install 'lame'.\nSince mp3 is a patented file format, lame may not be included in the default installation of your distribution.\nMany distributions offer lame in an additional software repository.");
     newTrunk.data.hasInternalReplayGain = true;
     table.append( newTrunk );
 
@@ -139,7 +139,7 @@ bool soundkonverter_codec_lame::isConfigSupported( ActionType action )
     return true;
 }
 
-bool soundkonverter_codec_lame::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
+void soundkonverter_codec_lame::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
 {
     KDialog *dialog = new KDialog( parent );
 //     dialog->setCaption( i18n("Configure %s",global_plugin_name)  );

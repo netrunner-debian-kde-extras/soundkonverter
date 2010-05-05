@@ -111,9 +111,10 @@ public:
     /** the downloaded input file */
     KUrl tempInputUrl;
     /** the temp file for the pipe */
-    KUrl tempUrl;
+    KUrl tempConvertUrl;
     
-    void generateTempUrl( const QString& extension );
+//     void generateTempUrl( const QString& extension );
+    KUrl generateTempUrl( const QString& prefix, const QString& extension );
 
     /** what shall we do with the file? */
     Mode mode;

@@ -156,14 +156,31 @@ int soundkonverter_replaygain_mp3gain::apply( const KUrl::List& fileList, Replay
 float soundkonverter_replaygain_mp3gain::parseOutput( const QString& output )
 {
     //  9% of 45218064 bytes analyzed
+    // [1/10] 32% of 13066690 bytes analyzed
     
+    float progress = -1.0f;
+
+    QRegExp reg1("\\[(\\d+)/(\\d+)\\] (\\d+)%");
+    QRegExp reg2("(\\d+)%");
+    if( output.contains(reg1) )
+    {
+        float fraction = 1.0f/reg1.cap(2).toInt();
+        progress = 100*(reg1.cap(1).toInt()-1)*fraction + reg1.cap(3).toInt()*fraction;
+    }
+    else if( output.contains(reg2) )
+    {
+        progress = reg2.cap(1).toInt();
+    }
+    
+    return progress;
+/*
     if( output == "" || !output.contains("%") ) return -1.0f;
 
     QString data = output;
     int space = data.indexOf(" ") + 1;
     int percent = data.indexOf("%");
     data = data.mid( space, percent-space );
-    return data.toFloat();
+    return data.toFloat();*/
 }
 
 #include "soundkonverter_replaygain_mp3gain.moc"

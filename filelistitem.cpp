@@ -57,19 +57,19 @@ void FileListItemDelegate::paint( QPainter *painter, const QStyleOptionViewItem&
     {
         if (option.state & QStyle::State_Selected)
         {
-             //_option.palette.setColor( QPalette::Highlight, QColor(215,62,62) );
-             backgroundColor = QColor(215,62,62);
+            //_option.palette.setColor( QPalette::Highlight, QColor(215,62,62) );
+            backgroundColor = QColor(215,62,62);
         }
         else
         {
-             backgroundColor = QColor(255,234,234);
+            backgroundColor = QColor(255,234,234);
         }
     }
     else
     {
         if (option.state & QStyle::State_Selected)
         {
-             backgroundColor = option.palette.highlight().color();
+            backgroundColor = option.palette.highlight().color();
         }   
         else
         {

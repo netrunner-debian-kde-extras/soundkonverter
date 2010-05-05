@@ -26,7 +26,7 @@ public:
     /** This function is called, when a new instance of soundKonverter should be created */
     virtual int newInstance();
 
-private:
+// private:
     soundKonverter *mainWindow;
 };
 

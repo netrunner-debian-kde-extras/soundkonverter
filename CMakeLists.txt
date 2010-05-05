@@ -1,13 +1,47 @@
 project(soundkonverter)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+
 find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
 
-#find_package(Cdparanoia)
-#macro_log_feature(CDPARANOIA_FOUND "cdparanoia" "Reads digital audio directly from a CD, then writes the data to a file or pipe in several different formats" "http://www.xiph.org/paranoia/" FALSE "" "Required for building soundKonverter.")
+# find_package(Cdparanoia)
+#macro_log_feature(CDPARANOIA_FOUND "cdparanoia" "Reads digital audio directly from a CD, then writes the data to a file or pipe in several different formats" "http://www.xiph.org/paranoia/" FALSE "" "Required for building Audex.")
 
-include_directories(${KDE4_INCLUDES} ${QT_INCLUDES} /usr/include/taglib)
-#include_directories(${KDE4_INCLUDES} ${QT_INCLUDES} /usr/include/taglib ${CDPARANOIA_INCLUDE_DIR})
-#include_directories(${KDE4_INCLUDES} ${QT_INCLUDES} /usr/include/taglib)
+set(TAGLIB_MIN_VERSION "1.4")
+find_package(Taglib REQUIRED)
+
+# # Check if TagLib is built with ASF and MP4 support
+# include(CheckCXXSourceCompiles)
+# set(CMAKE_REQUIRED_INCLUDES "${TAGLIB_INCLUDES}")
+# set(CMAKE_REQUIRED_LIBRARIES "${TAGLIB_LIBRARIES}")
+# 
+# check_cxx_source_compiles("#include <asftag.h>
+# int main() { TagLib::ASF::Tag tag; return 0;}" TAGLIB_ASF_FOUND)
+# if( NOT TAGLIB_ASF_FOUND )
+#     message(FATAL_ERROR "TagLib does not have ASF support compiled in.")
+# endif( NOT TAGLIB_ASF_FOUND )
+# 
+# check_cxx_source_compiles("#include <mp4tag.h>
+# int main() { TagLib::MP4::Tag tag(0, 0); return 0;}" TAGLIB_MP4_FOUND)
+# if( NOT TAGLIB_MP4_FOUND )
+#     message(FATAL_ERROR "TagLib does not have MP4 support compiled in.")
+# endif( NOT TAGLIB_MP4_FOUND )
+# 
+# set(CMAKE_REQUIRED_INCLUDES)
+# set(CMAKE_REQUIRED_LIBRARIES)
+# 
+# set(TAGLIB-EXTRAS_MIN_VERSION "1.0")
+# find_package(Taglib-Extras REQUIRED)
+# 
+# include(CheckTagLibFileName)
+# 
+# check_taglib_filename(COMPLEX_TAGLIB_FILENAME)
+# 
+#
+
+
+include_directories(${KDE4_INCLUDES} ${QT_INCLUDES} ${TAGLIB_INCLUDES})
 
 add_subdirectory(plugins/soundkonverter_codec_lame)
 add_subdirectory(plugins/soundkonverter_codec_ogg)
@@ -27,7 +61,7 @@ set(soundkonvertercore_SRCS
 
 kde4_add_library(soundkonvertercore SHARED ${soundkonvertercore_SRCS})
 
-target_link_libraries(soundkonvertercore ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS})
+target_link_libraries(soundkonvertercore ${KDE4_KDEUI_LIBS} ${KDE4_KFILE_LIBS} ${KDE4_KIO_LIBS})
 #set_target_properties(soundkonvertercore PROPERTIES VERSION ${GENERIC_LIB_VERSION} SOVERSION ${GENERIC_LIB_SOVERSION} )
 install(TARGETS soundkonvertercore DESTINATION ${LIB_INSTALL_DIR})
 
@@ -36,8 +70,8 @@ install(TARGETS soundkonvertercore DESTINATION ${LIB_INSTALL_DIR})
 # ADD_DEFINITIONS(${TAGLIB_CFLAGS} -DQT_STL)
 
 set(soundkonverter_SRCS
-   audiocd/cdmanager.cpp
-   audiocd/paranoia.cpp
+#    audiocd/cdmanager.cpp
+#    audiocd/paranoia.cpp
    configdialog/configdialog.cpp
    configdialog/configpagebase.cpp
    configdialog/configgeneralpage.cpp
@@ -71,8 +105,10 @@ set(soundkonverter_SRCS
    convert.cpp
    logger.cpp
    logviewer.cpp
+   aboutplugins.cpp
    conversionoptionsmanager.cpp
    global.cpp
+   codecproblems.cpp
  )
 
 #kde4_automoc(${soundkonverter_SRCS})
@@ -83,9 +119,7 @@ set(soundkonverter_SRCS
 
 kde4_add_executable(soundkonverter ${soundkonverter_SRCS})
 
-# target_link_libraries(soundkonverter ${KDE4_KDEUI_LIBS} ${KDE4_KFILE_LIBS} /usr/lib/libtag.so /usr/lib/libmediainfo.so soundkonvertercore )
-#target_link_libraries(soundkonverter ${KDE4_KDEUI_LIBS} ${KDE4_KFILE_LIBS} /usr/lib/libtag.so ${CDPARANOIA_LIBRARIES} soundkonvertercore)
-target_link_libraries(soundkonverter ${KDE4_KDEUI_LIBS} ${KDE4_KFILE_LIBS} /usr/lib/libtag.so /usr/lib/libcdda_paranoia.so soundkonvertercore)
+target_link_libraries(soundkonverter ${KDE4_KDEUI_LIBS} ${KDE4_KFILE_LIBS} ${KDE4_KIO_LIBS} ${KDE4_SOLID_LIBS} ${TAGLIB_LIBRARIES} kcddb kcompactdisc soundkonvertercore)
 
 install(TARGETS soundkonverter DESTINATION ${BIN_INSTALL_DIR})
 

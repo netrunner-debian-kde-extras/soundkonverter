@@ -42,6 +42,7 @@ void Config::load()
     data.general.lastProfile = group.readEntry( "lastProfile", i18n("High") );
     data.general.defaultFormat = group.readEntry( "defaultFormat", i18n("Last used") );
     data.general.lastFormat = group.readEntry( "lastFormat", "ogg vorbis" );
+    data.general.lastOutputDirectoryMode = group.readEntry( "lastOutputDirectoryMode", 0 );
     data.general.specifyOutputDirectory = group.readEntry( "specifyOutputDirectory", QDir::homePath() + "/soundKonverter" );
     data.general.metaDataOutputDirectory = group.readEntry( "metaDataOutputDirectory", QDir::homePath() + "/soundKonverter/%b/%d - %n - %a - %t" );
     data.general.copyStructureOutputDirectory = group.readEntry( "copyStructureOutputDirectory", QDir::homePath() + "/soundKonverter" );
@@ -370,6 +371,7 @@ void Config::save()
     group.writeEntry( "lastProfile", data.general.lastProfile );
     group.writeEntry( "defaultFormat", data.general.defaultFormat );
     group.writeEntry( "lastFormat", data.general.lastFormat );
+    group.writeEntry( "lastOutputDirectoryMode", data.general.lastOutputDirectoryMode );
     group.writeEntry( "specifyOutputDirectory", data.general.specifyOutputDirectory );
     group.writeEntry( "metaDataOutputDirectory", data.general.metaDataOutputDirectory );
     group.writeEntry( "copyStructureOutputDirectory", data.general.copyStructureOutputDirectory );

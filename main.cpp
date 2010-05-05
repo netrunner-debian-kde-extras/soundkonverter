@@ -1,10 +1,13 @@
 
 
 #include "soundkonverterapp.h"
+#include "soundkonverter.h"
 
-#include <kuniqueapplication.h>
-#include <kaboutdata.h>
-#include <kcmdlineargs.h>
+#include <kdeui_export.h>
+#include <KMainWindow>
+#include <KUniqueApplication>
+#include <KAboutData>
+#include <KCmdLineArgs>
 #include <KLocale>
 
 
@@ -33,6 +36,7 @@ int main(int argc, char **argv)
     options.add( "format <format>", ki18n("Add all files using the given format") );
     options.add( "output <directory>", ki18n("Output all files to <directory>") );
     options.add( "invisible", ki18n("Start soundKonverter invisible") );
+    options.add( "autostart", ki18n("Start the conversion immediately (enabled when using '--invisible')") );
     options.add( "autoclose", ki18n("Close soundKonverter after all files are converted (enabled when using '--invisible')") );
     options.add( "command <command>", ki18n("Execute <command> after each file has been converted") );
     options.add( "+[files]", ki18n("Audio file(s) to append to the file list") );
@@ -44,7 +48,12 @@ int main(int argc, char **argv)
         return 0;
     }
 
+//     soundKonverterApp app;
+    
     soundKonverterApp app;
+    if ( app.isSessionRestored() ) {
+        kRestoreMainWindows< soundKonverter >();
+    }
 
 //     registerTaglibPlugins();
 

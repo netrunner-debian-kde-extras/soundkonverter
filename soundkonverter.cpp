@@ -9,20 +9,26 @@
 #include "configdialog/configdialog.h"
 #include "logger.h"
 #include "logviewer.h"
-#include "audiocd/cdmanager.h"
 #include "replaygainscanner/replaygainscanner.h"
+#include "aboutplugins.h"
 
 // #include <KAction>
 // #include <KStandardAction>
+// #include <KMessageBox>
 #include <KActionCollection>
-#include <KStatusNotifierItem>
 #include <KApplication>
 #include <KActionMenu>
 #include <KLocale>
 #include <KToolBar>
 #include <KIcon>
-// #include <KStandardDirs>
+#include <KStandardDirs>
+#include <KMenu>
 
+#if KDE_IS_VERSION(4,4,0)
+    #include <KStatusNotifierItem>
+#else
+    #include <KSystemTrayIcon>
+#endif
 
 soundKonverter::soundKonverter()
     : KXmlGuiWindow(),
@@ -40,7 +46,7 @@ soundKonverter::soundKonverter()
     config = new Config( logger, this );
     config->load();
 
-    cdManager = new CDManager( this );
+//     cdManager = new CDManager( this );
 
     m_view = new soundKonverterView( logger, config, cdManager, this );
     connect( m_view, SIGNAL(signalConversionStarted()), this, SLOT(conversionStarted()) );
@@ -59,6 +65,8 @@ soundKonverter::soundKonverter()
     // mainwindow to automatically save settings if changed: window size,
     // toolbar position, icon size, etc.
     setupGUI( ToolBar | Keys | Save | Create );
+        
+//     helpMenu()->addTitle(i18n("About plugins"));
 }
 
 soundKonverter::~soundKonverter()
@@ -68,13 +76,29 @@ soundKonverter::~soundKonverter()
     if( systemTray ) delete systemTray;
 }
 
+void soundKonverter::saveProperties( const KConfigGroup& )
+{
+    m_view->saveFileList( false );
+}
+    
+void soundKonverter::readProperties( const KConfigGroup& )
+{
+    m_view->loadFileList( false );
+}
+    
 void soundKonverter::showSystemTray()
 {
-    systemTray = new KStatusNotifierItem( this );
-    systemTray->setCategory( KStatusNotifierItem::ApplicationStatus );
-    systemTray->setStatus( KStatusNotifierItem::Active );
-    systemTray->setIconByName( "soundkonverter" );
-    systemTray->setToolTip( "soundkonverter", i18n("Waiting"), "" );
+    #if KDE_IS_VERSION(4,4,0)
+        systemTray = new KStatusNotifierItem( this );
+        systemTray->setCategory( KStatusNotifierItem::ApplicationStatus );
+        systemTray->setStatus( KStatusNotifierItem::Active );
+        systemTray->setIconByName( "soundkonverter" );
+        systemTray->setToolTip( "soundkonverter", i18n("Waiting"), "" );
+    #else
+        systemTray = new KSystemTrayIcon( this );
+        systemTray->setIcon( KIcon("soundkonverter") );
+        systemTray->setToolTip( i18n("Waiting") );
+    #endif
 }
 
 void soundKonverter::addConvertFiles( const KUrl::List& urls, const QString& profile, const QString& format, const QString& directory )
@@ -90,6 +114,7 @@ void soundKonverter::addReplayGainFiles( const KUrl::List& urls )
 
 void soundKonverter::ripCd( const QString& device )
 {
+//     KMessageBox::error( this, i18n("opening cd") );
     m_view->showCdDialog( device != "auto" ? device : "" );
 }
 
@@ -164,6 +189,9 @@ void soundKonverter::showLogViewer()
 
     logViewer->show();
     logViewer->raise();
+/*    AboutPlugins *dialog = new AboutPlugins( config, this );
+    dialog->exec();
+    delete dialog;*/
 }
 
 void soundKonverter::showReplayGainScanner()
@@ -174,33 +202,51 @@ void soundKonverter::showReplayGainScanner()
     replayGainScanner->raise();
 }
 
+void soundKonverter::startConversion()
+{
+    m_view->startConversion();
+}
+
 void soundKonverter::conversionStarted()
 {
     if( systemTray )
     {
-//         KStandardDirs *stdDirs = new KStandardDirs();
-//         systemTray->setIconByPixmap( QMovie(stdDirs->findResource("data","soundkonverter/images/systray.mng")) );
-//         delete stdDirs;
-//         systemTray->setIconByPixmap(  );
-        systemTray->setToolTip( "soundkonverter", i18n("Converting") + ": 0%", "" );
+        #if KDE_IS_VERSION(4,4,0)
+            systemTray->setToolTip( "soundkonverter", i18n("Converting") + ": 0%", "" );
+        #else
+//             systemTray->setMovie( QMovie(KStandardDirs::findResource("data","soundkonverter/images/systray.mng")) );
+            systemTray->setToolTip( i18n("Converting") + ": 0%" );
+        #endif
     }
 }
 
 void soundKonverter::conversionStopped()
 {
+    if( autoclose ) KApplication::kApplication()->quit(); // NOTE close app on conversion stop (may irritate the user when stopping the conversion)
+
     if( systemTray )
     {
-//         systemTray->setIconByName( "soundkonverter" );
-        systemTray->setToolTip( "soundkonverter", i18n("Finished"), "" );
+        #if KDE_IS_VERSION(4,4,0)
+//             systemTray->setIconByName( "soundkonverter" );
+            systemTray->setToolTip( "soundkonverter", i18n("Finished"), "" );
+        #else
+//             systemTray->setIcon( KIcon("soundkonverter") );
+            systemTray->setToolTip( i18n("Finished") );
+        #endif
     }
-
-    if( autoclose ) kapp->quit(); // NOTE close app on conversion stop (may irritate the user when stopping the conversion)
 }
 
 void soundKonverter::progressChanged(const QString& progress)
 {
     setWindowTitle( progress + " - soundKonverter" );
-    if( systemTray ) systemTray->setToolTip( "soundkonverter", i18n("Converting") + ": " + progress, "" );
+    if( systemTray )
+    {
+        #if KDE_IS_VERSION(4,4,0)
+            systemTray->setToolTip( "soundkonverter", i18n("Converting") + ": " + progress, "" );
+        #else
+            systemTray->setToolTip( i18n("Converting") + ": " + progress );
+        #endif
+    }
 }
 
 

@@ -3,7 +3,7 @@ This is a preview version of soundKonverter 1.0
 It is meant only for showing technical changes and is not fully functional.
 
 Please remember that this version includes some known bugs and uncompleted features, so please keep that in mind if you write me a note wich you are welcome to do.
-This verion ist menat to show where soundKonverter is going and if you have suggestions please contact me.
+This version st menat to show where soundKonverter is going and if you have suggestions please contact me.
 
 Currently there are: 3 conversion plugins for vorbis tools, lame and ffmpeg; 1 replaygain plugin for vorbisgain; 1 ripper plugin for cdparanoia
 More plugins to come.

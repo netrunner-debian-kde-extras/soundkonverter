@@ -2,6 +2,7 @@
 #include "diropener.h"
 #include "../config.h"
 #include "../options.h"
+#include "../codecproblems.h"
 
 #include <QLayout>
 #include <QLabel>
@@ -206,34 +207,21 @@ void DirOpener::selectNoneClicked()
 
 void DirOpener::showHelp()
 {
-    QStringList messageList;
-    QString codecName;
+    QList<CodecProblems::Problem> problemList;
     
     QMap<QString,QStringList> problems = ( mode == Convert ) ? config->pluginLoader()->decodeProblems() : config->pluginLoader()->replaygainProblems();
     for( int i=0; i<problems.count(); i++ )
     {
-        codecName = problems.keys().at(i);
-        if( codecName != "wav" )
+        CodecProblems::Problem problem;
+        problem.codecName = problems.keys().at(i);
+        if( problem.codecName != "wav" )
         {
-            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).join("\n<b>or</b>\n");
+            problem.solutions = problems.value(problem.codecName);
+            problemList += problem;
         }
     }
-    
-    if( messageList.isEmpty() )
-    {
-        messageList += i18n("soundKonverter couldn't find any missing packages.\nMaybe you need to install an additional plugin via the packagemanager of your distribution.");
-    }
-    else
-    {
-        messageList.prepend( i18n("Some of the installed plugins aren't working because they are missing additional programs.\nPossible solutions are listed below.") );
-    }
-    
-    QMessageBox *messageBox = new QMessageBox( this );
-    messageBox->setIcon( QMessageBox::Information );
-    messageBox->setWindowTitle( i18n("Missing backends") );
-    messageBox->setText( messageList.join("\n\n").replace("\n","<br>") );
-    messageBox->setTextFormat( Qt::RichText );
-    messageBox->exec();
+    CodecProblems *problemsDialog = new CodecProblems( CodecProblems::Debug, problemList, this );
+    problemsDialog->exec();
 }
 
 

@@ -3,6 +3,7 @@
 
 #include "logger.h"
 #include "config.h"
+#include "codecproblems.h"
 
 #include <QResizeEvent>
 #include <QGridLayout>
@@ -22,9 +23,11 @@ ReplayGainFileList::ReplayGainFileList( Config *_config, Logger *_logger, QWidge
 
     queue = false;
     killed = false;
+    
+    lastAlbumItem = 0;
 
     setAcceptDrops( true );
-    setDragEnabled( false );
+    setDragEnabled( true );
 
     setColumnCount( 3 );
     QStringList labels;
@@ -66,6 +69,8 @@ ReplayGainFileList::ReplayGainFileList( Config *_config, Logger *_logger, QWidge
 //     actionCollection()->addAction("remove_file", removeAction);
     connect( removeAction, SIGNAL(triggered()), this, SLOT(removeSelectedItems()) );
 //     paste = new KAction( i18n("Paste"), "editpaste", 0, this, 0, actionCollection, "paste" );  // TODO paste
+    newAction = new KAction( KIcon("file-new"), i18n("New album"), this );
+//     connect( newAction, SIGNAL(triggered()), this, SLOT(newAlbum()) );
 
     contextMenu = new QMenu( this );
     contextMenu->addAction( collapseAction );
@@ -73,6 +78,7 @@ ReplayGainFileList::ReplayGainFileList( Config *_config, Logger *_logger, QWidge
     contextMenu->addSeparator();
     contextMenu->addAction( removeAction );
     //contextMenu->addAction( paste );
+    contextMenu->addAction( newAction );
 //     contextMenu->addSeparator();
 //     contextMenu->addAction( startAction );
 //     contextMenu->addAction( stopAction );
@@ -95,7 +101,12 @@ ReplayGainFileList::~ReplayGainFileList()
 
 void ReplayGainFileList::dragEnterEvent( QDragEnterEvent *event )
 {
-    if( event->mimeData()->hasFormat("text/uri-list") ) event->acceptProposedAction();
+    if( event->mimeData()->hasFormat("text/uri-list") || event->source() == this ) event->acceptProposedAction();
+}
+
+void ReplayGainFileList::dragMoveEvent( QDragMoveEvent *event )
+{
+    if( itemAt(event->pos()) && itemAt(event->pos()) && static_cast<ReplayGainFileListItem*>(itemAt(event->pos()))->type!=ReplayGainFileListItem::Track ) QTreeWidget::dragMoveEvent(event);
 }
 
 void ReplayGainFileList::dropEvent( QDropEvent *event )
@@ -103,88 +114,160 @@ void ReplayGainFileList::dropEvent( QDropEvent *event )
     QList<QUrl> q_urls = event->mimeData()->urls();
     KUrl::List k_urls;
     KUrl::List k_urls_dirs;
-    QString codecName;
     QStringList errorList;
     QMap< QString, QList<QStringList> > problems;
-    QStringList messageList;
     QString fileName;
-    QStringList affectedFiles;
     
-    for( int i=0; i<q_urls.size(); i++ )
+    if( event->source() == this )
     {
-        codecName = config->pluginLoader()->getCodecFromFile( q_urls.at(i) );
-
-        if( codecName == "inode/directory" )
+        QTreeWidgetItem *destination = itemAt(event->pos());
+        
+        if( !destination || static_cast<ReplayGainFileListItem*>(destination)->type!=ReplayGainFileListItem::Track )
         {
-            k_urls_dirs += q_urls.at(i);
+//             QList<QTreeWidgetItem*> parents;
+//             QList<QTreeWidgetItem*> children = selectedItems();
+//             for( int i=0; i<children.count(); i++ )
+//             {
+//                 if( children.at(i)->parent() && static_cast<ReplayGainFileListItem*>(children.at(i))->parent()->type()==ReplayGainFileListItem::Album )
+//                 {
+//                     parents += children.at(i)->parent();
+//                 }
+//             }
+            QTreeWidget::dropEvent(event);
+//             for( int i=0; i<parents.count(); i++ )
+//             {
+//                 if( parents.at(i)->childCount() == 0 )
+//                 {
+//                     delete parents.at(i);
+//                 }
+//             }
         }
-        else if( config->pluginLoader()->canReplayGain(codecName,0,&errorList) )
+//         else if( destination && static_cast<ReplayGainFileListItem*>(destination)->type==ReplayGainFileListItem::Track )
+//         {
+//             QList<QTreeWidgetItem*> sources = selectedItems();
+//             for( int i=0; i<sources.count(); i++ )
+//             {
+//                 if( sources.at(i)->parent() && static_cast<ReplayGainFileListItem*>(sources.at(i))->parent()->type()==ReplayGainFileListItem::Album )
+//                 {
+//                     for( int j=0; j<sources.at(i)->parent()->childCount(); j++ )
+//                     {
+//                         if( sources.at(i)->parent()->child(j) == sources.at(i) ) destination->parent()->addChild( sources.at(i)->parent()->takeChild(j) );
+//                     }
+//                 }
+//                 else
+//                 {
+//                     for( int j=0; j<topLevelItemCount(); j++ )
+//                     {
+//                         if( topLevelItem(j) == sources.at(i) ) destination->parent()->addChild( takeTopLevelItem(j) );
+//                     }
+//                 }
+//             }
+//         }
+        
+        for( int i=0; i<topLevelItemCount(); i++ )
         {
-            k_urls += q_urls.at(i);
-        }
-        else
-        {
-            fileName = KUrl(q_urls.at(i)).pathOrUrl();
-            if( codecName.isEmpty() ) codecName = fileName.right(fileName.length()-fileName.lastIndexOf(".")-1);
-            if( problems.value(codecName).count() < 2 )
+            ReplayGainFileListItem *item = topLevelItem(i);
+            if( item->type == ReplayGainFileListItem::Album )
             {
-                problems[codecName] += QStringList();
-                problems[codecName] += QStringList();
+                if( item->childCount() == 0 )
+                {
+                    delete item;
+                    i--;
+                }
             }
-            problems[codecName][0] += fileName;
-            if( !errorList.isEmpty() )
+        }
+    }
+    else
+    {
+        for( int i=0; i<q_urls.size(); i++ )
+        {
+            QString codecName = config->pluginLoader()->getCodecFromFile( q_urls.at(i) );
+
+            if( codecName == "inode/directory" )
             {
-                problems[codecName][1] += errorList;
+                k_urls_dirs += q_urls.at(i);
+            }
+            else if( config->pluginLoader()->canReplayGain(codecName,0,&errorList) )
+            {
+                k_urls += q_urls.at(i);
             }
             else
             {
-                problems[codecName][1] += i18n("This file type is unknown to soundKonverter.\nMaybe you need to install an additional soundKonverter plugin.\nYou should have a look at your distribution's package manager for this.");
+                fileName = KUrl(q_urls.at(i)).pathOrUrl();
+                if( codecName.isEmpty() ) codecName = fileName.right(fileName.length()-fileName.lastIndexOf(".")-1);
+                if( problems.value(codecName).count() < 2 )
+                {
+                    problems[codecName] += QStringList();
+                    problems[codecName] += QStringList();
+                }
+                problems[codecName][0] += fileName;
+                if( !errorList.isEmpty() )
+                {
+                    problems[codecName][1] += errorList;
+                }
+                else
+                {
+                    problems[codecName][1] += i18n("This file type is unknown to soundKonverter.\nMaybe you need to install an additional soundKonverter plugin.\nYou should have a look at your distribution's package manager for this.");
+                }
             }
         }
-    }
 
-    for( int i=0; i<problems.count(); i++ )
-    {
-        codecName = problems.keys().at(i);
-        if( codecName != "wav" )
+        QList<CodecProblems::Problem> problemList;
+        for( int i=0; i<problems.count(); i++ )
         {
-            problems[codecName][1].removeDuplicates();
-            affectedFiles.clear();
-            if( problems.value(codecName).at(0).count() <= 3 )
+            CodecProblems::Problem problem;
+            problem.codecName = problems.keys().at(i);
+            if( problem.codecName != "wav" )
             {
-                affectedFiles = problems.value(codecName).at(0);
+                #if QT_VERSION >= 0x040500
+                    problems[problem.codecName][1].removeDuplicates();
+                #else
+                    QStringList found;
+                    for( int j=0; j<problems.value(problem.codecName).at(1).count(); j++ )
+                    {
+                        if( found.contains(problems.value(problem.codecName).at(1).at(j)) )
+                        {
+                            problems[problem.codecName][1].removeAt(j);
+                            j--;
+                        }
+                        else
+                        {
+                            found += problems.value(problem.codecName).at(1).at(j);
+                        }
+                    }
+                #endif
+                problem.solutions = problems.value(problem.codecName).at(1);
+                if( problems.value(problem.codecName).at(0).count() <= 3 )
+                {
+                    problem.affectedFiles = problems.value(problem.codecName).at(0);
+                }
+                else
+                {
+                    problem.affectedFiles += problems.value(problem.codecName).at(0).at(0);
+                    problem.affectedFiles += problems.value(problem.codecName).at(0).at(1);
+                    problem.affectedFiles += i18n("... and %1 more files",problems.value(problem.codecName).at(0).count()-3);
+                }
+                problemList += problem;
             }
-            else
-            {
-                affectedFiles += problems.value(codecName).at(0).at(0);
-                affectedFiles += problems.value(codecName).at(0).at(1);
-                affectedFiles += i18n("... and %1 more files",problems.value(codecName).at(0).count()-3);
-            }
-            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).at(1).join("\n<b>or</b>\n") + i18n("\n\nAffected files:\n") + affectedFiles.join("\n");
         }
-    }
-    
-    if( !messageList.isEmpty() )
-    {
-        messageList.prepend( i18n("Replay Gain isn't supported for some files.\nPossible solutions are listed below.") );
-        QMessageBox *messageBox = new QMessageBox( this );
-        messageBox->setIcon( QMessageBox::Information );
-        messageBox->setWindowTitle( i18n("Missing backends") );
-        messageBox->setText( messageList.join("\n\n").replace("\n","<br>") );
-        messageBox->setTextFormat( Qt::RichText );
-        messageBox->exec();
-    }
 
-    if( k_urls.count() > 0 )
-    {
-        addFiles( k_urls );
-    }
-    for( int i=0; i<k_urls_dirs.count(); i++ )
-    {
-        addDir( k_urls_dirs.at(i), true, config->pluginLoader()->formatList(PluginLoader::ReplayGain,PluginLoader::CompressionType(PluginLoader::Lossy|PluginLoader::Lossless|PluginLoader::Hybrid)) );
-    }
+        if( problemList.count() > 0 )
+        {
+            CodecProblems *problemsDialog = new CodecProblems( CodecProblems::ReplayGain, problemList, this );
+            problemsDialog->exec();
+        }
 
-    event->acceptProposedAction();
+        if( k_urls.count() > 0 )
+        {
+            addFiles( k_urls );
+        }
+        for( int i=0; i<k_urls_dirs.count(); i++ )
+        {
+            addDir( k_urls_dirs.at(i), true, config->pluginLoader()->formatList(PluginLoader::ReplayGain,PluginLoader::CompressionType(PluginLoader::Lossy|PluginLoader::Lossless|PluginLoader::Hybrid)) );
+        }
+
+        event->acceptProposedAction();
+    }
 }
 
 void ReplayGainFileList::resizeEvent( QResizeEvent *event )
@@ -267,7 +350,7 @@ void ReplayGainFileList::addFiles( const KUrl::List& fileList, QString codecName
             }
         }
 
-                TagData *tags = config->tagEngine()->readTags( fileList.at(i) );
+        TagData *tags = config->tagEngine()->readTags( fileList.at(i) );
 
         if( tags && tags->album.simplified() != "" )
         {
@@ -293,12 +376,14 @@ void ReplayGainFileList::addFiles( const KUrl::List& fileList, QString codecName
             if( !newItem )
             {
                 // create album element
-                newItem = new ReplayGainFileListItem( this );
+                newItem = new ReplayGainFileListItem( this, lastAlbumItem );
                 newItem->type = ReplayGainFileListItem::Album;
                 newItem->codecName = codecName;
                 newItem->samplingRate = samplingRate;
                 newItem->albumName = tags->album;
                 newItem->setExpanded( true );
+                newItem->setFlags( newItem->flags() ^ Qt::ItemIsDragEnabled );
+                lastAlbumItem = newItem;
                 updateItem( newItem );
                 // create track element
                 newItem = new ReplayGainFileListItem( newItem );
@@ -682,7 +767,7 @@ void ReplayGainFileList::showContextMenu( const QPoint& point )
     ReplayGainFileListItem *item = (ReplayGainFileListItem*)itemAt( point );
 
     // if item is null, we can abort here
-    if( !item ) return;
+    //if( !item ) return;
 
     // add a tilte to our context manu
     //contextMenu->insertTitle( static_cast<FileListItem*>(item)->fileName ); // TODO sqeeze or something else
@@ -690,7 +775,7 @@ void ReplayGainFileList::showContextMenu( const QPoint& point )
     // TODO implement pasting, etc.
 
     // is this file (of our item) beeing converted at the moment?
-    if( item->state != ReplayGainFileListItem::Processing )
+    if( item && item->state != ReplayGainFileListItem::Processing )
     {
         removeAction->setVisible( true );
 //         startAction->setVisible( true );

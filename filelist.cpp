@@ -6,7 +6,8 @@
 #include "optionslayer.h"
 #include "core/conversionoptions.h"
 #include "outputdirectory.h"
-#include "audiocd/cdmanager.h"
+// #include "audiocd/cdmanager.h"
+#include "codecproblems.h"
 
 #include <KLocale>
 #include <KIcon>
@@ -24,10 +25,10 @@
 #include <KStandardDirs>
 
 
-FileList::FileList( Config *_config, CDManager *_cdManager, QWidget *parent )
+FileList::FileList( Config *_config, /*CDManager *_cdManager,*/ QWidget *parent )
     : QTreeWidget( parent ),
-    config( _config ),
-    cdManager( _cdManager )
+    config( _config )/*,
+    cdManager( _cdManager )*/
 {
     queue = false;
     notify = "";
@@ -98,6 +99,8 @@ FileList::FileList( Config *_config, CDManager *_cdManager, QWidget *parent )
     connect( this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)) );
 
     connect( this, SIGNAL(itemSelectionChanged()), this, SLOT(itemsSelected()) );
+
+    if( QFile::exists(KStandardDirs::locateLocal("data","soundkonverter/filelist_autosave.xml")) ) load( false );
 }
 
 FileList::~FileList()
@@ -117,6 +120,9 @@ FileList::~FileList()
         // TODO else stop item first
     }
     }*/
+
+    QFile listFile( KStandardDirs::locateLocal("data","soundkonverter/filelist_autosave.xml") );
+    listFile.remove();
 }
 
 void FileList::dragEnterEvent( QDragEnterEvent *event )
@@ -128,16 +134,14 @@ void FileList::dropEvent( QDropEvent *event )
 {
     QList<QUrl> q_urls = event->mimeData()->urls();
     KUrl::List k_urls;
-    QString codecName;
     QStringList errorList;
+    //    codec    @0 files @1 solutions
     QMap< QString, QList<QStringList> > problems;
-    QStringList messageList;
     QString fileName;
-    QStringList affectedFiles;
     
     for( int i=0; i<q_urls.size(); i++ )
     {
-        codecName = config->pluginLoader()->getCodecFromFile( q_urls.at(i) );
+        QString codecName = config->pluginLoader()->getCodecFromFile( q_urls.at(i) );
 
         if( codecName == "inode/directory" || config->pluginLoader()->canDecode(codecName,&errorList) )
         {
@@ -164,36 +168,49 @@ void FileList::dropEvent( QDropEvent *event )
         }
     }
 
+    QList<CodecProblems::Problem> problemList;
     for( int i=0; i<problems.count(); i++ )
     {
-        codecName = problems.keys().at(i);
-        if( codecName != "wav" )
+        CodecProblems::Problem problem;
+        problem.codecName = problems.keys().at(i);
+        if( problem.codecName != "wav" )
         {
-            problems[codecName][1].removeDuplicates();
-            affectedFiles.clear();
-            if( problems.value(codecName).at(0).count() <= 3 )
+            #if QT_VERSION >= 0x040500
+                problems[problem.codecName][1].removeDuplicates();
+            #else
+                QStringList found;
+                for( int j=0; j<problems.value(problem.codecName).at(1).count(); j++ )
+                {
+                    if( found.contains(problems.value(problem.codecName).at(1).at(j)) )
+                    {
+                        problems[problem.codecName][1].removeAt(j);
+                        j--;
+                    }
+                    else
+                    {
+                        found += problems.value(problem.codecName).at(1).at(j);
+                    }
+                }
+            #endif
+            problem.solutions = problems.value(problem.codecName).at(1);
+            if( problems.value(problem.codecName).at(0).count() <= 3 )
             {
-                affectedFiles = problems.value(codecName).at(0);
+                problem.affectedFiles = problems.value(problem.codecName).at(0);
             }
             else
             {
-                affectedFiles += problems.value(codecName).at(0).at(0);
-                affectedFiles += problems.value(codecName).at(0).at(1);
-                affectedFiles += i18n("... and %1 more files",problems.value(codecName).at(0).count()-3);
+                problem.affectedFiles += problems.value(problem.codecName).at(0).at(0);
+                problem.affectedFiles += problems.value(problem.codecName).at(0).at(1);
+                problem.affectedFiles += i18n("... and %1 more files",problems.value(problem.codecName).at(0).count()-3);
             }
-            messageList += "<b>Possible solutions for " + codecName + "</b>:\n" + problems.value(codecName).at(1).join("\n<b>or</b>\n") + i18n("\n\nAffected files:\n") + affectedFiles.join("\n");
+            problemList += problem;
         }
     }
     
-    if( !messageList.isEmpty() )
+    if( problemList.count() > 0 )
     {
-        messageList.prepend( i18n("Some files can't be decoded.\nPossible solutions are listed below.") );
-        QMessageBox *messageBox = new QMessageBox( this );
-        messageBox->setIcon( QMessageBox::Information );
-        messageBox->setWindowTitle( i18n("Missing backends") );
-        messageBox->setText( messageList.join("\n\n").replace("\n","<br>") );
-        messageBox->setTextFormat( Qt::RichText );
-        messageBox->exec();
+        CodecProblems *problemsDialog = new CodecProblems( CodecProblems::Decode, problemList, this );
+        problemsDialog->exec();
     }
 
     if( k_urls.count() > 0 )
@@ -329,6 +346,7 @@ void FileList::addFiles( const KUrl::List& fileList, ConversionOptions *conversi
         newItem->tags = tagEngine->readTags( newItem->url );
 //         readTagsTimeCount += readTagsTime.elapsed();
         newItem->time = ( newItem->tags ) ? newItem->tags->length : 200.0f;
+//         if(newItem->tags) KMessageBox::information(this,"tags read, length: "+QString::number(newItem->tags->length));
 //         addTopLevelItemTime.start();
         addTopLevelItem( newItem );
 //         addTopLevelItemTimeCount += addTopLevelItemTime.elapsed();
@@ -341,6 +359,8 @@ void FileList::addFiles( const KUrl::List& fileList, ConversionOptions *conversi
     }
     
     emit fileCountChanged( topLevelItemCount() );
+    
+    if( QObject::sender() == optionsLayer ) save( false );
 }
 
 void FileList::addDir( const KUrl& directory, bool recursive, const QStringList& codecList, ConversionOptions *conversionOptions )
@@ -387,11 +407,40 @@ void FileList::addDir( const KUrl& directory, bool recursive, const QStringList&
 //     qDebug() << "\tpScanStatusTimeCount: " << pScanStatusTimeCount;
 }
 
-void FileList::addTracks( const QString& device, QList<int> trackList, ConversionOptions *conversionOptions )
+// void FileList::addTracks( int cdId, QList<int> trackList, ConversionOptions *conversionOptions )
+// {
+//     FileListItem *lastListItem = 0;
+// 
+//     for( int i=0; i<trackList.count(); i++ )
+//     {
+//         FileListItem *newItem = new FileListItem( this );
+//         if( i == 0 )
+//         {
+//             newItem->conversionOptionsId = config->conversionOptionsManager()->addConversionOptions( conversionOptions );
+//         }
+//         else
+//         {
+//             newItem->conversionOptionsId = config->conversionOptionsManager()->increaseReferences( lastListItem->conversionOptionsId );
+//         }
+//         lastListItem = newItem;
+//         newItem->codecName = "audio cd";
+//         newItem->notify = notify;
+//         newItem->track = trackList.at(i);
+//         newItem->tracks = cdManager->getTrackCount( cdId );
+//         newItem->device = cdManager->getDevice( cdId );
+//         newItem->tags = cdManager->getTags( cdId, trackList.at(i) );
+//         newItem->time = newItem->tags ? newItem->tags->length : 200.0f;
+//         addTopLevelItem( newItem );
+//         updateItem( newItem );
+//         emit timeChanged( newItem->time );
+//     }
+// 
+//     emit fileCountChanged( topLevelItemCount() );
+// }
+
+void FileList::addTracks( const QString& device, QList<int> trackList, int tracks, QList<TagData*> tagList, ConversionOptions *conversionOptions )
 {
     FileListItem *lastListItem = 0;
-    
-    int tracks = cdManager->getTrackCount( device );
 
     for( int i=0; i<trackList.count(); i++ )
     {
@@ -410,7 +459,7 @@ void FileList::addTracks( const QString& device, QList<int> trackList, Conversio
         newItem->track = trackList.at(i);
         newItem->tracks = tracks;
         newItem->device = device;
-        newItem->tags = cdManager->getTags( device, trackList.at(i) );
+        newItem->tags = tagList.at(i);
         newItem->time = newItem->tags ? newItem->tags->length : 200.0f;
         addTopLevelItem( newItem );
         updateItem( newItem );
@@ -616,7 +665,7 @@ void FileList::itemFinished( FileListItem *item, int state )
         item->setText( columnByName(i18n("State")), i18n("Failed") );
     }
 
-//     save( true );
+    save( false );
 
 // ---- NOTE double use of _item_ !!! --------------------------------------------------
 

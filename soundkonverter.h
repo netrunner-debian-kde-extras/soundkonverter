@@ -9,6 +9,7 @@
 
 #include <KXmlGuiWindow>
 #include <KUrl>
+#include <kdeversion.h>
 
 class soundKonverterView;
 class KToggleAction;
@@ -18,7 +19,13 @@ class Logger;
 class LogViewer;
 class CDManager;
 class ReplayGainScanner;
-class KStatusNotifierItem;
+
+#if KDE_IS_VERSION(4,4,0)
+    class KStatusNotifierItem;
+#else
+    class KSystemTrayIcon;
+#endif
+
 
 /**
  * This class serves as the main window for soundKonverter.  It handles the
@@ -43,6 +50,7 @@ public:
     void addReplayGainFiles( const KUrl::List& urls );
     void ripCd( const QString& device );
     void setAutoClose( bool enabled ) { autoclose = enabled; }
+    void startConversion();
 
 private slots:
     void showConfigDialog();
@@ -64,7 +72,14 @@ private:
     soundKonverterView *m_view;
     LogViewer *logViewer;
     
-    KStatusNotifierItem *systemTray;
+    #if KDE_IS_VERSION(4,4,0)
+        KStatusNotifierItem *systemTray;
+    #else
+        KSystemTrayIcon *systemTray;
+    #endif
+
+    void saveProperties( const KConfigGroup& );
+    void readProperties( const KConfigGroup& );
     
     bool autoclose;
 
