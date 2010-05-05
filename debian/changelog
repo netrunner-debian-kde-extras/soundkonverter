@@ -5,7 +5,7 @@ soundkonverter (0.9.90-1) unstable; urgency=low
   * Bump Standards-Version to 3.8.4 (no changes needed).
   * Moved to source version 3.0.
   * Added watch file.
-  * Added build dependency on libcdparanoia-dev. (Closes: #565850)
+  * Added missing build dependencies. (Closes: #565850)
   * Added information about git repository.
   * Added the word "Copyright" to copyright file to make lintian happy.
 
