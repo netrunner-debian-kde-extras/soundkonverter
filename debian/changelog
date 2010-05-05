@@ -1,3 +1,10 @@
+soundkonverter (0.9.90-1) unstable; urgency=low
+
+  * Added the word "Copyright" to copyright file to make lintian happy.
+  * Imported Upstream version 0.9.90
+
+ -- Michael Meskes <meskes@debian.org>  Wed, 05 May 2010 09:15:31 +0200
+
 soundkonverter (1.0.0~alpha2-1) experimental; urgency=low
 
   * Imported Upstream version 1.0.0alpha2
