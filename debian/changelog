@@ -1,3 +1,10 @@
+soundkonverter (0.9.91-1) unstable; urgency=low
+
+  * New Upstream version 0.9.91
+  * Bump Standards-Version to 3.9.0 (no changes needed).
+
+ -- Michael Meskes <meskes@debian.org>  Wed, 21 Jul 2010 11:28:07 +0200
+
 soundkonverter (0.9.90-1) unstable; urgency=low
 
   * Imported Upstream version 0.9.90 for KDE4 which compiles fine with
