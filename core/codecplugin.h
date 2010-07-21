@@ -5,8 +5,6 @@
 #include "backendplugin.h"
 #include "conversionoptions.h"
 
-#include <KUrl>
-
 class QWidget;
 class CodecPlugin;
 class TagData;
@@ -20,9 +18,9 @@ public:
     ~CodecPluginItem();
   
     struct Data {
-        enum Mode { Enc, Dec } mode;
+//         enum Mode { Enc, Dec } mode;
         int length;
-    } data; // obsolete
+    } data;
 };
 
 
@@ -58,6 +56,7 @@ public:
     
 protected:
     ConversionOptions *lastUsedConversionOptions;
+
 };
 
 #define K_EXPORT_SOUNDKONVERTER_CODEC(libname, classname) \

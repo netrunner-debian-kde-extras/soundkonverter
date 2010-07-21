@@ -85,7 +85,7 @@ int soundkonverter_ripper_cdparanoia::rip( const QString& device, int track, int
 
     if( track > 0 )
     {
-        (*newItem->process) << "cdparanoia";
+        (*newItem->process) << binaries["cdparanoia"];
         (*newItem->process) << "-e";
         (*newItem->process) << "-d";
         (*newItem->process) << device;

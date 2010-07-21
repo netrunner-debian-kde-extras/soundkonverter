@@ -136,7 +136,7 @@ OptionsDetailed::OptionsDetailed( Config* _config, QWidget* parent )
         plugins.at(i)->deleteCodecWidget( widgets.at(i) );
     }
 */
-    formatChanged( cFormat->currentText() );
+//     formatChanged( cFormat->currentText() );
 }
 
 
@@ -202,6 +202,7 @@ void OptionsDetailed::formatChanged( const QString& format )
             cPlugin->addItems( config->data.backends.codecs.at(i).encoders );
         }
     }
+//     cPlugin->setEnabled( format != "wav" );
 
     if( cPlugin->currentText() != oldEncoder ) encoderChanged( cPlugin->currentText() );
     else if( wPlugin ) qobject_cast<CodecWidget*>(wPlugin)->setCurrentFormat( cFormat->currentText() );
@@ -227,6 +228,7 @@ void OptionsDetailed::encoderChanged( const QString& encoder )
         qobject_cast<CodecWidget*>(wPlugin)->setCurrentFormat( cFormat->currentText() );
         grid->addWidget( wPlugin, 2, 0 );
         wPlugin->show();
+//         wPlugin->setVisible( cFormat->currentText() != "wav" );
     }
     
     QStringList errorList;

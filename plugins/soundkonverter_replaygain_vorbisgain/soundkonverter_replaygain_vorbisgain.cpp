@@ -3,15 +3,6 @@
 
 #include "soundkonverter_replaygain_vorbisgain.h"
 
-#include <QWidget>
-#include <QLayout>
-#include <QLabel>
-#include <QCheckBox>
-#include <KLocale>
-#include <KComboBox>
-#include <QSpinBox>
-#include <QGroupBox>
-#include <QSlider>
 
 soundkonverter_replaygain_vorbisgain::soundkonverter_replaygain_vorbisgain( QObject *parent, const QStringList& args  )
     : ReplayGainPlugin( parent )
@@ -66,13 +57,6 @@ BackendPlugin::FormatInfo soundkonverter_replaygain_vorbisgain::formatInfo( cons
         info.mimeTypes.append( "audio/vorbis" );
         info.extensions.append( "ogg" );
     }
-    else if( codecName == "wav" )
-    {
-        info.lossless = true;
-        info.description = i18n("Wave won't compress the audio stream.");
-        info.mimeTypes.append( "audio/x-wav" );
-        info.extensions.append( "wav" );
-    }
 
     return info;
 }
@@ -118,7 +102,7 @@ int soundkonverter_replaygain_vorbisgain::apply( const KUrl::List& fileList, Rep
     connect( newItem->process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(processExit(int,QProcess::ExitStatus)) );
 
 //     newItem->mode = mode;
-    (*newItem->process) << "vorbisgain";
+    (*newItem->process) << binaries["vorbisgain"];
     if( mode == ReplayGainPlugin::Add )
     {
         (*newItem->process) << "--album";

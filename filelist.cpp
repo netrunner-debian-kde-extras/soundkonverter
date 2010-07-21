@@ -17,6 +17,7 @@
 #include <QProgressBar>
 
 #include <QLayout>
+#include <QGridLayout>
 #include <QStringList>
 #include <QMenu>
 #include <QFile>
@@ -81,6 +82,7 @@ FileList::FileList( Config *_config, /*CDManager *_cdManager,*/ QWidget *parent 
     connect( stopAction, SIGNAL(triggered()), this, SLOT(killSelectedItems()) );
     removeAction = new KAction( KIcon("edit-delete"), i18n("Remove"), this );
 //     removeAction->setShortcut( Qt::Key_Delete );
+//     removeAction->setShortcut( QKeySequence(Qt::CTRL + Qt::Key_D) );
 //     removeAction->setShortcut( QKeySequence::Delete );
 //     actionCollection()->addAction("remove_file", removeAction);
     connect( removeAction, SIGNAL(triggered()), this, SLOT(removeSelectedItems()) );
@@ -99,8 +101,6 @@ FileList::FileList( Config *_config, /*CDManager *_cdManager,*/ QWidget *parent 
     connect( this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)) );
 
     connect( this, SIGNAL(itemSelectionChanged()), this, SLOT(itemsSelected()) );
-
-    if( QFile::exists(KStandardDirs::locateLocal("data","soundkonverter/filelist_autosave.xml")) ) load( false );
 }
 
 FileList::~FileList()
@@ -345,8 +345,8 @@ void FileList::addFiles( const KUrl::List& fileList, ConversionOptions *conversi
 //         readTagsTime.start();
         newItem->tags = tagEngine->readTags( newItem->url );
 //         readTagsTimeCount += readTagsTime.elapsed();
-        newItem->time = ( newItem->tags ) ? newItem->tags->length : 200.0f;
-//         if(newItem->tags) KMessageBox::information(this,"tags read, length: "+QString::number(newItem->tags->length));
+        newItem->time = ( newItem->tags && newItem->tags->length > 0 ) ? newItem->tags->length : 200.0f;
+//         KMessageBox::information(this,"tags read, length: "+QString::number(newItem->time));
 //         addTopLevelItemTime.start();
         addTopLevelItem( newItem );
 //         addTopLevelItemTimeCount += addTopLevelItemTime.elapsed();
@@ -366,17 +366,6 @@ void FileList::addFiles( const KUrl::List& fileList, ConversionOptions *conversi
 void FileList::addDir( const KUrl& directory, bool recursive, const QStringList& codecList, ConversionOptions *conversionOptions )
 {
     TimeCount = 0;
-//     entryListTimeCount = 0;
-//     fileInfoTimeCount = 0;
-//     getCodecFromFileTimeCount = 0;
-//     addFilesTimeCount = 0;
-//     newItemTimeCount = 0;
-//     addConversionOptionsTimeCount = 0;
-//     readTagsTimeCount = 0;
-//     addTopLevelItemTimeCount = 0;
-//     updateItemTimeCount = 0;
-//     timeChangedTimeCount = 0;
-//     pScanStatusTimeCount = 0;
 
     int conversionOptionsId = config->conversionOptionsManager()->addConversionOptions( conversionOptions );
 
@@ -394,49 +383,7 @@ void FileList::addDir( const KUrl& directory, bool recursive, const QStringList&
     pScanStatus->hide(); // hide the status bar, when the scan is done
     
     qDebug() << "TimeCount: " << TimeCount;
-//     qDebug() << "\tentryListTimeCount: " << entryListTimeCount;
-//     qDebug() << "\tfileInfoTimeCount: " << fileInfoTimeCount;
-//     qDebug() << "\tgetCodecFromFileTimeCount: " << getCodecFromFileTimeCount;
-//     qDebug() << "\taddFilesTimeCount: " << addFilesTimeCount;
-//     qDebug() << "\t\tnewItemTimeCount: " << newItemTimeCount;
-//     qDebug() << "\t\taddConversionOptionsTimeCount: " << addConversionOptionsTimeCount;
-//     qDebug() << "\t\treadTagsTimeCount: " << readTagsTimeCount;
-//     qDebug() << "\t\taddTopLevelItemTimeCount: " << addTopLevelItemTimeCount;
-//     qDebug() << "\t\tupdateItemTimeCount: " << updateItemTimeCount;
-//     qDebug() << "\t\ttimeChangedTimeCount: " << timeChangedTimeCount;
-//     qDebug() << "\tpScanStatusTimeCount: " << pScanStatusTimeCount;
 }
-
-// void FileList::addTracks( int cdId, QList<int> trackList, ConversionOptions *conversionOptions )
-// {
-//     FileListItem *lastListItem = 0;
-// 
-//     for( int i=0; i<trackList.count(); i++ )
-//     {
-//         FileListItem *newItem = new FileListItem( this );
-//         if( i == 0 )
-//         {
-//             newItem->conversionOptionsId = config->conversionOptionsManager()->addConversionOptions( conversionOptions );
-//         }
-//         else
-//         {
-//             newItem->conversionOptionsId = config->conversionOptionsManager()->increaseReferences( lastListItem->conversionOptionsId );
-//         }
-//         lastListItem = newItem;
-//         newItem->codecName = "audio cd";
-//         newItem->notify = notify;
-//         newItem->track = trackList.at(i);
-//         newItem->tracks = cdManager->getTrackCount( cdId );
-//         newItem->device = cdManager->getDevice( cdId );
-//         newItem->tags = cdManager->getTags( cdId, trackList.at(i) );
-//         newItem->time = newItem->tags ? newItem->tags->length : 200.0f;
-//         addTopLevelItem( newItem );
-//         updateItem( newItem );
-//         emit timeChanged( newItem->time );
-//     }
-// 
-//     emit fileCountChanged( topLevelItemCount() );
-// }
 
 void FileList::addTracks( const QString& device, QList<int> trackList, int tracks, QList<TagData*> tagList, ConversionOptions *conversionOptions )
 {
@@ -473,45 +420,60 @@ void FileList::updateItem( FileListItem *item )
 {
     if( !item ) return;
 
-    KUrl outputUrl = OutputDirectory::calcPath( item, config );
-    item->setText( columnByName(i18n("Output")), outputUrl.toLocalFile() );
+    KUrl outputUrl;
+    
+    if( !item->outputUrl.toLocalFile().isEmpty() )
+    {
+        outputUrl = item->outputUrl;
+    }
+    else
+    {
+        outputUrl = OutputDirectory::calcPath( item, config );
+    }
+//     if( QFile::exists(outputUrl.toLocalFile()) )
+//     {
+//         if( config->data.general.conflictHandling == Config::Data::General::ConflictHandling::NewFileName )
+//         {
+//             outputUrl = OutputDirectory::uniqueFileName( outputUrl );
+//         }
+//     }
+    item->setText( 2, outputUrl.toLocalFile() );
 
     if( !item->converting )
     {
         if( QFile::exists(outputUrl.toLocalFile()) )
         {
-            item->setText( columnByName(i18n("State")), i18n("Will be skipped") );
+            item->setText( 0, i18n("Will be skipped") );
         }
         else
         {
-            item->setText( columnByName(i18n("State")), i18n("Waiting") );
+            item->setText( 0, i18n("Waiting") );
         }
     }
     else
     {
-        item->setText( columnByName(i18n("State")), i18n("Converting") );
+        item->setText( 0, i18n("Converting") );
     }
 
     ConversionOptions *options = config->conversionOptionsManager()->getConversionOptions(item->conversionOptionsId);
-    if( options ) item->setText( columnByName(i18n("Quality")), options->profile );
+    if( options ) item->setText( 3, options->profile );
     
     if( item->track >= 0 )
     {
         if( item->tags )
         {
-            item->setText( columnByName(i18n("Input")), QString().sprintf("%02i",item->tags->track) + " - " + item->tags->artist + " - " + item->tags->title );
+            item->setText( 1, QString().sprintf("%02i",item->tags->track) + " - " + item->tags->artist + " - " + item->tags->title );
         }
         else // shouldn't be possible
         {
-            item->setText( columnByName(i18n("Input")), i18n("CD track %1").arg(item->track) );
+            item->setText( 1, i18n("CD track %1").arg(item->track) );
         }
     }
     else
     {
-        item->setText( columnByName(i18n("Input")), item->url.pathOrUrl() );
+        item->setText( 1, item->url.pathOrUrl() );
         //if( options ) item->setToolTip( 0, i18n("The file %1 will be converted from %2 to %3 using the %4 profile.\nIt will be saved to: %5").arg(item->url.pathOrUrl()).arg(item->codecName).arg(options->codecName).arg(options->profile).arg(outputUrl.toLocalFile()) );
     }
-
 }
 
 void FileList::updateItems( QList<FileListItem*> items )
@@ -522,15 +484,23 @@ void FileList::updateItems( QList<FileListItem*> items )
     }
 }
 
-int FileList::columnByName( const QString& name )
+void FileList::updateAllItems()
 {
-    QTreeWidgetItem *header = headerItem();
-
-    for( int i=0; i<columnCount(); ++i ) {
-        if( header->text(i) == name ) return i;
+    for( int i=0; i<topLevelItemCount(); i++ )
+    {
+        updateItem( topLevelItem(i) );
     }
-    return -1;
 }
+
+// int FileList::columnByName( const QString& name )
+// {
+//     QTreeWidgetItem *header = headerItem();
+// 
+//     for( int i=0; i<columnCount(); ++i ) {
+//         if( header->text(i) == name ) return i;
+//     }
+//     return -1;
+// }
 
 void FileList::startConversion()
 {
@@ -538,8 +508,8 @@ void FileList::startConversion()
     FileListItem *item;
     for( int i=0; i<topLevelItemCount(); i++ ) {
         item = topLevelItem( i );
-        if( !item->converting && item->text(columnByName(i18n("State"))) != i18n("Will be skipped") ) {
-            item->setText( columnByName(i18n("State")), i18n("Waiting") );
+        if( !item->converting && item->text(0) != i18n("Will be skipped") ) {
+            item->setText( 0, i18n("Waiting") );
         }
     }
     queue = true;
@@ -598,7 +568,7 @@ void FileList::convertNextItem()
     for( int i=0; i<topLevelItemCount() && count < config->data.general.numFiles; i++ )
     {
         item = topLevelItem( i );
-        if( !item->converting && item->text(columnByName(i18n("State"))) == i18n("Waiting") )
+        if( !item->converting && item->text(0) == i18n("Waiting") )
         {
             if( item->track >= 0 && !devices.contains(item->device) )
             {
@@ -627,7 +597,7 @@ int FileList::waitingCount()
     for( int i=0; i<topLevelItemCount(); i++ )
     {
         item = topLevelItem( i );
-        if( item->text(columnByName(i18n("State"))) == i18n("Waiting") ) count++;
+        if( item->text(0) == i18n("Waiting") ) count++;
     }
     return count;
 }
@@ -652,20 +622,22 @@ void FileList::itemFinished( FileListItem *item, int state )
         if( item )
         {
             config->conversionOptionsManager()->removeConversionOptions( item->conversionOptionsId );
+            emit itemRemoved( item );
             delete item;
 //         itemsSelected();
         }
     }
     else if( state == 1 )
     {
-        item->setText( columnByName(i18n("State")), i18n("Stopped") );
+        item->setText( 0, i18n("Stopped") );
     }
     else
     {
-        item->setText( columnByName(i18n("State")), i18n("Failed") );
+        item->setText( 0, i18n("Failed") );
     }
 
-    save( false );
+    // FIXME disabled until saving gets faster
+//     save( false );
 
 // ---- NOTE double use of _item_ !!! --------------------------------------------------
 
@@ -685,7 +657,7 @@ void FileList::itemFinished( FileListItem *item, int state )
             time += item->time;
         }
         emit finished( time );
-        emit conversionStopped();
+        emit conversionStopped( state );
         emit fileCountChanged( topLevelItemCount() );
     }
 }
@@ -700,7 +672,7 @@ void FileList::rippingFinished( const QString& device )
         for( int i=0; i<topLevelItemCount(); i++ )
         {
             item = topLevelItem( i );
-            if( !item->converting && item->text(columnByName(i18n("State"))) == i18n("Waiting") )
+            if( !item->converting && item->text(0) == i18n("Waiting") )
             {
                 if( item->track >= 0 && item->device == device )
                 {
@@ -757,6 +729,7 @@ void FileList::showOptionsEditorDialog()
         connect( this, SIGNAL(editItems(QList<FileListItem*>)), optionsEditor, SLOT(itemsSelected(QList<FileListItem*>)) );
         connect( this, SIGNAL(setPreviousItemEnabled(bool)), optionsEditor, SLOT(setPreviousEnabled(bool)) );
         connect( this, SIGNAL(setNextItemEnabled(bool)), optionsEditor, SLOT(setNextEnabled(bool)) );
+        connect( this, SIGNAL(itemRemoved(FileListItem*)), optionsEditor, SLOT(itemRemoved(FileListItem*)) );
         connect( optionsEditor, SIGNAL(user2Clicked()), this, SLOT(selectPreviousItem()) );
         connect( optionsEditor, SIGNAL(user1Clicked()), this, SLOT(selectNextItem()) );
         connect( optionsEditor, SIGNAL(updateFileListItems(QList<FileListItem*>)), this, SLOT(updateItems(QList<FileListItem*>)) );
@@ -817,6 +790,7 @@ void FileList::removeSelectedItems()
         {
             emit timeChanged( -item->time );
             config->conversionOptionsManager()->removeConversionOptions( item->conversionOptionsId );
+            emit itemRemoved( item );
             delete item;
             i--;
         }
@@ -885,6 +859,7 @@ void FileList::load( bool user )
                 if( !item->converting )
                 {
                     config->conversionOptionsManager()->removeConversionOptions( item->conversionOptionsId );
+                    emit itemRemoved( item );
                     delete item;
                     i--;
                 }
@@ -959,6 +934,9 @@ void FileList::load( bool user )
 
 void FileList::save( bool user )
 {
+//     QTime time;
+//     time.start();
+
     QDomDocument list("soundkonverter_filelist");
     QDomElement root = list.createElement("soundkonverter");
     root.setAttribute("type","filelist");
@@ -1019,6 +997,8 @@ void FileList::save( bool user )
         stream << list.toString();
         listFile.close();
     }
+
+//     KMessageBox::information(0,"save file list: " + QString::number(time.elapsed()));
 }
 
 

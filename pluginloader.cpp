@@ -413,7 +413,7 @@ QList<ReplayGainPipe> PluginLoader::getReplayGainPipes( const QString& codecName
 QString PluginLoader::getCodecFromFile( const KUrl& filename )
 {
     QString codec = "";
-    QString mimeType = KMimeType::findByUrl( filename )->name();
+    QString mimeType = KMimeType::findByUrl(filename)->name();
 
     for( int i=0; i<codecPlugins.count(); i++ )
     {

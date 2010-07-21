@@ -44,11 +44,22 @@ find_package(Taglib REQUIRED)
 include_directories(${KDE4_INCLUDES} ${QT_INCLUDES} ${TAGLIB_INCLUDES})
 
 add_subdirectory(plugins/soundkonverter_codec_lame)
-add_subdirectory(plugins/soundkonverter_codec_ogg)
+add_subdirectory(plugins/soundkonverter_codec_vorbistools)
+add_subdirectory(plugins/soundkonverter_codec_flac)
 add_subdirectory(plugins/soundkonverter_codec_ffmpeg)
+add_subdirectory(plugins/soundkonverter_codec_mplayer)
+add_subdirectory(plugins/soundkonverter_codec_faac)
+add_subdirectory(plugins/soundkonverter_codec_neroaac)
+add_subdirectory(plugins/soundkonverter_codec_timidity)
 add_subdirectory(plugins/soundkonverter_replaygain_vorbisgain)
+add_subdirectory(plugins/soundkonverter_replaygain_metaflac)
 add_subdirectory(plugins/soundkonverter_replaygain_mp3gain)
+add_subdirectory(plugins/soundkonverter_replaygain_aacgain)
 add_subdirectory(plugins/soundkonverter_ripper_cdparanoia)
+
+include(MacroOptionalAddSubdirectory)
+macro_optional_add_subdirectory( po )
+
 
 set(soundkonvertercore_SRCS
    core/backendplugin.cpp

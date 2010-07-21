@@ -27,6 +27,7 @@
 #include <KMenu>
 #include <KAction>
 #include <KActionMenu>
+#include <KStandardDirs>
 
 #include <QLabel>
 #include <QLayout>
@@ -55,7 +56,7 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     gridLayout->setRowStretch( 1, 1 );
     connect( fileList, SIGNAL(fileCountChanged(int)), this, SLOT(fileCountChanged(int)) );
     connect( fileList, SIGNAL(conversionStarted()), this, SLOT(conversionStarted()) );
-    connect( fileList, SIGNAL(conversionStopped()), this, SLOT(conversionStopped()) );
+    connect( fileList, SIGNAL(conversionStopped(int)), this, SLOT(conversionStopped(int)) );
     connect( fileList, SIGNAL(queueModeChanged(bool)), this, SLOT(queueModeChanged(bool)) );
 
     optionsLayer = new OptionsLayer( config, this );
@@ -130,6 +131,8 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     Convert *convert = new Convert( config, fileList, logger );
     connect( convert, SIGNAL(updateTime(float)), progressIndicator, SLOT(update(float)) );
     connect( convert, SIGNAL(timeFinished(float)), progressIndicator, SLOT(timeFinished(float)) );
+
+    if( QFile::exists(KStandardDirs::locateLocal("data","soundkonverter/filelist_autosave.xml")) ) fileList->load( false );
 
     // DEBUG
 //     fileList->addFiles(KUrl("file:///home/daniel/Musik/Backup/1 - 04 - Ratatat - Mirando.mp3"), optionsLayer->currentConversionOptions());
@@ -527,13 +530,13 @@ void soundKonverterView::conversionStarted()
     emit signalConversionStarted();
 }
 
-void soundKonverterView::conversionStopped()
+void soundKonverterView::conversionStopped( int state )
 {
     pStart->show();
     startAction->setEnabled( true );
     pStop->hide();
     stopActionMenu->setEnabled( false );
-    emit signalConversionStopped();
+    emit signalConversionStopped( state );
 }
 
 void soundKonverterView::queueModeChanged( bool enabled )
@@ -550,6 +553,11 @@ void soundKonverterView::loadFileList( bool user )
 void soundKonverterView::saveFileList( bool user )
 {
     fileList->save( user );
+}
+
+void soundKonverterView::updateFileList()
+{
+    fileList->updateAllItems();
 }
 
 #include "soundkonverterview.moc"

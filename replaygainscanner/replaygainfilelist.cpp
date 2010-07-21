@@ -654,7 +654,6 @@ void ReplayGainFileList::processNextFile()
         if( item->type == ReplayGainFileListItem::Track )
         {
             itemList += item;
-            count++;
         }
         else
         {
@@ -663,12 +662,15 @@ void ReplayGainFileList::processNextFile()
                 child = (ReplayGainFileListItem*)item->child(j);
                 if( child->state != ReplayGainFileListItem::Waiting ) continue;
                 itemList += child;
-                count++;
 //                 if( child->state == ReplayGainFileListItem::Processing ) { itemList.clear(); break; } // NOTE this would be possible if per file calaculation would be possible
             }
         }
-        processItems( itemList );
-        break;
+        if( itemList.count() > 0 )
+        {
+            count++;
+            processItems( itemList );
+            break;
+        }
     }
     
     if( count <= 0 )

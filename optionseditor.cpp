@@ -216,7 +216,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pEditTags->setFixedWidth( pEditTags->sizeHint().width() );
     tagsGridLayout->addWidget( pEditTags, 6, 1, Qt::AlignHCenter );
     pEditTags->hide();
-//     connect( pEditTags, SIGNAL(clicked()), this, SLOT(editTagsClicked()) );
+    connect( pEditTags, SIGNAL(clicked()), this, SLOT(editTagsClicked()) );
 
 
 
@@ -280,6 +280,8 @@ void OptionsEditor::setTagInputEnabled( bool enabled )
 // FIXME maybe buggy
 void OptionsEditor::itemsSelected( QList<FileListItem*> items )
 {
+    applyChanges();
+    
     for( QList<FileListItem*>::Iterator it = items.begin(); it != items.end(); ) {
         if( (*it)->converting || (*it) == 0 ) it = items.erase( it );
         else it++;
@@ -492,14 +494,42 @@ void OptionsEditor::setNextEnabled( bool enabled )
     enableButton( User1, enabled );
 }
 
+void OptionsEditor::itemRemoved( FileListItem *item )
+{
+    selectedItems.removeAll( item );
+
+    itemsSelected( selectedItems );
+}
+
 void OptionsEditor::applyChanges()
 {
-    for( int i = 0; i < selectedItems.count(); i++ )
+    for( int i=0; i<selectedItems.count(); i++ )
     {
-        selectedItems[i]->conversionOptionsId = config->conversionOptionsManager()->updateConversionOptions( selectedItems.at(i)->conversionOptionsId, options->currentConversionOptions() );
+        selectedItems.at(i)->conversionOptionsId = config->conversionOptionsManager()->updateConversionOptions( selectedItems.at(i)->conversionOptionsId, options->currentConversionOptions() );
+        if( selectedItems.at(i)->tags )
+        {
+            selectedItems.at(i)->tags->title = lTitle->text();
+            selectedItems.at(i)->tags->track = iNumber->value();
+            selectedItems.at(i)->tags->artist = lArtist->text();
+            selectedItems.at(i)->tags->composer = lComposer->text();
+            selectedItems.at(i)->tags->album = lAlbum->text();
+            selectedItems.at(i)->tags->disc = iDisc->value();
+            selectedItems.at(i)->tags->year = iYear->value();
+            selectedItems.at(i)->tags->genre = cGenre->currentText();
+            selectedItems.at(i)->tags->comment = tComment->toPlainText();
+        }
     }
     
     emit updateFileListItems( selectedItems );
 }
 
+void OptionsEditor::editTagsClicked()
+{
+    for( int i=0; i<selectedItems.count(); i++ )
+    {
+        selectedItems.at(i)->tags = new TagData();
+    }
+
+    itemsSelected( selectedItems );
+}
 

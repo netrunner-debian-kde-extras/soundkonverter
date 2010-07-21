@@ -15,7 +15,7 @@ static const char description[] =
     //I18N_NOOP("soundKonverter is a frontend to various audio encoders and decoders.\n\nsoundKonverter needs other programs that are converting the files in the background called backends.\n\nIf you find a bug, please don't hesitate to report it to me.\nYou can either report it at https://bugs.launchpad.net/soundkonverter or you can send me an email to hessijames@gmail.com.\nPlease keep in mind that it may take some time until I get to fix it.");
     I18N_NOOP("soundKonverter is a frontend to various audio converters, Replay Gain tools and CD rippers.\n\nPlease file bug reports at https://bugs.launchpad.net/ubuntu/+source/soundkonverter\nor simply send me a mail to hessijames@gmail.com");
 
-static const char version[] = "1.0.0 beta1";
+static const char version[] = "1.0.0 beta2";
 
 int main(int argc, char **argv)
 {
@@ -23,8 +23,8 @@ int main(int argc, char **argv)
     about.addAuthor( ki18n("Daniel Faust"), KLocalizedString(), "hessijames@gmail.com" );
     about.addCredit( ki18n("David Vignoni"), ki18n("Nuvola icon theme"), 0, "http://www.icon-king.com" );
     about.addCredit( ki18n("Scott Wheeler"), ki18n("TagLib"), "wheeler@kde.org", "http://ktown.kde.org/~wheeler" );
+    about.addCredit( ki18n("Marco Nelles"), ki18n("Audex"), 0, "http://opensource.maniatek.de/audex" );
     about.addCredit( ki18n("Amarok developers"), ki18n("Amarok"), 0, "http://amarok.kde.org" );
-    about.addCredit( ki18n("Kaffeine developers"), ki18n("Kaffeine"), 0, "http://kaffeine.sourceforge.net" );
     about.addCredit( ki18n("All programmers of audio converters"), ki18n("Backends") );
     KCmdLineArgs::init(argc, argv, &about);
 

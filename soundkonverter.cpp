@@ -41,7 +41,7 @@ soundKonverter::soundKonverter()
     setAcceptDrops(true);
 
     logger = new Logger( this );
-    logger->log( 1000, "This is soundKonverter 1.0.0 beta1" );
+    logger->log( 1000, "This is soundKonverter 1.0.0 beta2" );
 
     config = new Config( logger, this );
     config->load();
@@ -50,7 +50,7 @@ soundKonverter::soundKonverter()
 
     m_view = new soundKonverterView( logger, config, cdManager, this );
     connect( m_view, SIGNAL(signalConversionStarted()), this, SLOT(conversionStarted()) );
-    connect( m_view, SIGNAL(signalConversionStopped()), this, SLOT(conversionStopped()) );
+    connect( m_view, SIGNAL(signalConversionStopped(int)), this, SLOT(conversionStopped(int)) );
     connect( m_view, SIGNAL(progressChanged(const QString&)), this, SLOT(progressChanged(QString)) );
 
     // tell the KXmlGuiWindow that this is indeed the main widget
@@ -98,6 +98,7 @@ void soundKonverter::showSystemTray()
         systemTray = new KSystemTrayIcon( this );
         systemTray->setIcon( KIcon("soundkonverter") );
         systemTray->setToolTip( i18n("Waiting") );
+        systemTray->show();
     #endif
 }
 
@@ -110,6 +111,7 @@ void soundKonverter::addReplayGainFiles( const KUrl::List& urls )
 {
     showReplayGainScanner();
     replayGainScanner->addFiles( urls );
+    replayGainScanner->activateWindow();
 }
 
 void soundKonverter::ripCd( const QString& device )
@@ -176,6 +178,7 @@ void soundKonverter::setupActions()
 void soundKonverter::showConfigDialog()
 {
     ConfigDialog *dialog = new ConfigDialog( config, this/*, ConfigDialog::Page(configStartPage)*/ );
+    connect( dialog, SIGNAL(updateFileList()), m_view, SLOT(updateFileList()) );
 
     dialog->resize( size() );
     dialog->exec();
@@ -220,9 +223,9 @@ void soundKonverter::conversionStarted()
     }
 }
 
-void soundKonverter::conversionStopped()
+void soundKonverter::conversionStopped( int state )
 {
-    if( autoclose ) KApplication::kApplication()->quit(); // NOTE close app on conversion stop (may irritate the user when stopping the conversion)
+    if( autoclose && state != 1 ) KApplication::kApplication()->quit(); // close app on conversion stop unless the conversion was stopped by the user
 
     if( systemTray )
     {

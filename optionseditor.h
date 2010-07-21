@@ -105,9 +105,11 @@ public slots:
     void itemsSelected( QList<FileListItem*> );
     void setPreviousEnabled( bool );
     void setNextEnabled( bool );
+    void itemRemoved( FileListItem* );
 
 private slots:
     void applyChanges();
+    void editTagsClicked();
 
 signals:
     // connected to FileList

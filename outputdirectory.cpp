@@ -14,6 +14,7 @@
 #include <QString>
 #include <QStringList>
 #include <QLabel>
+#include <QRegExp>
 
 #include <KLocale>
 #include <KMessageBox>
@@ -137,15 +138,49 @@ KUrl OutputDirectory::calcPath( FileListItem *fileListItem, Config *config, QStr
     {
         path = options->outputDirectory+"/"+fileName;
         if( config->data.general.useVFATNames ) path = vfatPath( path );
-        url = uniqueFileName( changeExtension(KUrl(path),extension) );
+        url = changeExtension( KUrl(path), extension );
+        if( config->data.general.conflictHandling == Config::Data::General::NewFileName ) url = uniqueFileName( url );
         return url;
     }
     else if( options->outputDirectoryMode == MetaData )
     {
         path = options->outputDirectory;
 
+        // TODO a little bit redundant, adding %f if file name wasn't set properly
         if( path.right(1) == "/" ) path += "%f";
-        else if( path.lastIndexOf(QRegExp("%[aAbBcCdDfFgGnNpPtTyY]{1,1}")) < path.lastIndexOf("/") ) path += "/%f";
+        else if( path.lastIndexOf(QRegExp("%[abcdfgnpty]")) < path.lastIndexOf("/") ) path += "/%f";
+//         else if( path.lastIndexOf(QRegExp("%[aAbBcCdDfFgGnNpPtTyY]{1,1}")) < path.lastIndexOf("/") ) path += "/%f";
+        
+        const int fileNameBegin = path.lastIndexOf("/");
+        if( fileListItem->tags == 0 || ( path.mid(fileNameBegin).contains("%n") && fileListItem->tags->track == 0 ) || ( path.mid(fileNameBegin).contains("%t") && fileListItem->tags->title.isEmpty() ) )
+        {
+            path = path.left( fileNameBegin ) + "/%f";
+        }
+
+        QRegExp reg( "\\[(.*)%([abcdfgnpty])(.*)\\]" );
+        reg.setMinimal( true );
+        while( path.indexOf(reg) != -1 )
+        {
+            if( fileListItem->tags &&
+                ( reg.cap(2) == "a" && !fileListItem->tags->artist.isEmpty() ) ||
+                ( reg.cap(2) == "b" && !fileListItem->tags->album.isEmpty() ) ||
+                ( reg.cap(2) == "c" && !fileListItem->tags->comment.isEmpty() ) ||
+                ( reg.cap(2) == "d" && fileListItem->tags->disc != 0 ) ||
+                ( reg.cap(2) == "g" && !fileListItem->tags->genre.isEmpty() ) ||
+                ( reg.cap(2) == "n" && fileListItem->tags->track != 0 ) ||
+                ( reg.cap(2) == "p" && !fileListItem->tags->composer.isEmpty() ) ||
+                ( reg.cap(2) == "t" && !fileListItem->tags->title.isEmpty() ) ||
+                ( reg.cap(2) == "y" && fileListItem->tags->year != 0 ) )
+            {
+                path.replace( reg, "\\1%\\2\\3" );
+            }
+            else
+            {
+                path.replace( reg, "" );
+            }
+        }
+        
+        while( path.contains("//") ) path.replace( "//", "/" );
 
         path.replace( "%a", "$replace_by_artist$" );
         path.replace( "%b", "$replace_by_album$" );
@@ -196,10 +231,11 @@ KUrl OutputDirectory::calcPath( FileListItem *fileListItem, Config *config, QStr
         path.replace( "$replace_by_filename$", filename );
 
         if( config->data.general.useVFATNames ) path = vfatPath( path );
-        url = uniqueFileName( KUrl(path + "." + extension) );
+        url = KUrl( path + "." + extension );
+        if( config->data.general.conflictHandling == Config::Data::General::NewFileName ) url = uniqueFileName( url );
         return url;
     }
-    else if( options->outputDirectoryMode == CopyStructure )
+/*    else if( options->outputDirectoryMode == CopyStructure )
     {
         QString inputPath = fileListItem->url.pathOrUrl();
         QString outputPath = options->outputDirectory;
@@ -239,13 +275,29 @@ KUrl OutputDirectory::calcPath( FileListItem *fileListItem, Config *config, QStr
         url = uniqueFileName( changeExtension(KUrl(options->outputDirectory+"/"+fileListItem->url.pathOrUrl()),extension) );
 //         if( config->data.general.useVFATNames ) path = vfatPath( path );
         return url;
-        */
+        *
+    }*/
+    else if( options->outputDirectoryMode == CopyStructure )
+    {
+        QString basePath = options->outputDirectory;
+        QString originalPath = fileListItem->url.pathOrUrl();
+        int cutpos = basePath.length();
+        while( basePath.left(cutpos) != originalPath.left(cutpos) )
+        {
+            cutpos = basePath.lastIndexOf( '/', cutpos - 1 );
+        }
+        // At this point, basePath and originalPath overlap on the left for cutpos characters (which might be 0).
+        if( config->data.general.useVFATNames ) path = vfatPath( path );
+        url = changeExtension( KUrl(basePath+originalPath.mid(cutpos)), extension );
+        if( config->data.general.conflictHandling == Config::Data::General::NewFileName ) url = uniqueFileName( url );
+        return url;
     }
     else // SourceDirectory
     {
         path = fileListItem->url.toLocalFile();
         if( config->data.general.useVFATNames ) path = vfatPath( path );
-        url = uniqueFileName( changeExtension(KUrl(path),extension) );
+        url = changeExtension( KUrl(path), extension );
+        if( config->data.general.conflictHandling == Config::Data::General::NewFileName ) url = uniqueFileName( url );
         return url;
     }
 }
@@ -262,7 +314,7 @@ KUrl OutputDirectory::changeExtension( const KUrl& url, const QString& extension
     return newUrl;
 }
 
-KUrl OutputDirectory::uniqueFileName( const KUrl& url )
+KUrl OutputDirectory::uniqueFileName( const KUrl& url, const QStringList& usedOutputNames )
 {
 /*    QFileInfo fileInfo( url.toLocalFile() );
 
@@ -277,7 +329,7 @@ KUrl OutputDirectory::uniqueFileName( const KUrl& url )
     
     KUrl uniqueUrl = url;
     
-    while( QFile::exists(uniqueUrl.toLocalFile()) )
+    while( QFile::exists(uniqueUrl.toLocalFile()) || usedOutputNames.contains(uniqueUrl.toLocalFile()) )
     {
         QString fileName = uniqueUrl.fileName();
         fileName = fileName.left( fileName.lastIndexOf(".")+1 ) + i18n("new") + fileName.mid( fileName.lastIndexOf(".") );

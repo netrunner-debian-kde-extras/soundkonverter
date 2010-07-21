@@ -4,6 +4,7 @@
 #include "../metadata/tagengine.h"
 #include "../config.h"
 #include "../options.h"
+#include "../outputdirectory.h"
 
 #include <KLocale>
 #include <KPushButton>
@@ -17,6 +18,7 @@
 #include <KInputDialog>
 
 #include <QLayout>
+#include <QGridLayout>
 #include <QLabel>
 #include <QGroupBox>
 #include <QTreeWidget>
@@ -407,12 +409,20 @@ CDOpener::CDOpener( Config *_config, const QString& _device, QWidget *parent /*M
     }
     
     if( !device.isEmpty() ) compact_disc->setDevice( device, 50, true, "cdin" );
+    
+    #if KDE_IS_VERSION(4,4,0)
+    #else
+//         KMessageBox::information( this, i18n("You are using a KDE version older than KDE 4.4.0. The library libkcompactdisc included in you release contains an error causing soundKonverter to crash. In order to rip audio CDs you need to add the file to the conversion list, save the list via the file menu, restart soundKonverter and load the saved file list again."), i18n("Known bug"), "libkcompactdisc_delete_bug" );
+        KMessageBox::information( this, i18n("You are using a KDE version older than KDE 4.4.0. The library libkcompactdisc included in you release contains an error causing which prevents the soundKonverter CD dialog from working after it has been opened once. In order to rip a second cd you need to restart soundKonverter."), i18n("Known bug"), "libkcompactdisc_delete_bug" );
+    #endif
 }
 
 CDOpener::~CDOpener()
 {
     delete cddb;
+    #if KDE_IS_VERSION(4,4,0)
     delete compact_disc;
+    #endif
 }
 
 void CDOpener::slot_disc_changed( unsigned int tracks )
@@ -491,7 +501,7 @@ void CDOpener::slot_disc_information( KCompactDisc::DiscInfo info )
         
         if( cddbFound )
         {
-            int answer = KMessageBox::questionYesNo( this, i18n("The cd contains title information. Dou you want to use them instead of the CDDB data?\n\nFound: %1 - %2").arg(compact_disc->discArtist()).arg(compact_disc->discTitle()), i18n("CD text found") );
+            int answer = KMessageBox::questionYesNo( this, i18n("The cd contains title information. Do you want to use them instead of the CDDB data?\n\nFound: %1 - %2").arg(compact_disc->discArtist()).arg(compact_disc->discTitle()), i18n("CD text found") );
             if( answer != KMessageBox::Yes )
             {
                 return;
@@ -1028,6 +1038,11 @@ void CDOpener::proceedClicked()
     {
         KMessageBox::error( this, i18n("You haven't selected a single so we can't proceed.") );
         return;
+    }
+    
+    if( options->currentConversionOptions()->outputDirectoryMode == OutputDirectory::Source )
+    {
+        options->setOutputDirectoryMode( (int)OutputDirectory::MetaData );
     }
 
     cdOpenerWidget->hide();

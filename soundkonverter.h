@@ -61,7 +61,7 @@ private slots:
     /** The conversion has started */
     void conversionStarted();
     /** The conversion has stopped */
-    void conversionStopped();
+    void conversionStopped( int state );
     
 private:
     Config *config;

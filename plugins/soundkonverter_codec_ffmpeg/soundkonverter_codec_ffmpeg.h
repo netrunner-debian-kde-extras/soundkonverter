@@ -21,7 +21,7 @@ public:
 
     QList<ConversionPipeTrunk> codecTable();
     BackendPlugin::FormatInfo formatInfo( const QString& codecName );
-    QString getCodecFromFile( const KUrl& filename, const QString& mimeType = "application/octet-stream" );
+//     QString getCodecFromFile( const KUrl& filename, const QString& mimeType = "application/octet-stream" );
     bool isConfigSupported( ActionType action );
     void showConfigDialog( ActionType action, const QString& format, QWidget *parent );
     bool hasInfo();
@@ -36,7 +36,6 @@ public:
 private:
    QStringList fromCodecs;
    QStringList toCodecs;
-   QStringList allCodecs;
    QMap<QString,QString> codecMap;
     
 private slots:

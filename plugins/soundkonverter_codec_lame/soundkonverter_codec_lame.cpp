@@ -104,6 +104,7 @@ BackendPlugin::FormatInfo soundkonverter_codec_lame::formatInfo( const QString& 
         info.lossless = true;
         info.description = i18n("Wave won't compress the audio stream.");
         info.mimeTypes.append( "audio/x-wav" );
+        info.mimeTypes.append( "audio/wav" );
         info.extensions.append( "wav" );
     }
 
@@ -214,7 +215,7 @@ QStringList soundkonverter_codec_lame::convertCommand( const KUrl& inputFile, co
 
     if( outputCodec == "mp3" )
     {
-        command += "lame";
+        command += binaries["lame"];
         command += "--nohist";
         command += "--pad-id3v2";
         if( lameConversionOptions && lameConversionOptions->data.preset != LameConversionOptions::Data::UserDefined )
@@ -319,7 +320,7 @@ QStringList soundkonverter_codec_lame::convertCommand( const KUrl& inputFile, co
     }
     else
     {
-        command += "lame";
+        command += binaries["lame"];
         command += "--decode";
         command += "\"" + inputFile.toLocalFile() + "\"";
         command += "\"" + outputFile.toLocalFile() + "\"";

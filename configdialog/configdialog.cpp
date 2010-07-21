@@ -46,6 +46,8 @@ ConfigDialog::ConfigDialog( Config *_config, QWidget *parent/*, Page startPage*/
     backendsPage->setIcon( KIcon("applications-system") );
     connect( configBackendsPage, SIGNAL(configChanged(bool)), this, SLOT(configChanged(bool)) );
 
+    lastUseVFATNames = config->data.general.useVFATNames;
+    lastConflictHandling = (int)config->data.general.conflictHandling;
 }
 
 ConfigDialog::~ConfigDialog()
@@ -68,6 +70,11 @@ void ConfigDialog::okClicked()
 //     configAdvancedPage->saveSettings();
     configBackendsPage->saveSettings();
     config->save();
+    
+    if( lastUseVFATNames != config->data.general.useVFATNames || lastConflictHandling != (int)config->data.general.conflictHandling )
+    {
+        emit updateFileList();
+    }
 }
 
 void ConfigDialog::defaultClicked()

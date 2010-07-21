@@ -111,7 +111,7 @@ ConfigGeneralPage::ConfigGeneralPage( Config *_config, QWidget *parent )
     cConflictHandling = new KComboBox( this );
     sConflictHandling += i18n("Generate new file name");
     sConflictHandling += i18n("Skip file");
-    sConflictHandling += i18n("Overwrite file");
+//     sConflictHandling += i18n("Overwrite file");
     cConflictHandling->addItems( sConflictHandling );
     cConflictHandling->setToolTip( i18n("Do that if the output file already exists") );
     cConflictHandling->setCurrentIndex( config->data.general.conflictHandling );
@@ -172,7 +172,7 @@ void ConfigGeneralPage::saveSettings()
     config->data.general.defaultFormat = cDefaultFormat->currentText();
 //     config->data.general.priority = cPriority->currentIndex() * 10; // NOTE that just works for 'normal' and 'low'
     config->data.general.useVFATNames = cUseVFATNames->isChecked();
-    config->data.general.conflictHandling = cConflictHandling->currentIndex();
+    config->data.general.conflictHandling = (Config::Data::General::ConflictHandling)cConflictHandling->currentIndex();
     config->data.general.numFiles = iNumFiles->value();
     config->data.general.updateDelay = iUpdateDelay->value();
 }

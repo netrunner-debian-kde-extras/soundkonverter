@@ -6,8 +6,10 @@
 #include "pluginloader.h"
 
 //#include <kio/jobclasses.h>
+// #include <kio/job.h>
+// #include <kio/copyjob.h>
 #include <kio/job.h>
-#include <kio/copyjob.h>
+#include <kio/jobclasses.h>
 
 #include <QObject>
 #include <QList>
@@ -90,7 +92,7 @@ public:
     /** for the conversion and moving the file to a temporary place */
     KProcess *process;
     /** for moving the file to the temporary directory */
-    KIO::Job *kioCopyJob;
+    KIO::FileCopyJob *kioCopyJob;
     /** the id from the plugin (-1 if false) */
     int convertID;
     /** the id from the plugin (-1 if false) */
@@ -202,6 +204,7 @@ private:
     FileList *fileList;
     Logger* logger;
     KProcess notify;
+    QMap<int,QString> usedOutputNames;
     
     struct LogQueue {
         int id;
