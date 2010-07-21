@@ -10,9 +10,7 @@
 
 CodecPluginItem::CodecPluginItem( QObject *parent )
     : BackendPluginItem( parent )
-{
-    data.length = 37*60+40;
-}
+{}
 
 CodecPluginItem::~CodecPluginItem()
 {}
@@ -51,5 +49,4 @@ ConversionOptions *CodecPlugin::conversionOptionsFromXml( QDomElement conversion
     options->fromXml( conversionOptions );
     return options;
 }
-
 

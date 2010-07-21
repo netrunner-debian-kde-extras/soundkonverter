@@ -38,6 +38,7 @@ QDomElement ConversionOptions::toXml( QDomDocument document )
     encodingOptions.setAttribute("bitrateMax",bitrateMax);
     encodingOptions.setAttribute("samplingRate",samplingRate);
     encodingOptions.setAttribute("channels",channels);
+    encodingOptions.setAttribute("compressionLevel",compressionLevel);
     conversionOptions.appendChild(encodingOptions);
     QDomElement outputOptions = document.createElement("outputOptions");
     outputOptions.setAttribute("outputDirectoryMode",outputDirectoryMode);
@@ -64,6 +65,7 @@ bool ConversionOptions::fromXml( QDomElement conversionOptions )
     bitrateMax = encodingOptions.attribute("bitrateMax").toInt();
     samplingRate = encodingOptions.attribute("samplingRate").toInt();
     channels = encodingOptions.attribute("channels").toInt();
+    compressionLevel = encodingOptions.attribute("compressionLevel").toDouble();
     QDomElement outputOptions = conversionOptions.elementsByTagName("outputOptions").at(0).toElement();
     outputDirectoryMode = outputOptions.attribute("outputDirectoryMode").toInt();
     outputDirectory = outputOptions.attribute("outputDirectory");

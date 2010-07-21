@@ -1,6 +1,6 @@
 
-#ifndef OGGCODECWIDGET_H
-#define OGGCODECWIDGET_H
+#ifndef FFMPEGCODECWIDGET_H
+#define FFMPEGCODECWIDGET_H
 
 #include "../../core/codecwidget.h"
 
@@ -46,4 +46,4 @@ signals:
     void somethingChanged();
 };
 
-#endif // OGGCODECWIDGET_H
+#endif // FFMPEGCODECWIDGET_H

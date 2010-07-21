@@ -64,6 +64,7 @@ public slots:
     void showCdDialog( const QString& device = "", bool intern = true );
     void loadFileList( bool user = true );
     void saveFileList( bool user = true );
+    void updateFileList();
 
 private slots:
     void addClicked( int index );
@@ -78,7 +79,7 @@ private slots:
     /** The conversion has started */
     void conversionStarted();
     /** The conversion has stopped */
-    void conversionStopped();
+    void conversionStopped( int state );
     /** Conversion will continue/stop after current files have been converted */
     void queueModeChanged( bool enabled );
     
@@ -112,7 +113,7 @@ private:
 signals:
     void progressChanged( const QString& progress );
     void signalConversionStarted();
-    void signalConversionStopped();
+    void signalConversionStopped( int state );
 };
 
 #endif // _soundKonverterVIEW_H_

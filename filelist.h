@@ -39,12 +39,14 @@ public:
     FileListItem *topLevelItem( int index ) const { return static_cast<FileListItem*>( QTreeWidget::topLevelItem(index) ); }
 
     //bool queueEnabled() { return queue; } not used
-    int columnByName( const QString& name ); // NOTE seems to be unneeded -> remove
+//     int columnByName( const QString& name ); // NOTE seems to be unneeded -> remove
 
     void setOptionsLayer( OptionsLayer *_optionsLayer ) { optionsLayer = _optionsLayer; }
     
     void load( bool user = false );
     void save( bool user = false );
+    void updateAllItems();
+    void updateItem( FileListItem *item );
 
 private:
     /** Lists all file in a directory and adds them to the file list, if fast is false. The number of listed files is returned */
@@ -56,30 +58,7 @@ private:
     
     int TimeCount;
     QTime Time;
-    int entryListTimeCount;
-    QTime entryListTime;
-    int fileInfoTimeCount;
-    QTime fileInfoTime;
-    int getCodecFromFileTimeCount;
-    QTime getCodecFromFileTime;
-    int addFilesTimeCount;
-    QTime addFilesTime;
-    int newItemTimeCount;
-    QTime newItemTime;
-    int addConversionOptionsTimeCount;
-    QTime addConversionOptionsTime;
-    int readTagsTimeCount;
-    QTime readTagsTime;
-    int addTopLevelItemTimeCount;
-    QTime addTopLevelItemTime;
-    int updateItemTimeCount;
-    QTime updateItemTime;
-    int timeChangedTimeCount;
-    QTime timeChangedTime;
-    int pScanStatusTimeCount;
-    QTime pScanStatusTime;
 
-    void updateItem( FileListItem *item );
     void convertNextItem();
     int waitingCount();
     int convertingCount();
@@ -151,7 +130,7 @@ signals:
     // connected to soundKonverterView
     void fileCountChanged( int count );
     void conversionStarted();
-    void conversionStopped();
+    void conversionStopped( int state );
     void queueModeChanged( bool enabled );
 
 //     void stopClicked();
@@ -165,6 +144,7 @@ signals:
     void editItems( QList<FileListItem*> );
     void setPreviousItemEnabled( bool );
     void setNextItemEnabled( bool );
+    void itemRemoved( FileListItem* );
 };
 
 #endif // FILELIST_H

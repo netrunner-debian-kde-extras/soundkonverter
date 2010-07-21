@@ -1,27 +1,27 @@
 
-#include "oggcodecglobal.h"
+#include "vorbistoolscodecglobal.h"
 
-#include "soundkonverter_codec_ogg.h"
+#include "soundkonverter_codec_vorbistools.h"
 #include "../../core/conversionoptions.h"
-#include "oggcodecwidget.h"
+#include "vorbistoolscodecwidget.h"
 
 
-soundkonverter_codec_ogg::soundkonverter_codec_ogg( QObject *parent, const QStringList& args  )
+soundkonverter_codec_vorbistools::soundkonverter_codec_vorbistools( QObject *parent, const QStringList& args  )
     : CodecPlugin( parent )
 {
     binaries["oggenc"] = "";
     binaries["oggdec"] = "";
 }
 
-soundkonverter_codec_ogg::~soundkonverter_codec_ogg()
+soundkonverter_codec_vorbistools::~soundkonverter_codec_vorbistools()
 {}
 
-QString soundkonverter_codec_ogg::name()
+QString soundkonverter_codec_vorbistools::name()
 {
     return global_plugin_name;
 }
 
-QList<ConversionPipeTrunk> soundkonverter_codec_ogg::codecTable()
+QList<ConversionPipeTrunk> soundkonverter_codec_vorbistools::codecTable()
 {
     QList<ConversionPipeTrunk> table;
     ConversionPipeTrunk newTrunk;
@@ -45,7 +45,7 @@ QList<ConversionPipeTrunk> soundkonverter_codec_ogg::codecTable()
     return table;
 }
 
-BackendPlugin::FormatInfo soundkonverter_codec_ogg::formatInfo( const QString& codecName )
+BackendPlugin::FormatInfo soundkonverter_codec_vorbistools::formatInfo( const QString& codecName )
 {
     BackendPlugin::FormatInfo info;
     info.codecName = codecName;
@@ -70,7 +70,7 @@ BackendPlugin::FormatInfo soundkonverter_codec_ogg::formatInfo( const QString& c
     return info;
 }
 
-QString soundkonverter_codec_ogg::getCodecFromFile( const KUrl& filename, const QString& mimeType )
+QString soundkonverter_codec_vorbistools::getCodecFromFile( const KUrl& filename, const QString& mimeType )
 {
     if( mimeType == "application/x-ogg" || mimeType == "application/ogg" || mimeType == "audio/ogg" || mimeType == "audio/vorbis" || mimeType == "audio/x-vorbis+ogg" )
     {
@@ -89,25 +89,25 @@ QString soundkonverter_codec_ogg::getCodecFromFile( const KUrl& filename, const 
     return "";
 }
 
-bool soundkonverter_codec_ogg::isConfigSupported( ActionType action )
+bool soundkonverter_codec_vorbistools::isConfigSupported( ActionType action )
 {
     return false;
 }
 
-void soundkonverter_codec_ogg::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
+void soundkonverter_codec_vorbistools::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
 {}
 
-bool soundkonverter_codec_ogg::hasInfo()
+bool soundkonverter_codec_vorbistools::hasInfo()
 {
     return false;
 }
 
-void soundkonverter_codec_ogg::showInfo()
+void soundkonverter_codec_vorbistools::showInfo()
 {}
 
-QWidget *soundkonverter_codec_ogg::newCodecWidget()
+QWidget *soundkonverter_codec_vorbistools::newCodecWidget()
 {
-    OggCodecWidget *widget = new OggCodecWidget();
+    VorbisToolsCodecWidget *widget = new VorbisToolsCodecWidget();
     if( lastUsedConversionOptions )
     {
         widget->setCurrentConversionOptions( lastUsedConversionOptions );
@@ -117,7 +117,7 @@ QWidget *soundkonverter_codec_ogg::newCodecWidget()
     return qobject_cast<QWidget*>(widget);
 }
 
-int soundkonverter_codec_ogg::convert( const KUrl& inputFile, const KUrl& outputFile, const QString& inputCodec, const QString& outputCodec, ConversionOptions *_conversionOptions, TagData *tags, bool replayGain )
+int soundkonverter_codec_vorbistools::convert( const KUrl& inputFile, const KUrl& outputFile, const QString& inputCodec, const QString& outputCodec, ConversionOptions *_conversionOptions, TagData *tags, bool replayGain )
 {
     QStringList command = convertCommand( inputFile, outputFile, inputCodec, outputCodec, _conversionOptions, tags, replayGain );
     if( command.isEmpty() ) return -1;
@@ -139,7 +139,7 @@ int soundkonverter_codec_ogg::convert( const KUrl& inputFile, const KUrl& output
     return newItem->id;
 }
 
-QStringList soundkonverter_codec_ogg::convertCommand( const KUrl& inputFile, const KUrl& outputFile, const QString& inputCodec, const QString& outputCodec, ConversionOptions *_conversionOptions, TagData *tags, bool replayGain )
+QStringList soundkonverter_codec_vorbistools::convertCommand( const KUrl& inputFile, const KUrl& outputFile, const QString& inputCodec, const QString& outputCodec, ConversionOptions *_conversionOptions, TagData *tags, bool replayGain )
 {
     if( !_conversionOptions ) return QStringList();
     
@@ -148,7 +148,7 @@ QStringList soundkonverter_codec_ogg::convertCommand( const KUrl& inputFile, con
 
     if( outputCodec == "ogg vorbis" )
     {
-        command += "oggenc";
+        command += binaries["oggenc"];
         if( conversionOptions->qualityMode == ConversionOptions::Quality )
         {
             command += "-q";
@@ -197,7 +197,7 @@ QStringList soundkonverter_codec_ogg::convertCommand( const KUrl& inputFile, con
     }
     else
     {
-        command += "oggdec";
+        command += binaries["oggdec"];
         command += "\"" + inputFile.toLocalFile() + "\"";
         command += "-o";
         command += "\"" + outputFile.toLocalFile() + "\"";
@@ -206,7 +206,7 @@ QStringList soundkonverter_codec_ogg::convertCommand( const KUrl& inputFile, con
     return command;
 }
 
-float soundkonverter_codec_ogg::parseOutput( const QString& output )
+float soundkonverter_codec_vorbistools::parseOutput( const QString& output )
 {
     //         [ 99.5%]
   
@@ -219,4 +219,4 @@ float soundkonverter_codec_ogg::parseOutput( const QString& output )
 }
 
 
-#include "soundkonverter_codec_ogg.moc"
+#include "soundkonverter_codec_vorbistools.moc"

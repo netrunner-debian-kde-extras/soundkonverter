@@ -57,7 +57,7 @@ LameCodecWidget::LameCodecWidget()
     cPresetFast = new QCheckBox( i18n("Fast encoding"), this );
     connect( cPresetFast, SIGNAL(toggled(bool)), SIGNAL(somethingChanged()) );
     presetBox->addWidget( cPresetFast );
-    cPresetFast->setToolTip( i18n("Use a faster encoding alogrithm. (Results in a lower output quality.)") );
+    cPresetFast->setToolTip( i18n("Use a faster encoding alogrithm (results in a slightly lower output quality).") );
 
     presetBox->addStretch();
 
@@ -487,29 +487,35 @@ int LameCodecWidget::currentDataRate()
 
 void LameCodecWidget::presetChanged( const QString& preset )
 {
+    cPreset->setToolTip( "" );
+
     if( preset == i18n("Medium") )
     {
         iPresetBitrate->setEnabled( false );
         cPresetFast->setEnabled( true );
         userdefinedBox->setEnabled( false );
+        cPreset->setToolTip( i18n("This preset should provide near transparency to most people on most music (~150 kbps abr).") );
     }
     else if( preset == i18n("Standard") )
     {
         iPresetBitrate->setEnabled( false );
         cPresetFast->setEnabled( true );
         userdefinedBox->setEnabled( false );
+        cPreset->setToolTip( i18n("This preset should generally be transparent to most people on most music\nand is already quite high in quality (~230 kbps abr).") );
     }
     else if( preset == i18n("Extreme") )
     {
         iPresetBitrate->setEnabled( false );
         cPresetFast->setEnabled( true );
         userdefinedBox->setEnabled( false );
+        cPreset->setToolTip( i18n("If you have extremely good hearing and similar equipment, this preset will generally provide\nslightly higher quality than the standard mode (~280 kbps abr).") );
     }
     else if( preset == i18n("Insane") )
     {
         iPresetBitrate->setEnabled( false );
         cPresetFast->setEnabled( false );
         userdefinedBox->setEnabled( false );
+        cPreset->setToolTip( i18n("This preset will usually be overkill for most people and most situations, but if you must have\nthe absolute highest quality with no regard to filesize, this is the way to go (320 kbps cbr).") );
     }
     else if( preset == i18n("Specify bitrate") )
     {

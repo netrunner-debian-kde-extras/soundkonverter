@@ -1,27 +1,26 @@
 
-#ifndef SOUNDKONVERTER_CODEC_OGG_H
-#define SOUNDKONVERTER_CODEC_OGG_H
+#ifndef SOUNDKONVERTER_CODEC_FAAC_H
+#define SOUNDKONVERTER_CODEC_FAAC_H
 
 #include "../../core/codecplugin.h"
 
 class ConversionOptions;
 
 
-class soundkonverter_codec_ogg : public CodecPlugin
+class soundkonverter_codec_faac : public CodecPlugin
 {
     Q_OBJECT
 public:
     /** Default Constructor */
-    soundkonverter_codec_ogg( QObject *parent, const QStringList& args );
+    soundkonverter_codec_faac( QObject *parent, const QStringList& args );
 
     /** Default Destructor */
-    virtual ~soundkonverter_codec_ogg();
+    virtual ~soundkonverter_codec_faac();
 
     QString name();
 
     QList<ConversionPipeTrunk> codecTable();
     BackendPlugin::FormatInfo formatInfo( const QString& codecName );
-    QString getCodecFromFile( const KUrl& filename, const QString& mimeType = "application/octet-stream" );
     bool isConfigSupported( ActionType action );
     void showConfigDialog( ActionType action, const QString& format, QWidget *parent );
     bool hasInfo();
@@ -33,9 +32,9 @@ public:
     float parseOutput( const QString& output );
 };
 
-K_EXPORT_SOUNDKONVERTER_CODEC( ogg, soundkonverter_codec_ogg );
+K_EXPORT_SOUNDKONVERTER_CODEC( faac, soundkonverter_codec_faac );
 
 
-#endif // _SOUNDKONVERTER_CODEC_OGG_H_
+#endif // _SOUNDKONVERTER_CODEC_FAAC_H_
 
 

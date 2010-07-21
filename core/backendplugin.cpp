@@ -40,6 +40,29 @@ void BackendPlugin::scanForBackends( const QStringList& directoryList )
     }
 }
 
+QString BackendPlugin::getCodecFromFile( const KUrl& filename, const QString& mimeType )
+{
+    for( int i=0; i<allCodecs.count(); i++ )
+    {
+        if( formatInfo(allCodecs.at(i)).mimeTypes.indexOf(mimeType) != -1 )
+        {
+            return allCodecs.at(i);
+        }
+    }
+    
+    QString extension = filename.url().mid( filename.url().lastIndexOf(".") + 1 );
+
+    for( int i=0; i<allCodecs.count(); i++ )
+    {
+        if( formatInfo(allCodecs.at(i)).extensions.indexOf(extension) != -1 )
+        {
+            return allCodecs.at(i);
+        }
+    }
+        
+    return "";
+}
+
 bool BackendPlugin::pause( int id )
 {
     return false;

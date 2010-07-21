@@ -17,7 +17,7 @@ ComboButton::ComboButton( QWidget *parent )
 
     m_box = new KComboBox( this );
     grid->addWidget( m_box, 0, 0 );
-    m_box->setSizeAdjustPolicy( QComboBox::AdjustToContents );
+//     m_box->setSizeAdjustPolicy( QComboBox::AdjustToContents ); // default
     connect( m_box, SIGNAL(activated(int)), this, SLOT(boxActivated(int)) );
     setFocusProxy( m_box );
 
@@ -36,14 +36,9 @@ ComboButton::~ComboButton()
 
 void ComboButton::balanceSize()
 {
-    int width;
+    const int width = m_button->sizeHint().width();
 
-    //if( m_sizeMode == Max )
-        //width = m_box->sizeHint().width()-19;
-    //else
-        width = m_button->sizeHint().width();
-
-    int height = ( m_box->sizeHint().height() > m_button->sizeHint().height() ) ? m_box->sizeHint().height() : m_button->sizeHint().height();
+    const int height = ( m_box->sizeHint().height() > m_button->sizeHint().height() ) ? m_box->sizeHint().height() : m_button->sizeHint().height();
 
     m_box->setFixedSize( width+19, height+m_increaseHeight );
     m_button->setFixedSize( width, height+m_increaseHeight );

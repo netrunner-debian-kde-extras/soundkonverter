@@ -3,15 +3,6 @@
 
 #include "soundkonverter_replaygain_mp3gain.h"
 
-#include <QWidget>
-#include <QLayout>
-#include <QLabel>
-#include <QCheckBox>
-#include <KLocale>
-#include <KComboBox>
-#include <QSpinBox>
-#include <QGroupBox>
-#include <QSlider>
 
 soundkonverter_replaygain_mp3gain::soundkonverter_replaygain_mp3gain( QObject *parent, const QStringList& args  )
     : ReplayGainPlugin( parent )
@@ -54,13 +45,6 @@ BackendPlugin::FormatInfo soundkonverter_replaygain_mp3gain::formatInfo( const Q
         info.mimeTypes.append( "audio/mpeg" );
         info.extensions.append( "mp3" );
     }
-    else if( codecName == "wav" )
-    {
-        info.lossless = true;
-        info.description = i18n("Wave won't compress the audio stream.");
-        info.mimeTypes.append( "audio/x-wav" );
-        info.extensions.append( "wav" );
-    }
 
     return info;
 }
@@ -100,7 +84,7 @@ int soundkonverter_replaygain_mp3gain::apply( const KUrl::List& fileList, Replay
 
 //     newItem->mode = mode;
 
-    (*newItem->process) << "mp3gain";
+    (*newItem->process) << binaries["mp3gain"];
     if( mode == ReplayGainPlugin::Add )
     {
         (*newItem->process) << "-a";

@@ -4,8 +4,8 @@
 
 #include <KGenericFactory>
 #include <KProcess>
+#include <KUrl>
 #include <QList>
-
 #include <QObject>
 
 class BackendPlugin;
@@ -63,7 +63,7 @@ public:
     virtual QString type() = 0;
 
     virtual FormatInfo formatInfo( const QString& codecName ) = 0;
-    virtual QString getCodecFromFile( const KUrl& filename, const QString& mimeType = "application/octet-stream" ) = 0;
+    virtual QString getCodecFromFile( const KUrl& filename, const QString& mimeType = "application/octet-stream" );
     virtual bool hasInfo() = 0;
     virtual void showInfo() = 0;
     virtual bool pause( int id );
@@ -81,6 +81,7 @@ public:
 protected:
     QList<BackendPluginItem*> backendItems;
     int lastId;
+    QStringList allCodecs;
 //     int priority;
 
 signals:

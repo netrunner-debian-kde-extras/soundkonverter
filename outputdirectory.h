@@ -33,6 +33,9 @@ public:
     /** Constructor */
     OutputDirectory( Config *_config, QWidget *parent = 0 );
 
+    /** Destructor */
+    virtual ~OutputDirectory();
+
     Mode mode();
     void setMode( Mode );
     QString directory();
@@ -40,12 +43,9 @@ public:
 
     static KUrl calcPath( FileListItem *fileListItem, Config *config, QString extension = "" );
     static KUrl changeExtension( const KUrl& url, const QString& extension );
-    static KUrl uniqueFileName( const KUrl& url );
+    static KUrl uniqueFileName( const KUrl& url, const QStringList& usedOutputNames = QStringList() );
     static KUrl makePath( const KUrl& url );
     static QString vfatPath( const QString& path );
-
-    /** Destructor */
-    virtual ~OutputDirectory();
 
 public slots:
     //void setActive( bool );
@@ -71,7 +71,7 @@ private:
     KProcess kfm;
 
     Config *config;
-
+    
 signals:
     void modeChanged( int );
     void directoryChanged( const QString& );

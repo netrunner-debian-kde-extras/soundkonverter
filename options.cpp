@@ -103,13 +103,13 @@ ConversionOptions *Options::currentConversionOptions()
 
 bool Options::setCurrentConversionOptions( ConversionOptions *options )
 {
-    bool success =  optionsDetailed->setCurrentConversionOptions( options );
+    const bool success =  optionsDetailed->setCurrentConversionOptions( options );
     tabChanged( 0 ); // NOTE not very clean, but optionsSimple needs to get updated
 //     optionsSimple->refill();
     return success;
 }
 
-void Options::simpleOutputDirectoryModeChanged( int mode )
+void Options::simpleOutputDirectoryModeChanged( const int mode )
 {
     if(optionsDetailed && optionsDetailed->outputDirectory) optionsDetailed->outputDirectory->setMode( (OutputDirectory::Mode)mode );
     config->data.general.lastOutputDirectoryMode = mode;
@@ -137,11 +137,11 @@ void Options::simpleOptionsChanged()
     optionsDetailed->setReplayGainChecked( optionsSimple->isReplayGainChecked() );
 //     optionsDetailed->setBpmEnabled( optionsSimple->isBpmChecked() );
     QString toolTip;
-    bool replaygainEnabled = optionsDetailed->isReplayGainEnabled( &toolTip );
+    const bool replaygainEnabled = optionsDetailed->isReplayGainEnabled( &toolTip );
     optionsSimple->setReplayGainEnabled( replaygainEnabled, toolTip );
 }
 
-void Options::detailedOutputDirectoryModeChanged( int mode )
+void Options::detailedOutputDirectoryModeChanged( const int mode )
 {
 //     if(optionsSimple && optionsSimple->outputDirectory) optionsSimple->outputDirectory->setMode( (OutputDirectory::Mode)mode );
     config->data.general.lastOutputDirectoryMode = mode;
@@ -156,7 +156,7 @@ void Options::detailedOutputDirectoryChanged( const QString& directory )
 // {
 // }
 
-void Options::tabChanged( int pageIndex )
+void Options::tabChanged( const int pageIndex )
 {
     if( pageIndex == 0 )
     {
@@ -195,6 +195,19 @@ void Options::setFormat( const QString& format )
 {
     optionsSimple->setCurrentFormat( format );
     simpleOptionsChanged();
+}
+
+void Options::setOutputDirectoryMode( int mode )
+{
+    QString directory;
+    optionsSimple->setCurrentOutputDirectoryMode( (OutputDirectory::Mode)mode );
+    if( mode == (int)OutputDirectory::Specify ) directory = config->data.general.specifyOutputDirectory;
+    else if( mode == (int)OutputDirectory::Source ) directory = "";
+    else if( mode == (int)OutputDirectory::MetaData ) directory = config->data.general.metaDataOutputDirectory;
+    else if( mode == (int)OutputDirectory::CopyStructure ) directory = config->data.general.copyStructureOutputDirectory;
+    optionsSimple->setCurrentOutputDirectory( directory );
+    simpleOutputDirectoryModeChanged( (OutputDirectory::Mode)mode );
+    simpleOutputDirectoryChanged( directory );
 }
 
 void Options::setOutputDirectory( const QString& directory )

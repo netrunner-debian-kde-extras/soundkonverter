@@ -163,6 +163,7 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
         info.description = i18n("Advanced Audio Coding is a lossy and popular audio format."); // http://en.wikipedia.org/wiki/Advanced_Audio_Coding
         info.mimeTypes.append( "audio/aac" );
         info.mimeTypes.append( "audio/aacp" );
+        info.mimeTypes.append( "audio/mp4" );
         info.extensions.append( "aac" );
         info.extensions.append( "3gp" );
         info.extensions.append( "mp4" );
@@ -330,28 +331,28 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
 }
 
 
-QString soundkonverter_codec_ffmpeg::getCodecFromFile( const KUrl& filename, const QString& mimeType )
-{
-    for( int i=0; i<allCodecs.count(); i++ )
-    {
-        if( formatInfo(allCodecs.at(i)).mimeTypes.indexOf(mimeType) != -1 )
-        {
-            return allCodecs.at(i);
-        }
-    }
-    
-    QString extension = filename.url().right( filename.url().length() - filename.url().lastIndexOf(".") - 1 );
-
-    for( int i=0; i<allCodecs.count(); i++ )
-    {
-        if( formatInfo(allCodecs.at(i)).extensions.indexOf(extension) != -1 )
-        {
-            return allCodecs.at(i);
-        }
-    }
-        
-    return "";
-}
+// QString soundkonverter_codec_ffmpeg::getCodecFromFile( const KUrl& filename, const QString& mimeType )
+// {
+//     for( int i=0; i<allCodecs.count(); i++ )
+//     {
+//         if( formatInfo(allCodecs.at(i)).mimeTypes.indexOf(mimeType) != -1 )
+//         {
+//             return allCodecs.at(i);
+//         }
+//     }
+//     
+//     QString extension = filename.url().right( filename.url().length() - filename.url().lastIndexOf(".") - 1 );
+// 
+//     for( int i=0; i<allCodecs.count(); i++ )
+//     {
+//         if( formatInfo(allCodecs.at(i)).extensions.indexOf(extension) != -1 )
+//         {
+//             return allCodecs.at(i);
+//         }
+//     }
+//         
+//     return "";
+// }
 
 bool soundkonverter_codec_ffmpeg::isConfigSupported( ActionType action )
 {
@@ -388,7 +389,7 @@ int soundkonverter_codec_ffmpeg::convert( const KUrl& inputFile, const KUrl& out
 
     if( outputCodec != "wav" )
     {
-        command += "ffmpeg";
+        command += binaries["ffmpeg"];
         command += "-i";
         command += "\"" + inputFile.toLocalFile() + "\"";
         command += "-acodec";
@@ -406,9 +407,9 @@ int soundkonverter_codec_ffmpeg::convert( const KUrl& inputFile, const KUrl& out
         }
         command += "\"" + outputFile.toLocalFile() + "\"";
     }
-    else
+    else // NOTE really necessary?
     {
-        command += "ffmpeg";
+        command += binaries["ffmpeg"];
         command += "-i";
         command += "\"" + inputFile.toLocalFile() + "\"";
         command += "\"" + outputFile.toLocalFile() + "\"";
@@ -468,6 +469,9 @@ float soundkonverter_codec_ffmpeg::parseOutput( const QString& output, int *leng
         time = data.left( data.indexOf(" ") );
         return time.toFloat();
     }
+    
+    // TODO error handling
+    // Error while decoding stream #0.0
     
     return -1;
 }

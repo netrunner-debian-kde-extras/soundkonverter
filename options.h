@@ -46,7 +46,7 @@ public:
     ConversionOptions *currentConversionOptions();
 
     /** Set the current options */
-    bool setCurrentConversionOptions( ConversionOptions *options );
+    bool setCurrentConversionOptions( ConversionOptions* optionsptions );
 
 public slots:
     /** Set the current profile */
@@ -54,6 +54,9 @@ public slots:
 
     /** Set the current format */
     void setFormat( const QString& format );
+
+    /** Set the current output directory mode */
+    void setOutputDirectoryMode( int mode );
 
     /** Set the current output directory */
     void setOutputDirectory( const QString& directory );
@@ -83,14 +86,14 @@ private:
 
 
 private slots:
-    void tabChanged( int pageIndex );
+    void tabChanged( const int pageIndex );
 //     void somethingChanged();
 //     void configChanged();
 //     void showConfigDialogBackends();
-    void simpleOutputDirectoryModeChanged(int);
+    void simpleOutputDirectoryModeChanged(const int mode);
     void simpleOutputDirectoryChanged(const QString&);
     void simpleOptionsChanged();
-    void detailedOutputDirectoryModeChanged(int);
+    void detailedOutputDirectoryModeChanged(const int mode);
     void detailedOutputDirectoryChanged(const QString&);
 //     void detailedOptionsChanged();
 

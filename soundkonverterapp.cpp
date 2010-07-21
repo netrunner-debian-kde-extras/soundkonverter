@@ -13,6 +13,7 @@
 // #include <ksystemtray.h>
 // #include <kstandarddirs.h>
 #include <stdio.h>
+#include <KMessageBox>
 
 #include <kurl.h>
 
@@ -36,49 +37,46 @@ int soundKonverterApp::newInstance()
     bool autoclose = false;
     bool autostart = false;
     
-    if( args->count() > 0 )
+    QString device = args->getOption( "rip" );
+    if( !device.isEmpty() )
     {
-        QString device = args->getOption( "rip" );
-        if( !device.isEmpty() )
-        {
-            mainWindow->ripCd( device );
-        }
-        
-        autoclose = args->isSet( "autoclose" );
-        autostart = args->isSet( "autostart" );
+        mainWindow->ripCd( device );
+    }
+    
+    autoclose = args->isSet( "autoclose" );
+    autostart = args->isSet( "autostart" );
 
-        if( args->isSet( "invisible" ) )
-        {
-            autoclose = true;
-            autostart = true;
-            visible = false;
-            mainWindow->showSystemTray();
-        }
+    if( args->isSet( "invisible" ) )
+    {
+        autoclose = true;
+        autostart = true;
+        visible = false;
+        mainWindow->showSystemTray();
+    }
 
-        mainWindow->setAutoClose( autoclose );
-        
-        QString profile = args->getOption( "profile" );
-        QString format = args->getOption( "format" );
-        QString directory = args->getOption( "output" );
-        
-        if( args->isSet( "replaygain" ) )
+    mainWindow->setAutoClose( autoclose );
+    
+    QString profile = args->getOption( "profile" );
+    QString format = args->getOption( "format" );
+    QString directory = args->getOption( "output" );
+    
+    if( args->isSet( "replaygain" ) )
+    {
+        KUrl::List urls;
+        for( int i=0; i<args->count(); i++ )
         {
-            KUrl::List urls;
-            for( int i=0; i<args->count(); i++ )
-            {
-                urls.append( args->arg(i) );
-            }
-            if( !urls.isEmpty() ) mainWindow->addReplayGainFiles( urls );
+            urls.append( args->arg(i) );
         }
-        else
+        if( !urls.isEmpty() ) mainWindow->addReplayGainFiles( urls );
+    }
+    else
+    {
+        KUrl::List urls;
+        for( int i=0; i<args->count(); i++ )
         {
-            KUrl::List urls;
-            for( int i=0; i<args->count(); i++ )
-            {
-                urls.append( args->arg(i) );
-            }
-            if( !urls.isEmpty() ) mainWindow->addConvertFiles( urls, profile, format, directory );
+            urls.append( args->arg(i) );
         }
+        if( !urls.isEmpty() ) mainWindow->addConvertFiles( urls, profile, format, directory );
     }
     args->clear();
     

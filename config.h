@@ -51,7 +51,11 @@ public:
             QString copyStructureOutputDirectory;
 //             int priority;
             bool useVFATNames;
-            int conflictHandling;
+            enum ConflictHandling {
+                NewFileName = 0,
+                Skip = 1,
+                Overwrite = 2
+            } conflictHandling;
             int numFiles;
             int updateDelay;
 //             bool executeUserScript;

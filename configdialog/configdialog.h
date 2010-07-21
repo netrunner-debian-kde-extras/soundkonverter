@@ -39,6 +39,9 @@ private:
     ConfigAdvancedPage *configAdvancedPage;
     KPageWidgetItem *backendsPage;
     ConfigBackendsPage *configBackendsPage;
+    
+    bool lastUseVFATNames;
+    int lastConflictHandling;
 
 private slots:
     void configChanged( bool state );
@@ -46,6 +49,8 @@ private slots:
     void applyClicked();
     void defaultClicked();
 
+signals:
+    void updateFileList();
 };
 
 #endif

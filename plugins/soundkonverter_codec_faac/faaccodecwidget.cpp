@@ -1,7 +1,7 @@
 
-#include "oggcodecglobal.h"
+#include "faaccodecglobal.h"
 
-#include "oggcodecwidget.h"
+#include "faaccodecwidget.h"
 #include "../../core/conversionoptions.h"
 
 #include <math.h>
@@ -18,9 +18,9 @@
 #include <QLineEdit>
 
 
-OggCodecWidget::OggCodecWidget()
+FaacCodecWidget::FaacCodecWidget()
     : CodecWidget(),
-    currentFormat( "ogg" )
+    currentFormat( "aac" )
 {
     QGridLayout *grid = new QGridLayout( this );
     grid->setContentsMargins( 0, 0, 0, 0 );
@@ -56,33 +56,33 @@ OggCodecWidget::OggCodecWidget()
     connect( dQuality, SIGNAL(valueChanged(double)), SIGNAL(somethingChanged()) );
     topBox->addWidget( dQuality );
 
-    topBox->addSpacing( 12 );
-
-    QLabel *lBitrateMode = new QLabel( i18n("Bitrate mode")+":", this );
-    topBox->addWidget( lBitrateMode );
-    cBitrateMode = new KComboBox( this );
-    cBitrateMode->addItem( i18n("Variable") );
-    cBitrateMode->addItem( i18n("Avarage") );
-    cBitrateMode->addItem( i18n("Constant") );
-    cBitrateMode->setFixedWidth( cBitrateMode->sizeHint().width() );
-    connect( cBitrateMode, SIGNAL(activated(int)), SIGNAL(somethingChanged()) );
-    topBox->addWidget( cBitrateMode );
+//     topBox->addSpacing( 12 );
+// 
+//     QLabel *lBitrateMode = new QLabel( i18n("Bitrate mode")+":", this );
+//     topBox->addWidget( lBitrateMode );
+//     cBitrateMode = new KComboBox( this );
+//     cBitrateMode->addItem( i18n("Variable") );
+//     cBitrateMode->addItem( i18n("Avarage") );
+//     cBitrateMode->addItem( i18n("Constant") );
+//     cBitrateMode->setFixedWidth( cBitrateMode->sizeHint().width() );
+//     connect( cBitrateMode, SIGNAL(activated(int)), SIGNAL(somethingChanged()) );
+//     topBox->addWidget( cBitrateMode );
 
     topBox->addStretch();
 
     QHBoxLayout *midBox = new QHBoxLayout();
     grid->addLayout( midBox, 1, 0 );
 
-    chChannels = new QCheckBox( i18n("Channels")+":", this );
-    connect( chChannels, SIGNAL(toggled(bool)), this, SLOT(channelsToggled(bool)) );
-    connect( chChannels, SIGNAL(toggled(bool)), SIGNAL(somethingChanged()) );
-    midBox->addWidget( chChannels );
-    cChannels = new KComboBox( this );
-    cChannels->addItem( i18n("Mono") );
-    midBox->addWidget( cChannels );
-    channelsToggled( false );
-
-    midBox->addSpacing( 12 );
+//     chChannels = new QCheckBox( i18n("Channels")+":", this );
+//     connect( chChannels, SIGNAL(toggled(bool)), this, SLOT(channelsToggled(bool)) );
+//     connect( chChannels, SIGNAL(toggled(bool)), SIGNAL(somethingChanged()) );
+//     midBox->addWidget( chChannels );
+//     cChannels = new KComboBox( this );
+//     cChannels->addItem( i18n("Mono") );
+//     midBox->addWidget( cChannels );
+//     channelsToggled( false );
+// 
+//     midBox->addSpacing( 12 );
 
     chSamplerate = new QCheckBox( i18n("Resample")+":", this );
     connect( chSamplerate, SIGNAL(toggled(bool)), this, SLOT(samplerateToggled(bool)) );
@@ -110,22 +110,22 @@ OggCodecWidget::OggCodecWidget()
     modeChanged( 0 );
 }
 
-OggCodecWidget::~OggCodecWidget()
+FaacCodecWidget::~FaacCodecWidget()
 {}
 
 // TODO optimize
-int OggCodecWidget::bitrateForQuality( double quality )
+int FaacCodecWidget::bitrateForQuality( double quality )
 {
     return quality*100/3;
 }
 
 // TODO optimize
-double OggCodecWidget::qualityForBitrate( int bitrate )
+double FaacCodecWidget::qualityForBitrate( int bitrate )
 {
     return (double)bitrate*3/100;
 }
 
-ConversionOptions *OggCodecWidget::currentConversionOptions()
+ConversionOptions *FaacCodecWidget::currentConversionOptions()
 {
     ConversionOptions *options = new ConversionOptions();
     options->pluginName = global_plugin_name;
@@ -135,7 +135,7 @@ ConversionOptions *OggCodecWidget::currentConversionOptions()
         options->qualityMode = ConversionOptions::Quality;
         options->quality = dQuality->value();
         options->bitrate = bitrateForQuality( options->quality );
-        options->bitrateMode = ConversionOptions::Vbr;
+//         options->bitrateMode = ConversionOptions::Vbr;
         options->bitrateMin = 0;
         options->bitrateMax = 0;
     }
@@ -144,19 +144,19 @@ ConversionOptions *OggCodecWidget::currentConversionOptions()
         options->qualityMode = ConversionOptions::Bitrate;
         options->bitrate = dQuality->value();
         options->quality = qualityForBitrate( options->bitrate );
-        options->bitrateMode = ( cBitrateMode->currentText()==i18n("Avarage") ) ? ConversionOptions::Abr : ConversionOptions::Cbr;
+//         options->bitrateMode = ( cBitrateMode->currentText()==i18n("Avarage") ) ? ConversionOptions::Abr : ConversionOptions::Cbr;
         options->bitrateMin = 0;
         options->bitrateMax = 0;
     }
     if( chSamplerate->isChecked() ) options->samplingRate = cSamplerate->currentText().replace(" Hz","").toInt();
     else options->samplingRate = 0;
-    if( chChannels->isChecked() ) options->channels = 1;
-    else options->channels = 0;
+//     if( chChannels->isChecked() ) options->channels = 1;
+//     else options->channels = 0;
 
     return options;
 }
 
-bool OggCodecWidget::setCurrentConversionOptions( ConversionOptions *_options )
+bool FaacCodecWidget::setCurrentConversionOptions( ConversionOptions *_options )
 {
     if( !_options || _options->pluginName != global_plugin_name ) return false;
     
@@ -167,53 +167,53 @@ bool OggCodecWidget::setCurrentConversionOptions( ConversionOptions *_options )
         cMode->setCurrentIndex( cMode->findText(i18n("Quality")) );
         modeChanged( cMode->currentIndex() );
         dQuality->setValue( options->quality );
-        cBitrateMode->setCurrentIndex( cBitrateMode->findText(i18n("Variable")) );
+//         cBitrateMode->setCurrentIndex( cBitrateMode->findText(i18n("Variable")) );
     }
     else
     {
         cMode->setCurrentIndex( cMode->findText(i18n("Bitrate")) );
         modeChanged( cMode->currentIndex() );
         dQuality->setValue( options->bitrate );
-        if( options->bitrateMode == ConversionOptions::Abr ) cBitrateMode->setCurrentIndex( cBitrateMode->findText(i18n("Avarage")) );
-        else cBitrateMode->setCurrentIndex( cBitrateMode->findText(i18n("Constant")) );
+//         if( options->bitrateMode == ConversionOptions::Abr ) cBitrateMode->setCurrentIndex( cBitrateMode->findText(i18n("Avarage")) );
+//         else cBitrateMode->setCurrentIndex( cBitrateMode->findText(i18n("Constant")) );
     }
     chSamplerate->setChecked( options->samplingRate != 0 );
     if( options->samplingRate != 0 ) cSamplerate->setCurrentIndex( cSamplerate->findText(QString::number(options->samplingRate)+" Hz") );
-    chChannels->setChecked( options->channels != 0 );
+//     chChannels->setChecked( options->channels != 0 );
     
     return true;
 }
 
-void OggCodecWidget::setCurrentFormat( const QString& format )
+void FaacCodecWidget::setCurrentFormat( const QString& format )
 {
     if( currentFormat == format ) return;
     currentFormat = format;
     setEnabled( currentFormat != "wav" );
 }
 
-QString OggCodecWidget::currentProfile()
+QString FaacCodecWidget::currentProfile()
 {
     if( currentFormat == "wav" )
     {
         return i18n("Lossless");
     }
-    else if( cMode->currentIndex() == 0 && dQuality->value() == 2.0 && chChannels->isChecked() && chSamplerate->isChecked() && cSamplerate->currentIndex() == 4 )
+    else if( cMode->currentIndex() == 0 && dQuality->value() == 60 &&  chSamplerate->isChecked() && cSamplerate->currentIndex() == 4 )
     {
         return i18n("Very low");
     }
-    else if( cMode->currentIndex() == 0 && dQuality->value() == 3.0 && !chChannels->isChecked() && chSamplerate->isChecked() && cSamplerate->currentIndex() == 4 )
+    else if( cMode->currentIndex() == 0 && dQuality->value() == 80 &&  chSamplerate->isChecked() && cSamplerate->currentIndex() == 4 )
     {
         return i18n("Low");
     }
-    else if( cMode->currentIndex() == 0 && dQuality->value() == 4.0 && !chChannels->isChecked() && !chSamplerate->isChecked() )
+    else if( cMode->currentIndex() == 0 && dQuality->value() == 100 &&  !chSamplerate->isChecked() )
     {
         return i18n("Medium");
     }
-    else if( cMode->currentIndex() == 0 && dQuality->value() == 5.0 && !chChannels->isChecked() && !chSamplerate->isChecked() )
+    else if( cMode->currentIndex() == 0 && dQuality->value() == 120 &&  !chSamplerate->isChecked() )
     {
         return i18n("High");
     }
-    else if( cMode->currentIndex() == 0 && dQuality->value() == 6.0 && !chChannels->isChecked() && !chSamplerate->isChecked() )
+    else if( cMode->currentIndex() == 0 && dQuality->value() == 140 &&  !chSamplerate->isChecked() )
     {
         return i18n("Very high");
     }
@@ -221,16 +221,16 @@ QString OggCodecWidget::currentProfile()
     return i18n("User defined");
 }
 
-bool OggCodecWidget::setCurrentProfile( const QString& profile )
+bool FaacCodecWidget::setCurrentProfile( const QString& profile )
 {
     if( profile == i18n("Very low") )
     {
         cMode->setCurrentIndex( 0 );
         modeChanged( 0 );
-        sQuality->setValue( 200 );
-        dQuality->setValue( 2.0 );
-        cBitrateMode->setCurrentIndex( 0 );
-        chChannels->setChecked( true );
+        sQuality->setValue( 60 );
+        dQuality->setValue( 60 );
+//         cBitrateMode->setCurrentIndex( 0 );
+//         chChannels->setChecked( true );
         chSamplerate->setChecked( true );
         cSamplerate->setCurrentIndex( 4 );
         return true;
@@ -239,10 +239,10 @@ bool OggCodecWidget::setCurrentProfile( const QString& profile )
     {
         cMode->setCurrentIndex( 0 );
         modeChanged( 0 );
-        sQuality->setValue( 300 );
-        dQuality->setValue( 3.0 );
-        cBitrateMode->setCurrentIndex( 0 );
-        chChannels->setChecked( false );
+        sQuality->setValue( 80 );
+        dQuality->setValue( 80 );
+//         cBitrateMode->setCurrentIndex( 0 );
+//         chChannels->setChecked( false );
         chSamplerate->setChecked( true );
         cSamplerate->setCurrentIndex( 4 );
         return true;
@@ -251,10 +251,10 @@ bool OggCodecWidget::setCurrentProfile( const QString& profile )
     {
         cMode->setCurrentIndex( 0 );
         modeChanged( 0 );
-        sQuality->setValue( 400 );
-        dQuality->setValue( 4.0 );
-        cBitrateMode->setCurrentIndex( 0 );
-        chChannels->setChecked( false );
+        sQuality->setValue( 100 );
+        dQuality->setValue( 100 );
+//         cBitrateMode->setCurrentIndex( 0 );
+//         chChannels->setChecked( false );
         chSamplerate->setChecked( false );
         return true;
     }
@@ -262,10 +262,10 @@ bool OggCodecWidget::setCurrentProfile( const QString& profile )
     {
         cMode->setCurrentIndex( 0 );
         modeChanged( 0 );
-        sQuality->setValue( 500 );
-        dQuality->setValue( 5.0 );
-        cBitrateMode->setCurrentIndex( 0 );
-        chChannels->setChecked( false );
+        sQuality->setValue( 120 );
+        dQuality->setValue( 120 );
+//         cBitrateMode->setCurrentIndex( 0 );
+//         chChannels->setChecked( false );
         chSamplerate->setChecked( false );
         return true;
     }
@@ -273,10 +273,10 @@ bool OggCodecWidget::setCurrentProfile( const QString& profile )
     {
         cMode->setCurrentIndex( 0 );
         modeChanged( 0 );
-        sQuality->setValue( 600 );
-        dQuality->setValue( 6.0 );
-        cBitrateMode->setCurrentIndex( 0 );
-        chChannels->setChecked( false );
+        sQuality->setValue( 140 );
+        dQuality->setValue( 140 );
+//         cBitrateMode->setCurrentIndex( 0 );
+//         chChannels->setChecked( false );
         chSamplerate->setChecked( false );
         return true;
     }
@@ -284,7 +284,7 @@ bool OggCodecWidget::setCurrentProfile( const QString& profile )
     return false;
 }
 
-QDomDocument OggCodecWidget::customProfile()
+QDomDocument FaacCodecWidget::customProfile()
 {
     QDomDocument profile("soundkonverter_profile");
     QDomElement root = profile.createElement("soundkonverter");
@@ -294,16 +294,16 @@ QDomDocument OggCodecWidget::customProfile()
     QDomElement encodingOptions = profile.createElement("encodingOptions");
     encodingOptions.setAttribute("qualityMode",cMode->currentIndex());
     encodingOptions.setAttribute("quality",dQuality->value());
-    encodingOptions.setAttribute("bitrateMode",cBitrateMode->currentIndex());
-    encodingOptions.setAttribute("channelsEnabled",chChannels->isChecked() && chChannels->isEnabled());
-    encodingOptions.setAttribute("channels",cChannels->currentIndex());
+//     encodingOptions.setAttribute("bitrateMode",cBitrateMode->currentIndex());
+//     encodingOptions.setAttribute("channelsEnabled",chChannels->isChecked() && chChannels->isEnabled());
+//     encodingOptions.setAttribute("channels",cChannels->currentIndex());
     encodingOptions.setAttribute("samplerateEnabled",chSamplerate->isChecked() && chSamplerate->isEnabled());
     encodingOptions.setAttribute("samplerate",cSamplerate->currentIndex());
     root.appendChild(encodingOptions);
     return profile;
 }
 
-bool OggCodecWidget::setCustomProfile( const QString& profile, const QDomDocument& document )
+bool FaacCodecWidget::setCustomProfile( const QString& profile, const QDomDocument& document )
 {
     QDomElement root = document.documentElement();
     QDomElement encodingOptions = root.elementsByTagName("encodingOptions").at(0).toElement();
@@ -311,15 +311,15 @@ bool OggCodecWidget::setCustomProfile( const QString& profile, const QDomDocumen
     modeChanged( cMode->currentIndex() );
     sQuality->setValue( (int)(encodingOptions.attribute("quality").toDouble()*100) );
     dQuality->setValue( encodingOptions.attribute("quality").toDouble() );
-    cBitrateMode->setCurrentIndex( encodingOptions.attribute("bitrateMode").toInt() );
-    chChannels->setChecked( encodingOptions.attribute("channelsEnabled").toInt() );
-    cChannels->setCurrentIndex( encodingOptions.attribute("channels").toInt() );
+//     cBitrateMode->setCurrentIndex( encodingOptions.attribute("bitrateMode").toInt() );
+//     chChannels->setChecked( encodingOptions.attribute("channelsEnabled").toInt() );
+//     cChannels->setCurrentIndex( encodingOptions.attribute("channels").toInt() );
     chSamplerate->setChecked( encodingOptions.attribute("samplerateEnabled").toInt() );
     cSamplerate->setCurrentIndex( encodingOptions.attribute("samplerate").toInt() );
     return true;
 }
 
-int OggCodecWidget::currentDataRate()
+int FaacCodecWidget::currentDataRate()
 {
     int dataRate;
     
@@ -340,10 +340,10 @@ int OggCodecWidget::currentDataRate()
             dataRate = dQuality->value()/8*60*1000;
         }
         
-        if( chChannels->isChecked() )
-        {
-            dataRate *= 0.9f;
-        }
+//         if( chChannels->isChecked() )
+//         {
+//             dataRate *= 0.9f;
+//         }
         if( chSamplerate->isChecked() && cSamplerate->currentText().replace(" Hz","").toInt() <= 22050 )
         {
             dataRate *= 0.9f;
@@ -353,63 +353,63 @@ int OggCodecWidget::currentDataRate()
     return dataRate;
 }
 
-void OggCodecWidget::modeChanged( int mode )
+void FaacCodecWidget::modeChanged( int mode )
 {
     if( mode == 0 )
     {
-        sQuality->setRange( -100, 1000 );
+        sQuality->setRange( 10, 500 );
 //         sQuality->setTickInterval( 100 );
-        sQuality->setSingleStep( 50 );
-        dQuality->setRange( -1, 10 );
-        dQuality->setSingleStep( 0.5 );
-        dQuality->setDecimals( 2 );
+        sQuality->setSingleStep( 10 );
+        dQuality->setRange( 10, 500 );
+        dQuality->setSingleStep( 10 );
+        dQuality->setDecimals( 0 );
         dQuality->setSuffix( "" );
-        sQuality->setValue( 400 );
-        dQuality->setValue( 4.0 );
+        sQuality->setValue( 100 );
+        dQuality->setValue( 100 );
 //         dQuality->setValue( qualityForBitrate(dQuality->value()) );
 //         qualitySpinBoxChanged( dQuality->value() );
 
-        cBitrateMode->clear();
-        cBitrateMode->addItem( i18n("Variable") );
-        cBitrateMode->setEnabled( false );
+//         cBitrateMode->clear();
+//         cBitrateMode->addItem( i18n("Variable") );
+//         cBitrateMode->setEnabled( false );
     }
     else
     {
-        sQuality->setRange( 800, 32000 );
+        sQuality->setRange( 8, 320 );
 //         sQuality->setTickInterval( 800 );
-        sQuality->setSingleStep( 800 );
+        sQuality->setSingleStep( 8 );
         dQuality->setRange( 8, 320 );
         dQuality->setSingleStep( 8 );
         dQuality->setDecimals( 0 );
         dQuality->setSuffix( " kbps" );
-        sQuality->setValue( 16000 );
+        sQuality->setValue( 160 );
         dQuality->setValue( 160 );
 //         dQuality->setValue( bitrateForQuality(dQuality->value()) );
 //         qualitySpinBoxChanged( dQuality->value() );
 
-        cBitrateMode->clear();
-        cBitrateMode->addItem( i18n("Avarage") );
-        cBitrateMode->addItem( i18n("Constant") );
-        cBitrateMode->setEnabled( true );
+//         cBitrateMode->clear();
+//         cBitrateMode->addItem( i18n("Avarage") );
+//         cBitrateMode->addItem( i18n("Constant") );
+//         cBitrateMode->setEnabled( true );
     }
 }
 
-void OggCodecWidget::qualitySliderChanged( int quality )
+void FaacCodecWidget::qualitySliderChanged( int quality )
 {
-    dQuality->setValue( double(quality)/100.0 );
+    dQuality->setValue( double(quality) );
 }
 
-void OggCodecWidget::qualitySpinBoxChanged( double quality )
+void FaacCodecWidget::qualitySpinBoxChanged( double quality )
 {
-    sQuality->setValue( round(quality*100.0) );
+    sQuality->setValue( round(quality) );
 }
 
-void OggCodecWidget::channelsToggled( bool enabled )
-{
-    cChannels->setEnabled( enabled );
-}
+// void FaacCodecWidget::channelsToggled( bool enabled )
+// {
+//     cChannels->setEnabled( enabled );
+// }
 
-void OggCodecWidget::samplerateToggled( bool enabled )
+void FaacCodecWidget::samplerateToggled( bool enabled )
 {
     cSamplerate->setEnabled( enabled );
 }

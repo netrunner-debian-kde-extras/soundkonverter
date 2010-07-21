@@ -1,21 +1,21 @@
 
-#ifndef OGGCODECWIDGET_H
-#define OGGCODECWIDGET_H
+#ifndef MPLAYERCODECWIDGET_H
+#define MPLAYERCODECWIDGET_H
 
 #include "../../core/codecwidget.h"
 
 class KComboBox;
 class QSlider;
-class QDoubleSpinBox;
+class QSpinBox;
 class QCheckBox;
 // class QLabel;
 
-class OggCodecWidget : public CodecWidget
+class MPlayerCodecWidget : public CodecWidget
 {
     Q_OBJECT
 public:
-    OggCodecWidget();
-    ~OggCodecWidget();
+    MPlayerCodecWidget();
+    ~MPlayerCodecWidget();
 
     ConversionOptions *currentConversionOptions();
     bool setCurrentConversionOptions( ConversionOptions *_options );
@@ -27,10 +27,8 @@ public:
     int currentDataRate();
 
 private:
-    KComboBox *cMode;
-    QSlider *sQuality;
-    QDoubleSpinBox *dQuality;
-    KComboBox *cBitrateMode;
+    QSlider *sBitrate;
+    QSpinBox *iBitrate;
     QCheckBox *chChannels;
     KComboBox *cChannels;
     QCheckBox *chSamplerate;
@@ -38,13 +36,9 @@ private:
 
     QString currentFormat; // holds the current output file format
 
-    int bitrateForQuality( double quality );
-    double qualityForBitrate( int bitrate );
-
 private slots:
-    void modeChanged( int mode );
-    void qualitySliderChanged( int quality );
-    void qualitySpinBoxChanged( double quality );
+    void qualitySliderChanged( int bitrate );
+    void qualitySpinBoxChanged( int bitrate );
     void channelsToggled( bool enabled );
     void samplerateToggled( bool enabled );
 
@@ -52,4 +46,4 @@ signals:
     void somethingChanged();
 };
 
-#endif // OGGCODECWIDGET_H
+#endif // MPLAYERCODECWIDGET_H
