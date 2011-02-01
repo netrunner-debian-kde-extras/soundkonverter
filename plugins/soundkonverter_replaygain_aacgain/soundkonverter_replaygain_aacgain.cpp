@@ -8,6 +8,9 @@ soundkonverter_replaygain_aacgain::soundkonverter_replaygain_aacgain( QObject *p
     : ReplayGainPlugin( parent )
 {
     binaries["aacgain"] = "";
+    
+    allCodecs += "aac";
+    allCodecs += "mp3";
 }
 
 soundkonverter_replaygain_aacgain::~soundkonverter_replaygain_aacgain()
@@ -50,6 +53,7 @@ BackendPlugin::FormatInfo soundkonverter_replaygain_aacgain::formatInfo( const Q
         info.mimeTypes.append( "audio/aac" );
         info.mimeTypes.append( "audio/aacp" );
         info.mimeTypes.append( "audio/mp4" );
+        info.mimeTypes.append( "video/mp4" );
         info.extensions.append( "aac" );
         info.extensions.append( "3gp" );
         info.extensions.append( "mp4" );
@@ -67,31 +71,39 @@ BackendPlugin::FormatInfo soundkonverter_replaygain_aacgain::formatInfo( const Q
     return info;
 }
 
-QString soundkonverter_replaygain_aacgain::getCodecFromFile( const KUrl& filename, const QString& mimeType )
-{
-    if( mimeType == "audio/aac" || mimeType == "audio/aacp" || mimeType == "audio/mp4" )
-    {
-        return "aac";
-    }
-    else if( mimeType == "audio/x-mp3" || mimeType == "audio/mp3" || mimeType == "audio/mpeg" )
-    {
-        return "mp3";
-    }
-    else if( mimeType == "application/octet-stream" )
-    {
-        if( filename.url().endsWith(".aac") ) return "aac";
-        if( filename.url().endsWith(".mp3") ) return "mp3";
-    }
+// QString soundkonverter_replaygain_aacgain::getCodecFromFile( const KUrl& filename, const QString& mimeType )
+// {
+//     if( mimeType == "audio/aac" || mimeType == "audio/aacp" || mimeType == "audio/mp4" )
+//     {
+//         return "aac";
+//     }
+//     else if( mimeType == "audio/x-mp3" || mimeType == "audio/mp3" || mimeType == "audio/mpeg" )
+//     {
+//         return "mp3";
+//     }
+//     else if( mimeType == "application/octet-stream" )
+//     {
+//         if( filename.url().endsWith(".aac") ) return "aac";
+//         if( filename.url().endsWith(".mp3") ) return "mp3";
+//     }
+// 
+//     return "";
+// }
 
-    return "";
+bool soundkonverter_replaygain_aacgain::isConfigSupported( ActionType action, const QString& codecName )
+{
+    return true;
 }
+
+void soundkonverter_replaygain_aacgain::showConfigDialog( ActionType action, const QString& codecName, QWidget *parent )
+{}
 
 bool soundkonverter_replaygain_aacgain::hasInfo()
 {
     return false;
 }
 
-void soundkonverter_replaygain_aacgain::showInfo()
+void soundkonverter_replaygain_aacgain::showInfo( QWidget *parent )
 {}
 
 int soundkonverter_replaygain_aacgain::apply( const KUrl::List& fileList, ReplayGainPlugin::ApplyMode mode )
@@ -108,6 +120,7 @@ int soundkonverter_replaygain_aacgain::apply( const KUrl::List& fileList, Replay
 //     newItem->mode = mode;
 
     (*newItem->process) << binaries["aacgain"];
+    (*newItem->process) << "-k";
     if( mode == ReplayGainPlugin::Add )
     {
         (*newItem->process) << "-a";

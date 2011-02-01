@@ -5,8 +5,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/mod
 find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
 
-# find_package(Cdparanoia)
-#macro_log_feature(CDPARANOIA_FOUND "cdparanoia" "Reads digital audio directly from a CD, then writes the data to a file or pipe in several different formats" "http://www.xiph.org/paranoia/" FALSE "" "Required for building Audex.")
+find_package(Cdparanoia REQUIRED)
+# macro_log_feature(CDPARANOIA_FOUND "cdparanoia" "Reads digital audio directly from a CD, then writes the data to a file or pipe in several different formats" "http://www.xiph.org/paranoia/" FALSE "" "Required for building soundKonverter.")
 
 set(TAGLIB_MIN_VERSION "1.4")
 find_package(Taglib REQUIRED)
@@ -41,20 +41,29 @@ find_package(Taglib REQUIRED)
 #
 
 
-include_directories(${KDE4_INCLUDES} ${QT_INCLUDES} ${TAGLIB_INCLUDES})
+include_directories(${KDE4_INCLUDES} ${QT_INCLUDES} ${TAGLIB_INCLUDES} ${CDPARANOIA_INCLUDE_DIR})
 
 add_subdirectory(plugins/soundkonverter_codec_lame)
+add_subdirectory(plugins/soundkonverter_codec_twolame)
 add_subdirectory(plugins/soundkonverter_codec_vorbistools)
 add_subdirectory(plugins/soundkonverter_codec_flac)
+add_subdirectory(plugins/soundkonverter_codec_flake)
 add_subdirectory(plugins/soundkonverter_codec_ffmpeg)
+add_subdirectory(plugins/soundkonverter_codec_mac)
 add_subdirectory(plugins/soundkonverter_codec_mplayer)
 add_subdirectory(plugins/soundkonverter_codec_faac)
 add_subdirectory(plugins/soundkonverter_codec_neroaac)
 add_subdirectory(plugins/soundkonverter_codec_timidity)
+add_subdirectory(plugins/soundkonverter_codec_wavpack)
+add_subdirectory(plugins/soundkonverter_codec_shorten)
+add_subdirectory(plugins/soundkonverter_codec_musepack)
+# add_subdirectory(plugins/soundkonverter_codec_speex)
 add_subdirectory(plugins/soundkonverter_replaygain_vorbisgain)
 add_subdirectory(plugins/soundkonverter_replaygain_metaflac)
 add_subdirectory(plugins/soundkonverter_replaygain_mp3gain)
 add_subdirectory(plugins/soundkonverter_replaygain_aacgain)
+add_subdirectory(plugins/soundkonverter_replaygain_wvgain)
+add_subdirectory(plugins/soundkonverter_replaygain_musepack)
 add_subdirectory(plugins/soundkonverter_ripper_cdparanoia)
 
 include(MacroOptionalAddSubdirectory)
@@ -81,13 +90,11 @@ install(TARGETS soundkonvertercore DESTINATION ${LIB_INSTALL_DIR})
 # ADD_DEFINITIONS(${TAGLIB_CFLAGS} -DQT_STL)
 
 set(soundkonverter_SRCS
-#    audiocd/cdmanager.cpp
-#    audiocd/paranoia.cpp
    configdialog/configdialog.cpp
    configdialog/configpagebase.cpp
    configdialog/configgeneralpage.cpp
-   configdialog/configadvancedpage.cpp
    configdialog/configbackendspage.cpp
+#    configdialog/configadvancedpage.cpp
    metadata/tagengine.cpp
    opener/fileopener.cpp
    opener/diropener.cpp
@@ -97,30 +104,31 @@ set(soundkonverter_SRCS
    replaygainscanner/replaygainscanner.cpp
    replaygainscanner/replaygainfilelist.cpp
    replaygainscanner/replaygainfilelistitem.cpp
+   global.cpp
    main.cpp
    soundkonverter.cpp
    soundkonverterapp.cpp
    soundkonverterview.cpp
+   codecproblems.cpp
+   combobutton.cpp
    config.cpp
+   conversionoptionsmanager.cpp
+   convert.cpp
    filelist.cpp
    filelistitem.cpp
-   combobutton.cpp
-   progressindicator.cpp
+   logger.cpp
+   logviewer.cpp
    options.cpp
    optionssimple.cpp
    optionsdetailed.cpp
-   optionslayer.cpp
    optionseditor.cpp
+   optionslayer.cpp
    pluginloader.cpp
+   progressindicator.cpp
    outputdirectory.cpp
-   convert.cpp
-   logger.cpp
-   logviewer.cpp
-   aboutplugins.cpp
-   conversionoptionsmanager.cpp
-   global.cpp
-   codecproblems.cpp
- )
+#    aboutplugins.cpp
+)
+
 
 #kde4_automoc(${soundkonverter_SRCS})
 
@@ -130,7 +138,7 @@ set(soundkonverter_SRCS
 
 kde4_add_executable(soundkonverter ${soundkonverter_SRCS})
 
-target_link_libraries(soundkonverter ${KDE4_KDEUI_LIBS} ${KDE4_KFILE_LIBS} ${KDE4_KIO_LIBS} ${KDE4_SOLID_LIBS} ${TAGLIB_LIBRARIES} kcddb kcompactdisc soundkonvertercore)
+target_link_libraries(soundkonverter ${KDE4_KDEUI_LIBS} ${KDE4_KFILE_LIBS} ${KDE4_KIO_LIBS} ${TAGLIB_LIBRARIES} kcddb ${CDPARANOIA_LIBRARIES} soundkonvertercore)
 
 install(TARGETS soundkonverter DESTINATION ${BIN_INSTALL_DIR})
 

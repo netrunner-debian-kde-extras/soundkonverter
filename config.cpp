@@ -1,12 +1,13 @@
 
 #include "config.h"
 #include "logger.h"
+#include "global.h"
 
 #include <KConfigGroup>
 #include <QDir>
 #include <QDomElement>
 #include <solid/device.h>
-#include <kstandarddirs.h>
+#include <KStandardDirs>
 
 
 Config::Config( Logger *_logger, QObject *parent )
@@ -46,6 +47,7 @@ void Config::load()
     data.general.specifyOutputDirectory = group.readEntry( "specifyOutputDirectory", QDir::homePath() + "/soundKonverter" );
     data.general.metaDataOutputDirectory = group.readEntry( "metaDataOutputDirectory", QDir::homePath() + "/soundKonverter/%b/%d - %n - %a - %t" );
     data.general.copyStructureOutputDirectory = group.readEntry( "copyStructureOutputDirectory", QDir::homePath() + "/soundKonverter" );
+    data.general.waitForAlbumGain = group.readEntry( "waitForAlbumGain", false );
     data.general.useVFATNames = group.readEntry( "useVFATNames", true );
     data.general.conflictHandling = (Config::Data::General::ConflictHandling)group.readEntry( "conflictHandling", 0 );
 //     data.general.priority = group.readEntry( "priority", 10 );
@@ -59,6 +61,8 @@ void Config::load()
 //     data.general.executeUserScript = group.readEntry( "executeUserScript", false );
 //     data.general.showToolBar = group.readEntry( "showToolBar", false );
 //     data.general.outputFilePermissions = group.readEntry( "outputFilePermissions", 644 );
+    data.general.createActionsMenu = group.readEntry( "createActionsMenu", true );
+    data.general.removeFailedFiles = group.readEntry( "removeFailedFiles", true );
     
     group = conf->group( "Backends" );
     data.backends.rippers = group.readEntry( "rippers", QStringList() );
@@ -364,7 +368,7 @@ void Config::save()
     KConfigGroup group;
     
     group = conf->group( "General" );
-    group.writeEntry( "configVersion", 1000 );
+    group.writeEntry( "configVersion", SOUNDKONVERTER_VERSION_NUMBER );
     group.writeEntry( "startTab", data.general.startTab );
     group.writeEntry( "lastTab", data.general.lastTab );
     group.writeEntry( "defaultProfile", data.general.defaultProfile );
@@ -383,6 +387,8 @@ void Config::save()
 //     group.writeEntry( "executeUserScript", data.general.executeUserScript );
 //     group.writeEntry( "showToolBar", data.general.showToolBar );
 //     group.writeEntry( "outputFilePermissions", data.general.outputFilePermissions );
+    group.writeEntry( "createActionsMenu", data.general.createActionsMenu );
+    group.writeEntry( "removeFailedFiles", data.general.removeFailedFiles );
 
     group = conf->group( "Backends" );
     group.writeEntry( "rippers", data.backends.rippers );
@@ -395,6 +401,90 @@ void Config::save()
         formats += format;
     }
     group.writeEntry( "formats", formats );
+    
+    writeServiceMenu();
+}
+
+void Config::writeServiceMenu()
+{
+    if( data.general.createActionsMenu )
+    {
+        QString content;
+        QStringList mimeTypes;
+
+        content = "";
+        content += "[Desktop Entry]\n";
+        content += "Type=Service\n";
+        content += "Encoding=UTF-8\n";
+        
+        const QStringList convertFormats = pPluginLoader->formatList( PluginLoader::Decode, PluginLoader::CompressionType(PluginLoader::Lossy|PluginLoader::Lossless|PluginLoader::Hybrid) );
+
+        mimeTypes.clear();
+        foreach( const QString format, convertFormats )
+        {
+            mimeTypes += pPluginLoader->codecMimeTypes( format );
+        }
+        
+        content += "ServiceTypes=KonqPopupMenu/Plugin," + mimeTypes.join(",") + "\n";
+        
+        content += "Icon=soundkonverter\n";
+        content += "Actions=ConvertWithSoundkonverter;\n\n";
+
+        content += "[Desktop Action ConvertWithSoundkonverter]\n";
+        content += "Name="+i18n("Convert with soundKonverter")+"\n";
+        content += "Icon=soundkonverter\n";
+        content += "Exec=soundkonverter %F\n";
+        
+        if( mimeTypes.count() > 0 )
+        {
+            QFile convertActionFile( KStandardDirs::locateLocal( "services", "ServiceMenus/convert_with_soundkonverter.desktop" ) );
+            if( convertActionFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
+            {
+                QTextStream convertActionStream( &convertActionFile );
+                convertActionStream << content;
+                convertActionFile.close();
+            }
+        }
+
+        content = "";
+        content += "[Desktop Entry]\n";
+        content += "Type=Service\n";
+        content += "Encoding=UTF-8\n";
+
+        const QStringList replaygainFormats = pPluginLoader->formatList( PluginLoader::ReplayGain, PluginLoader::CompressionType(PluginLoader::Lossy|PluginLoader::Lossless|PluginLoader::Hybrid) );
+
+        mimeTypes.clear();
+        foreach( const QString format, replaygainFormats )
+        {
+            mimeTypes += pPluginLoader->codecMimeTypes( format );
+        }
+        
+        content += "ServiceTypes=KonqPopupMenu/Plugin," + mimeTypes.join(",") + "\n";
+
+        content += "Icon=soundkonverter_replaygain\n";
+        content += "Actions=AddReplayGainWithSoundkonverter;\n\n";
+
+        content += "[Desktop Action AddReplayGainWithSoundkonverter]\n";
+        content += "Name="+i18n("Add Replay Gain with soundKonverter")+"\n";
+        content += "Icon=soundkonverter-replaygain\n";
+        content += "Exec=soundkonverter --replaygain %F\n";
+
+        if( mimeTypes.count() > 0 )
+        {
+            QFile replaygainActionFile( KStandardDirs::locateLocal( "services", "ServiceMenus/add_replaygain_with_soundkonverter.desktop" ) );
+            if( replaygainActionFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
+            {
+                QTextStream replaygainActionStream( &replaygainActionFile );
+                replaygainActionStream << content;
+                replaygainActionFile.close();
+            }
+        }
+    }
+    else
+    {
+        QFile::remove( KStandardDirs::locateLocal( "services", "ServiceMenus/convert_with_soundkonverter.desktop" ) );
+        QFile::remove( KStandardDirs::locateLocal( "services", "ServiceMenus/add_replaygain_with_soundkonverter.desktop" ) );
+    }
 }
 
 QStringList Config::customProfiles()

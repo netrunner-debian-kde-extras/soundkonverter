@@ -20,7 +20,7 @@
 
 VorbisToolsCodecWidget::VorbisToolsCodecWidget()
     : CodecWidget(),
-    currentFormat( "ogg" )
+    currentFormat( "ogg vorbis" )
 {
     QGridLayout *grid = new QGridLayout( this );
     grid->setContentsMargins( 0, 0, 0, 0 );
@@ -128,7 +128,6 @@ double VorbisToolsCodecWidget::qualityForBitrate( int bitrate )
 ConversionOptions *VorbisToolsCodecWidget::currentConversionOptions()
 {
     ConversionOptions *options = new ConversionOptions();
-    options->pluginName = global_plugin_name;
 
     if( cMode->currentText()==i18n("Quality") )
     {

@@ -50,6 +50,7 @@ public:
             QString metaDataOutputDirectory;
             QString copyStructureOutputDirectory;
 //             int priority;
+            bool waitForAlbumGain;
             bool useVFATNames;
             enum ConflictHandling {
                 NewFileName = 0,
@@ -61,6 +62,8 @@ public:
 //             bool executeUserScript;
 //             bool showToolBar;
 //             int outputFilePermissions;
+            bool createActionsMenu;
+            bool removeFailedFiles;
         } general;
         struct Backends {
             QStringList rippers;
@@ -79,6 +82,7 @@ public:
     void load();
     void save();
     
+    /// returns a list of all working custom profiles
     QStringList customProfiles();
 
     PluginLoader *pluginLoader() { return pPluginLoader; }
@@ -91,6 +95,8 @@ private:
     PluginLoader *pPluginLoader;
     TagEngine *pTagEngine;
     ConversionOptionsManager *pConversionOptionsManager;
+    
+    void writeServiceMenu();
 };
 
 #endif

@@ -15,6 +15,7 @@
 #include <QStringList>
 #include <QLabel>
 #include <QRegExp>
+#include <QProcess>
 
 #include <KLocale>
 #include <KMessageBox>
@@ -123,9 +124,10 @@ KUrl OutputDirectory::calcPath( FileListItem *fileListItem, Config *config, QStr
     if( extension.isEmpty() ) extension = options->codecName;
 
     QString fileName;
-    if( fileListItem->track == -1 ) fileName = fileListItem->url.fileName();
-    else if( fileListItem->tags != 0 ) fileName =  QString().sprintf("%02i",fileListItem->tags->track) + " - " + fileListItem->tags->title + "." + extension;
-    else fileName = "track" + QString::number(fileListItem->track) + "." + extension; // NOTE shouldn't be possible
+    if( fileListItem->track == -1 )
+        fileName = fileListItem->url.fileName();
+    else
+        fileName =  QString().sprintf("%02i",fileListItem->tags->track) + " - " + fileListItem->tags->artist + " - " + fileListItem->tags->title + "." + extension;
 
     // if the user wants to change the output directory/file name per file! TODO
 //     if( !fileListItem->options.outputFilePathName.isEmpty() ) {
@@ -514,11 +516,8 @@ void OutputDirectory::gotoDir()
         i = startDir.lastIndexOf( "/", i );
         startDir = startDir.left( i );
     }
-
-    kfm.clearProgram();
-    kfm << "dolphin";
-    kfm << startDir;
-    kfm.start();
+    
+    QProcess::startDetached( "dolphin", QStringList(startDir) );
 }
 
 void OutputDirectory::modeChangedSlot( int mode )

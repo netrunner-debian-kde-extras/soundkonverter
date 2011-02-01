@@ -2,6 +2,7 @@
 
 #include "soundkonverterapp.h"
 #include "soundkonverter.h"
+#include "global.h"
 
 #include <kdeui_export.h>
 #include <KMainWindow>
@@ -13,9 +14,9 @@
 
 static const char description[] =
     //I18N_NOOP("soundKonverter is a frontend to various audio encoders and decoders.\n\nsoundKonverter needs other programs that are converting the files in the background called backends.\n\nIf you find a bug, please don't hesitate to report it to me.\nYou can either report it at https://bugs.launchpad.net/soundkonverter or you can send me an email to hessijames@gmail.com.\nPlease keep in mind that it may take some time until I get to fix it.");
-    I18N_NOOP("soundKonverter is a frontend to various audio converters, Replay Gain tools and CD rippers.\n\nPlease file bug reports at https://bugs.launchpad.net/ubuntu/+source/soundkonverter\nor simply send me a mail to hessijames@gmail.com");
+    I18N_NOOP("soundKonverter is a frontend to various audio converters, Replay Gain tools and CD rippers.\n\nPlease file bug reports at https://bugs.launchpad.net/soundkonverter\nor simply send me a mail to hessijames@gmail.com");
 
-static const char version[] = "1.0.0 beta2";
+static const char version[] = SOUNDKONVERTER_VERSION_STRING;
 
 int main(int argc, char **argv)
 {
@@ -38,7 +39,7 @@ int main(int argc, char **argv)
     options.add( "invisible", ki18n("Start soundKonverter invisible") );
     options.add( "autostart", ki18n("Start the conversion immediately (enabled when using '--invisible')") );
     options.add( "autoclose", ki18n("Close soundKonverter after all files are converted (enabled when using '--invisible')") );
-    options.add( "command <command>", ki18n("Execute <command> after each file has been converted") );
+    options.add( "command <command>", ki18n("Execute <command> after each file has been converted (%i=input file, %o=output file)") );
     options.add( "+[files]", ki18n("Audio file(s) to append to the file list") );
     KCmdLineArgs::addCmdLineOptions(options);
     
@@ -48,15 +49,13 @@ int main(int argc, char **argv)
         return 0;
     }
 
-//     soundKonverterApp app;
-    
     soundKonverterApp app;
-    if ( app.isSessionRestored() ) {
+    if( app.isSessionRestored() )
+    {
         kRestoreMainWindows< soundKonverter >();
     }
-
-//     registerTaglibPlugins();
 
     // mainWin has WDestructiveClose flag by default, so it will delete itself.
     return app.exec();
 }
+

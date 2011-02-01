@@ -6,6 +6,8 @@
 #include "ffmpegcodecwidget.h"
 
 
+// TODO video files
+
 soundkonverter_codec_ffmpeg::soundkonverter_codec_ffmpeg( QObject *parent, const QStringList& args  )
     : CodecPlugin( parent )
 {
@@ -38,7 +40,7 @@ QList<ConversionPipeTrunk> soundkonverter_codec_ffmpeg::codecTable()
 {
     QList<ConversionPipeTrunk> table;
     
-    // encode
+    // decode
     fromCodecs += "wav";
     fromCodecs += "ogg vorbis";
     fromCodecs += "mp3";
@@ -52,7 +54,6 @@ QList<ConversionPipeTrunk> soundkonverter_codec_ffmpeg::codecTable()
 //     fromCodecs += "sonic lossless";
     fromCodecs += "als";
     fromCodecs += "amr nb";
-    // decode
     fromCodecs += "amr wb";
     fromCodecs += "ape";
 //     fromCodecs += "eac3";
@@ -65,9 +66,22 @@ QList<ConversionPipeTrunk> soundkonverter_codec_ffmpeg::codecTable()
 //     fromCodecs += "truespeech";
     fromCodecs += "tta";
     fromCodecs += "wavpack";
+    fromCodecs += "ra";
     // containers
     fromCodecs += "3gp";
+    fromCodecs += "rm";
+    // video
+    fromCodecs += "avi";
+    fromCodecs += "mkv";
+    fromCodecs += "ogv";
+    fromCodecs += "mpeg";
+    fromCodecs += "mov";
+    fromCodecs += "mp4";
+    fromCodecs += "flv";
+    fromCodecs += "wmv";
+    fromCodecs += "rv";
 
+    // encode
     toCodecs += "wav";
     toCodecs += "ogg vorbis";
     toCodecs += "mp3";
@@ -80,6 +94,7 @@ QList<ConversionPipeTrunk> soundkonverter_codec_ffmpeg::codecTable()
 //     toCodecs += "sonic";
 //     toCodecs += "sonic lossless";
     toCodecs += "amr nb";
+    
     
     for( int i=0; i<fromCodecs.count(); i++ )
     {
@@ -148,7 +163,7 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
         info.mimeTypes.append( "audio/x-oggflac" );
         info.extensions.append( "flac" );
         info.extensions.append( "fla" );
-        info.extensions.append( "ogg" );
+//         info.extensions.append( "ogg" );
     }
     else if( codecName == "wma" )
     {
@@ -164,6 +179,7 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
         info.mimeTypes.append( "audio/aac" );
         info.mimeTypes.append( "audio/aacp" );
         info.mimeTypes.append( "audio/mp4" );
+        info.mimeTypes.append( "video/mp4" );
         info.extensions.append( "aac" );
         info.extensions.append( "3gp" );
         info.extensions.append( "mp4" );
@@ -181,13 +197,14 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
         info.lossless = true;
         info.description = i18n("Apple Lossless Audio Codec is a lossless audio format from Apple."); // http://en.wikipedia.org/wiki/Alac
 //         info.mimeTypes.append( "audio/x-ms-wma" );
-        info.extensions.append( "m41" );
+        info.extensions.append( "m4a" );
+        info.extensions.append( "mp4" );
     }
     else if( codecName == "mp2" )
     {
         info.lossless = false;
         info.description = i18n("MPEG-1 Audio Layer II is an old lossy audio format."); // http://en.wikipedia.org/wiki/MPEG-1_Audio_Layer_II
-        info.mimeTypes.append( "audio/mpeg" );
+//         info.mimeTypes.append( "audio/mpeg" );
         info.extensions.append( "mp2" );
     }
 //     else if( codecName == "sonic" ) // TODO description
@@ -246,19 +263,20 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
     else if( codecName == "speex" )
     {
         info.lossless = false;
-        info.description = i18n("Speex is a free and lossy audio codec designed for encoding speech."); // http://en.wikipedia.org/wiki/Speex
-        info.mimeTypes.append( "audio/speex" );
-        info.mimeTypes.append( "audio/ogg" );
+        info.description = i18n("Speex is a free and lossy audio codec designed for low quality speech encoding.\nFor more information see: http://www.speex.org");
+        info.mimeTypes.append( "audio/x-speex" );
+        info.mimeTypes.append( "audio/x-speex+ogg" );
         info.extensions.append( "spx" );
+//         info.extensions.append( "ogg" );
     }
     else if( codecName == "mp1" )
     {
         info.lossless = false;
         info.description = i18n("MPEG-1 Audio Layer I very old and lossy file format."); // http://en.wikipedia.org/wiki/MP1
-        info.mimeTypes.append( "audio/mpeg" );
+//         info.mimeTypes.append( "audio/mpeg" );
         info.extensions.append( "mp1" );
     }
-    else if( codecName == "mpc" )
+    else if( codecName == "musepack" )
     {
         info.lossless = false;
         info.description = i18n("Musepack is a free and lossy file format based on mp2 and optimized for high quality."); // http://en.wikipedia.org/wiki/Musepack
@@ -271,9 +289,9 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
     else if( codecName == "shorten" )
     {
         info.lossless = true;
-        info.description = i18n("Shorten is an old lossless audio format."); // http://en.wikipedia.org/wiki/Shorten
-        info.mimeTypes.append( "audio/x-ms-wma" );
-        info.extensions.append( "wma" );
+        info.description = i18n("Shorten is a free and lossless audio codec.\nFor more information see: http://etree.org/shnutils/shorten/");
+        info.mimeTypes.append( "application/x-shorten" );
+        info.extensions.append( "shn" );
     }
 //     else if( codecName == "mlp" ) // TODO description
 //     {
@@ -311,6 +329,14 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
         info.extensions.append( "wv" );
         info.extensions.append( "wvp" );
     }
+    else if( codecName == "ra" )
+    {
+        info.lossless = false;
+        info.description = i18n("Real Media Audio is a propritary and lossy codec.");
+        info.mimeTypes.append( "audio/vnd.rn-realaudio" );
+        info.extensions.append( "ra" );
+        info.extensions.append( "rax" );
+    }
     else if( codecName == "3gp" )
     {
         info.lossless = false;
@@ -325,6 +351,103 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
         info.extensions.append( "3ga" );
         info.extensions.append( "3gp2" );
         info.extensions.append( "3gpp2" );
+    }
+    else if( codecName == "rm" )
+    {
+        info.lossless = false;
+        info.description = i18n("Real Media is a propritary and lossy codec.");
+        info.mimeTypes.append( "application/vnd.rn-realmedia" );
+        info.extensions.append( "rm" );
+        info.extensions.append( "rmj" );
+        info.extensions.append( "rmm" );
+        info.extensions.append( "rms" );
+        info.extensions.append( "rmvb" );
+        info.extensions.append( "rmx" );
+        info.extensions.append( "rm" );
+        info.extensions.append( "rm" );
+        info.extensions.append( "rm" );
+        info.extensions.append( "rm" );
+    }
+    else if( codecName == "avi" )
+    {
+        info.lossless = false;
+//         info.description = i18n("");
+        info.mimeTypes.append( "video/x-msvideo" );
+        info.extensions.append( "avi" );
+        info.extensions.append( "divx" );
+    }
+    else if( codecName == "mkv" )
+    {
+        info.lossless = false;
+//         info.description = i18n("");
+        info.mimeTypes.append( "video/x-matroska" );
+        info.extensions.append( "mkv" );
+    }
+    else if( codecName == "ogv" )
+    {
+        info.lossless = false;
+//         info.description = i18n("");
+        info.mimeTypes.append( "video/ogg" );
+        info.extensions.append( "ogv" );
+    }
+    else if( codecName == "mpeg" )
+    {
+        info.lossless = false;
+//         info.description = i18n("");
+        info.mimeTypes.append( "video/mpeg" );
+        info.extensions.append( "mpg" );
+        info.extensions.append( "mpeg" );
+        info.extensions.append( "m2t" );
+        info.extensions.append( "m2ts" );
+        info.extensions.append( "mod" );
+        info.extensions.append( "mp2" );
+        info.extensions.append( "mpe" );
+        info.extensions.append( "mts" );
+        info.extensions.append( "ts" );
+        info.extensions.append( "vob" );
+    }
+    else if( codecName == "mov" )
+    {
+        info.lossless = false;
+//         info.description = i18n("");
+        info.mimeTypes.append( "video/quicktime" );
+        info.extensions.append( "mov" );
+        info.extensions.append( "moov" );
+        info.extensions.append( "qt" );
+        info.extensions.append( "qtvr" );
+    }
+    else if( codecName == "mp4" )
+    {
+        info.lossless = false;
+//         info.description = i18n("");
+        info.mimeTypes.append( "video/mp4" );
+        info.extensions.append( "mp4" );
+        info.extensions.append( "m4v" );
+    }
+    else if( codecName == "flv" )
+    {
+        info.lossless = false;
+//         info.description = i18n("");
+        info.mimeTypes.append( "video/x-flv" );
+        info.mimeTypes.append( "video/flv" );
+        info.extensions.append( "flv" );
+    }
+    else if( codecName == "wmv" )
+    {
+        info.lossless = false;
+//         info.description = i18n("");
+        info.mimeTypes.append( "video/x-ms-wmv" );
+        info.mimeTypes.append( "video/x-ms-asf" );
+        info.extensions.append( "wmv" );
+        info.extensions.append( "asf" );
+    }
+    else if( codecName == "rv" )
+    {
+        info.lossless = false;
+//         info.description = i18n("");
+        info.mimeTypes.append( "video/vnd.rn-realvideo" );
+        info.extensions.append( "rv" );
+        info.extensions.append( "rvx" );
     }
 
     return info;
@@ -354,12 +477,12 @@ BackendPlugin::FormatInfo soundkonverter_codec_ffmpeg::formatInfo( const QString
 //     return "";
 // }
 
-bool soundkonverter_codec_ffmpeg::isConfigSupported( ActionType action )
+bool soundkonverter_codec_ffmpeg::isConfigSupported( ActionType action, const QString& codecName )
 {
     return false;
 }
 
-void soundkonverter_codec_ffmpeg::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
+void soundkonverter_codec_ffmpeg::showConfigDialog( ActionType action, const QString& codecName, QWidget *parent )
 {}
 
 bool soundkonverter_codec_ffmpeg::hasInfo()
@@ -367,7 +490,7 @@ bool soundkonverter_codec_ffmpeg::hasInfo()
     return false;
 }
 
-void soundkonverter_codec_ffmpeg::showInfo()
+void soundkonverter_codec_ffmpeg::showInfo( QWidget *parent )
 {}
 
 QWidget *soundkonverter_codec_ffmpeg::newCodecWidget()
@@ -394,16 +517,19 @@ int soundkonverter_codec_ffmpeg::convert( const KUrl& inputFile, const KUrl& out
         command += "\"" + inputFile.toLocalFile() + "\"";
         command += "-acodec";
         command += codecMap[conversionOptions->codecName];
-        command += "-ab";
-        command += QString::number(conversionOptions->bitrate) + "k";
-        if( conversionOptions->samplingRate > 0 )
+        if( outputCodec != "alac" )
         {
-            command += "-ar";
-            command += QString::number(conversionOptions->samplingRate);
-        }
-        if( conversionOptions->channels > 0 )
-        {
-            command += "-ac 1";
+            command += "-ab";
+            command += QString::number(conversionOptions->bitrate) + "k";
+            if(  conversionOptions->samplingRate > 0 )
+            {
+                command += "-ar";
+                command += QString::number(conversionOptions->samplingRate);
+            }
+            if( conversionOptions->channels > 0 )
+            {
+                command += "-ac 1";
+            }
         }
         command += "\"" + outputFile.toLocalFile() + "\"";
     }

@@ -9,6 +9,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
+
 #include "urlopener.h"
 #include "../options.h"
 #include "../config.h"
@@ -23,7 +24,9 @@
 #include <QDir>
 
 
-// TODO enable proceed button only if at least one file got selected
+// TODO enable proceed button only if at least one file got selected // copy'n'paste error ???
+
+// TODO message box if url can't be added -> maybe in file list
 
 UrlOpener::UrlOpener( Config *_config, QWidget *parent, Qt::WFlags f )
     : KDialog( parent, f ),
@@ -87,7 +90,6 @@ UrlOpener::UrlOpener( Config *_config, QWidget *parent, Qt::WFlags f )
     connect( pCancel, SIGNAL(clicked()), this, SLOT(reject()) );
 }
 
-
 UrlOpener::~UrlOpener()
 {}
 
@@ -120,7 +122,14 @@ void UrlOpener::okClickedSlot()
 {
     if( page == ConversionOptionsPage )
     {
-        emit done( urls, options->currentConversionOptions() );
+        if( options->currentConversionOptions() )
+        {
+            emit done( urls, options->currentConversionOptions() );
+            accept();
+        }
+        else
+        {
+            KMessageBox::error( this, i18n("No conversion options selected.") );
+        }
     }
-    accept();
 }

@@ -21,6 +21,10 @@ soundkonverter_codec_lame::soundkonverter_codec_lame( QObject *parent, const QSt
     : CodecPlugin( parent )
 {
     binaries["lame"] = "";
+    
+    allCodecs += "mp3";
+    allCodecs += "mp2";
+    allCodecs += "wav";
 }
 
 soundkonverter_codec_lame::~soundkonverter_codec_lame()
@@ -97,7 +101,7 @@ BackendPlugin::FormatInfo soundkonverter_codec_lame::formatInfo( const QString& 
         info.lossless = false;
         info.description = i18n("MP2 is an old lossy audio codec.");
         info.mimeTypes.append( "audio/x-mp2" );
-        info.extensions.append( "mp32" );
+        info.extensions.append( "mp2" );
     }
     else if( codecName == "wav" )
     {
@@ -111,40 +115,39 @@ BackendPlugin::FormatInfo soundkonverter_codec_lame::formatInfo( const QString& 
     return info;
 }
 
-QString soundkonverter_codec_lame::getCodecFromFile( const KUrl& filename, const QString& mimeType )
-{
-    if( mimeType == "audio/x-mp3" || mimeType == "audio/mp3" || mimeType == "audio/mpeg" )
-    {
-        return "mp3";
-    }
-    else if( mimeType == "audio/x-mp2" || mimeType == "audio/mp2" || mimeType == "video/mpeg" )
-    {
-        return "mp2";
-    }
-    else if( mimeType == "audio/x-wav" || mimeType == "audio/wav" )
-    {
-        return "wav";
-    }
-    else if( mimeType == "application/octet-stream" )
-    {
-        if( filename.url().endsWith(".mp3") ) return "mp3";
-        if( filename.url().endsWith(".mp2") ) return "mp2";
-        if( filename.url().endsWith(".wav") ) return "wav";
-    }
+// QString soundkonverter_codec_lame::getCodecFromFile( const KUrl& filename, const QString& mimeType )
+// {
+//     if( mimeType == "audio/x-mp3" || mimeType == "audio/mp3" || mimeType == "audio/mpeg" )
+//     {
+//         return "mp3";
+//     }
+//     else if( mimeType == "audio/x-mp2" || mimeType == "audio/mp2" || mimeType == "video/mpeg" )
+//     {
+//         return "mp2";
+//     }
+//     else if( mimeType == "audio/x-wav" || mimeType == "audio/wav" )
+//     {
+//         return "wav";
+//     }
+//     else if( mimeType == "application/octet-stream" )
+//     {
+//         if( filename.url().endsWith(".mp3") ) return "mp3";
+//         if( filename.url().endsWith(".mp2") ) return "mp2";
+//         if( filename.url().endsWith(".wav") ) return "wav";
+//     }
+// 
+//     return "";
+// }
 
-    return "";
-}
-
-bool soundkonverter_codec_lame::isConfigSupported( ActionType action )
+bool soundkonverter_codec_lame::isConfigSupported( ActionType action, const QString& codecName )
 {
     return true;
 }
 
-void soundkonverter_codec_lame::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
+void soundkonverter_codec_lame::showConfigDialog( ActionType action, const QString& codecName, QWidget *parent )
 {
     KDialog *dialog = new KDialog( parent );
-//     dialog->setCaption( i18n("Configure %s",global_plugin_name)  );
-    dialog->setCaption( "Configure lame" );
+    dialog->setCaption( i18n("Configure %1").arg(global_plugin_name)  );
     dialog->setButtons( KDialog::Ok | KDialog::Cancel | KDialog::Apply );
 
     QWidget *widget = new QWidget( dialog );
@@ -161,11 +164,24 @@ void soundkonverter_codec_lame::showConfigDialog( ActionType action, const QStri
 
 bool soundkonverter_codec_lame::hasInfo()
 {
-    return false;
+    return true;
 }
 
-void soundkonverter_codec_lame::showInfo()
-{}
+void soundkonverter_codec_lame::showInfo( QWidget *parent )
+{
+    KDialog *dialog = new KDialog( parent );
+    dialog->setCaption( i18n("About %1").arg(global_plugin_name)  );
+    dialog->setButtons( KDialog::Ok );
+
+    QLabel *widget = new QLabel( dialog );
+    
+    widget->setText( i18n("LAME is a free high quality MP3 encoder.\nYou can get it at: http://lame.sourceforge.net") );
+
+    dialog->setMainWidget( widget );
+
+    dialog->enableButtonApply( false );
+    dialog->show();
+}
 
 QWidget *soundkonverter_codec_lame::newCodecWidget()
 {
@@ -208,9 +224,9 @@ QStringList soundkonverter_codec_lame::convertCommand( const KUrl& inputFile, co
     QStringList command;
     ConversionOptions *conversionOptions = _conversionOptions;
     LameConversionOptions *lameConversionOptions = 0;
-    if( _conversionOptions->pluginName == name() )
+    if( conversionOptions->pluginName == name() )
     {
-        lameConversionOptions = static_cast<LameConversionOptions*>(_conversionOptions);
+        lameConversionOptions = static_cast<LameConversionOptions*>(conversionOptions);
     }
 
     if( outputCodec == "mp3" )
@@ -262,7 +278,7 @@ QStringList soundkonverter_codec_lame::convertCommand( const KUrl& inputFile, co
             {
                 if( conversionOptions->bitrateMode == ConversionOptions::Abr )
                 {
-                    command += "-abr";
+                    command += "--abr";
                     command += QString::number(conversionOptions->bitrate);
                     if( conversionOptions->bitrateMin > 0 || conversionOptions->bitrateMax > 0 )
                     {
@@ -280,7 +296,7 @@ QStringList soundkonverter_codec_lame::convertCommand( const KUrl& inputFile, co
                 }
                 else if( conversionOptions->bitrateMode == ConversionOptions::Cbr )
                 {
-                    command += "-cbr";
+                    command += "--cbr";
                     command += "-b";
                     command += QString::number(conversionOptions->bitrate);
                 }
@@ -314,6 +330,10 @@ QStringList soundkonverter_codec_lame::convertCommand( const KUrl& inputFile, co
                     command += "d";
                 }
             }
+        }
+        if( conversionOptions->pluginName == name() )
+        {
+            command += conversionOptions->cmdArguments;
         }
         command += "\"" + inputFile.toLocalFile() + "\"";
         command += "\"" + outputFile.toLocalFile() + "\"";

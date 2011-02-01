@@ -47,6 +47,8 @@ private:
     QStringList sConflictHandling;
     KIntSpinBox *iNumFiles;
     KIntSpinBox *iUpdateDelay;
+    QCheckBox *cCreateActionsMenu;
+    QCheckBox *cRemoveFailedFiles;
 
     Config *config;
 

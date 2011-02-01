@@ -8,6 +8,8 @@ soundkonverter_replaygain_mp3gain::soundkonverter_replaygain_mp3gain( QObject *p
     : ReplayGainPlugin( parent )
 {
     binaries["mp3gain"] = "";
+    
+    allCodecs += "mp3";
 }
 
 soundkonverter_replaygain_mp3gain::~soundkonverter_replaygain_mp3gain()
@@ -42,6 +44,7 @@ BackendPlugin::FormatInfo soundkonverter_replaygain_mp3gain::formatInfo( const Q
         info.lossless = false;
         info.description = i18n("MP3 is a very popular lossy audio codec.");
         info.mimeTypes.append( "audio/x-mp3" );
+        info.mimeTypes.append( "audio/mp3" );
         info.mimeTypes.append( "audio/mpeg" );
         info.extensions.append( "mp3" );
     }
@@ -49,26 +52,34 @@ BackendPlugin::FormatInfo soundkonverter_replaygain_mp3gain::formatInfo( const Q
     return info;
 }
 
-QString soundkonverter_replaygain_mp3gain::getCodecFromFile( const KUrl& filename, const QString& mimeType )
-{
-    if( mimeType == "audio/x-mp3" || mimeType == "audio/mp3" || mimeType == "audio/mpeg" )
-    {
-        return "mp3";
-    }
-    else if( mimeType == "application/octet-stream" )
-    {
-        if( filename.url().endsWith(".mp3") ) return "mp3";
-    }
+// QString soundkonverter_replaygain_mp3gain::getCodecFromFile( const KUrl& filename, const QString& mimeType )
+// {
+//     if( mimeType == "audio/x-mp3" || mimeType == "audio/mp3" || mimeType == "audio/mpeg" )
+//     {
+//         return "mp3";
+//     }
+//     else if( mimeType == "application/octet-stream" )
+//     {
+//         if( filename.url().endsWith(".mp3") ) return "mp3";
+//     }
+// 
+//     return "";
+// }
 
-    return "";
+bool soundkonverter_replaygain_mp3gain::isConfigSupported( ActionType action, const QString& codecName )
+{
+    return true;
 }
+
+void soundkonverter_replaygain_mp3gain::showConfigDialog( ActionType action, const QString& codecName, QWidget *parent )
+{}
 
 bool soundkonverter_replaygain_mp3gain::hasInfo()
 {
     return false;
 }
 
-void soundkonverter_replaygain_mp3gain::showInfo()
+void soundkonverter_replaygain_mp3gain::showInfo( QWidget *parent )
 {}
 
 int soundkonverter_replaygain_mp3gain::apply( const KUrl::List& fileList, ReplayGainPlugin::ApplyMode mode )
@@ -85,6 +96,7 @@ int soundkonverter_replaygain_mp3gain::apply( const KUrl::List& fileList, Replay
 //     newItem->mode = mode;
 
     (*newItem->process) << binaries["mp3gain"];
+    (*newItem->process) << "-k";
     if( mode == ReplayGainPlugin::Add )
     {
         (*newItem->process) << "-a";

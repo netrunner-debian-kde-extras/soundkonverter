@@ -63,6 +63,7 @@ BackendPlugin::FormatInfo soundkonverter_codec_neroaac::formatInfo( const QStrin
         info.mimeTypes.append( "audio/aac" );
         info.mimeTypes.append( "audio/aacp" );
         info.mimeTypes.append( "audio/mp4" );
+        info.mimeTypes.append( "video/mp4" );
         info.extensions.append( "aac" );
         info.extensions.append( "3gp" );
         info.extensions.append( "mp4" );
@@ -80,12 +81,12 @@ BackendPlugin::FormatInfo soundkonverter_codec_neroaac::formatInfo( const QStrin
     return info;
 }
 
-bool soundkonverter_codec_neroaac::isConfigSupported( ActionType action )
+bool soundkonverter_codec_neroaac::isConfigSupported( ActionType action, const QString& codecName )
 {
     return false;
 }
 
-void soundkonverter_codec_neroaac::showConfigDialog( ActionType action, const QString& format, QWidget *parent )
+void soundkonverter_codec_neroaac::showConfigDialog( ActionType action, const QString& codecName, QWidget *parent )
 {}
 
 bool soundkonverter_codec_neroaac::hasInfo()
@@ -93,7 +94,7 @@ bool soundkonverter_codec_neroaac::hasInfo()
     return false;
 }
 
-void soundkonverter_codec_neroaac::showInfo()
+void soundkonverter_codec_neroaac::showInfo( QWidget *parent )
 {}
 
 QWidget *soundkonverter_codec_neroaac::newCodecWidget()
