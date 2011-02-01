@@ -25,6 +25,23 @@ BackendPlugin::BackendPlugin( QObject *parent )
 BackendPlugin::~BackendPlugin()
 {}
 
+BackendPlugin::FormatInfo BackendPlugin::formatInfo( const QString& codecName )
+{
+    BackendPlugin::FormatInfo info;
+    info.codecName = codecName;
+
+    if( codecName == "wav" )
+    {
+        info.lossless = true;
+        info.description = i18n("Wave won't compress the audio stream.");
+        info.mimeTypes.append( "audio/x-wav" );
+        info.mimeTypes.append( "audio/wav" );
+        info.extensions.append( "wav" );
+    }
+
+    return info;
+}
+
 void BackendPlugin::scanForBackends( const QStringList& directoryList )
 {
     for( QMap<QString, QString>::Iterator a = binaries.begin(); a != binaries.end(); ++a )
@@ -50,7 +67,7 @@ QString BackendPlugin::getCodecFromFile( const KUrl& filename, const QString& mi
         }
     }
     
-    QString extension = filename.url().mid( filename.url().lastIndexOf(".") + 1 );
+    const QString extension = filename.url().mid( filename.url().lastIndexOf(".") + 1 );
 
     for( int i=0; i<allCodecs.count(); i++ )
     {

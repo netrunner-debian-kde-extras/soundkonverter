@@ -88,6 +88,8 @@ public:
     QList<ReplayGainPipe> replaygainPipes;
     /** number of the current attempt to convert the file/add replaygain (for the pipes lists) */
     int take;
+    /** number of the last try in case the conversion wasn't successful in the end */
+    int lastTake;
 
     /** for the conversion and moving the file to a temporary place */
     KProcess *process;
@@ -203,7 +205,6 @@ private:
     CDManager* cdManager;
     FileList *fileList;
     Logger* logger;
-    KProcess notify;
     QMap<int,QString> usedOutputNames;
     
     struct LogQueue {

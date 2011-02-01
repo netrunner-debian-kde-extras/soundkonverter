@@ -5,16 +5,13 @@
  */
 #include "soundkonverter.h"
 #include "soundkonverterview.h"
+#include "global.h"
 #include "config.h"
 #include "configdialog/configdialog.h"
 #include "logger.h"
 #include "logviewer.h"
 #include "replaygainscanner/replaygainscanner.h"
-#include "aboutplugins.h"
 
-// #include <KAction>
-// #include <KStandardAction>
-// #include <KMessageBox>
 #include <KActionCollection>
 #include <KApplication>
 #include <KActionMenu>
@@ -23,6 +20,7 @@
 #include <KIcon>
 #include <KStandardDirs>
 #include <KMenu>
+#include <QDir>
 
 #if KDE_IS_VERSION(4,4,0)
     #include <KStatusNotifierItem>
@@ -41,12 +39,10 @@ soundKonverter::soundKonverter()
     setAcceptDrops(true);
 
     logger = new Logger( this );
-    logger->log( 1000, "This is soundKonverter 1.0.0 beta2" );
+    logger->log( 1000, i18n("This is soundKonverter %1").arg(SOUNDKONVERTER_VERSION_STRING) );
 
     config = new Config( logger, this );
     config->load();
-
-//     cdManager = new CDManager( this );
 
     m_view = new soundKonverterView( logger, config, cdManager, this );
     connect( m_view, SIGNAL(signalConversionStarted()), this, SLOT(conversionStarted()) );
@@ -67,13 +63,33 @@ soundKonverter::soundKonverter()
     setupGUI( ToolBar | Keys | Save | Create );
         
 //     helpMenu()->addTitle(i18n("About plugins"));
+
+    // clean up old files from previous soundKonverter versions
+    if( config->data.app.configVersion < 1001 )
+    {
+        if( QFile::exists(QDir::homePath()+"/.kde4/share/kde4/services/ServiceMenus/convert_with_soundkonverter.desktop") )
+        {
+            QFile::remove(QDir::homePath()+"/.kde4/share/kde4/services/ServiceMenus/convert_with_soundkonverter.desktop");
+            logger->log( 1000, i18n("Removing old file: %1").arg(QDir::homePath()+"/.kde4/share/kde4/services/ServiceMenus/convert_with_soundkonverter.desktop") );
+        }
+        if( QFile::exists(QDir::homePath()+"/.kde4/share/kde4/services/ServiceMenus/add_replaygain_with_soundkonverter.desktop") )
+        {
+            QFile::remove(QDir::homePath()+"/.kde4/share/kde4/services/ServiceMenus/add_replaygain_with_soundkonverter.desktop");
+            logger->log( 1000, i18n("Removing old file: %1").arg(QDir::homePath()+"/.kde4/share/kde4/services/ServiceMenus/add_replaygain_with_soundkonverter.desktop") );
+        }
+    }
 }
 
 soundKonverter::~soundKonverter()
 {
-    if( logViewer ) delete logViewer;
-    if( replayGainScanner ) delete replayGainScanner;
-    if( systemTray ) delete systemTray;
+    if( logViewer )
+        delete logViewer;
+    
+    if( replayGainScanner )
+        delete replayGainScanner;
+    
+    if( systemTray )
+        delete systemTray;
 }
 
 void soundKonverter::saveProperties( const KConfigGroup& )
@@ -102,9 +118,9 @@ void soundKonverter::showSystemTray()
     #endif
 }
 
-void soundKonverter::addConvertFiles( const KUrl::List& urls, const QString& profile, const QString& format, const QString& directory )
+void soundKonverter::addConvertFiles( const KUrl::List& urls, const QString& profile, const QString& format, const QString& directory, const QString& notifyCommand )
 {
-    m_view->addConvertFiles( urls, profile, format, directory );
+    m_view->addConvertFiles( urls, profile, format, directory, notifyCommand );
 }
 
 void soundKonverter::addReplayGainFiles( const KUrl::List& urls )
@@ -132,7 +148,7 @@ void soundKonverter::setupActions()
     connect( logviewer, SIGNAL(triggered()), this, SLOT(showLogViewer()) );
 
     KAction *replaygainscanner = actionCollection()->addAction("replaygainscanner");
-    replaygainscanner->setText(i18n("Replay Gain Scanner..."));
+    replaygainscanner->setText(i18n("Replay Gain tool..."));
     replaygainscanner->setIcon(KIcon("soundkonverter-replaygain"));
     connect( replaygainscanner, SIGNAL(triggered()), this, SLOT(showReplayGainScanner()) );
 
@@ -152,7 +168,7 @@ void soundKonverter::setupActions()
     connect( add_audiocd, SIGNAL(triggered()), m_view, SLOT(showCdDialog()) );
     
     KAction *add_url = actionCollection()->addAction("add_url");
-    add_url->setText(i18n("Add Url..."));
+    add_url->setText(i18n("Add url..."));
     add_url->setIcon(KIcon("network-workgroup"));
     connect( add_url, SIGNAL(triggered()), m_view, SLOT(showUrlDialog()) );
     
@@ -225,7 +241,8 @@ void soundKonverter::conversionStarted()
 
 void soundKonverter::conversionStopped( int state )
 {
-    if( autoclose && state != 1 ) KApplication::kApplication()->quit(); // close app on conversion stop unless the conversion was stopped by the user
+    if( autoclose && state != 1 && !m_view->isVisible() )
+        KApplication::kApplication()->quit(); // close app on conversion stop unless the conversion was stopped by the user or the window is shown
 
     if( systemTray )
     {

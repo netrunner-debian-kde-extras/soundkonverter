@@ -16,7 +16,6 @@
 #include "opener/urlopener.h"
 #include "opener/playlistopener.h"
 #include "convert.h"
-// #include "audiocd/cdmanager.h"
 #include "options.h"
 #include "codecproblems.h"
 
@@ -51,7 +50,7 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     gridLayout->setContentsMargins( 6, 6, 6, 6 );
 //     gridLayout->setSpacing( 0 );
 
-    fileList = new FileList( config, /*cdManager,*/ this );
+    fileList = new FileList( config, this );
     gridLayout->addWidget( fileList, 1, 0 );
     gridLayout->setRowStretch( 1, 1 );
     connect( fileList, SIGNAL(fileCountChanged(int)), this, SLOT(fileCountChanged(int)) );
@@ -64,7 +63,7 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     optionsLayer->hide();
 //     optionsLayer->fadeIn();
     gridLayout->addWidget( optionsLayer, 1, 0 );
-    connect( optionsLayer, SIGNAL(done(const KUrl::List&,ConversionOptions*)), fileList, SLOT(addFiles(const KUrl::List&,ConversionOptions*)) );
+    connect( optionsLayer, SIGNAL(done(const KUrl::List&,ConversionOptions*,const QString&)), fileList, SLOT(addFiles(const KUrl::List&,ConversionOptions*,const QString&)) );
 
 
     // add a horizontal box layout for the add combobutton to the grid
@@ -82,7 +81,7 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     cAdd->insertItem( KIcon("audio-x-generic"), i18n("Add files...") );
     cAdd->insertItem( KIcon("folder"), i18n("Add folder...") );
     cAdd->insertItem( KIcon("media-optical-audio"), i18n("Add CD tracks...") );
-    cAdd->insertItem( KIcon("network-workgroup"), i18n("Add Url...") );
+    cAdd->insertItem( KIcon("network-workgroup"), i18n("Add url...") );
     cAdd->insertItem( KIcon("view-media-playlist"), i18n("Add playlist...") );
     cAdd->increaseHeight( 6 );
     addBox->addWidget( cAdd );
@@ -132,14 +131,8 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     connect( convert, SIGNAL(updateTime(float)), progressIndicator, SLOT(update(float)) );
     connect( convert, SIGNAL(timeFinished(float)), progressIndicator, SLOT(timeFinished(float)) );
 
-    if( QFile::exists(KStandardDirs::locateLocal("data","soundkonverter/filelist_autosave.xml")) ) fileList->load( false );
-
-    // DEBUG
-//     fileList->addFiles(KUrl("file:///home/daniel/Musik/Backup/1 - 04 - Ratatat - Mirando.mp3"), optionsLayer->currentConversionOptions());
-//     fileList->addFiles(KUrl("file:///home/daniel/Musik/Backup/1 - 04 - Ratatat - Mirando.mp3"), optionsLayer->currentConversionOptions());
-//     fileList->addFiles(KUrl("file:///home/daniel/Musik/Backup/1 - 04 - Ratatat - Mirando.mp3"), optionsLayer->currentConversionOptions());
-//     fileList->addFiles(KUrl("file:///home/daniel/Musik/Backup/1 - 04 - Ratatat - Mirando.mp3"), optionsLayer->currentConversionOptions());
-//     fileList->addFiles(KUrl("file:///home/daniel/Musik/Backup/1 - 04 - Ratatat - Mirando.mp3"), optionsLayer->currentConversionOptions());
+    if( QFile::exists(KStandardDirs::locateLocal("data","soundkonverter/filelist_autosave.xml")) )
+        fileList->load( false );
 }
 
 soundKonverterView::~soundKonverterView()
@@ -329,7 +322,7 @@ void soundKonverterView::showPlaylistDialog()
     fileList->save( false );
 }
 
-void soundKonverterView::addConvertFiles( const KUrl::List& urls, QString _profile, QString _format, const QString& directory )
+void soundKonverterView::addConvertFiles( const KUrl::List& urls, QString _profile, QString _format, const QString& directory, const QString& notifyCommand )
 {
     KUrl::List k_urls;
     QStringList errorList;
@@ -495,7 +488,16 @@ void soundKonverterView::addConvertFiles( const KUrl::List& urls, QString _profi
             options->setOutputDirectory( directory );
             ConversionOptions *conversionOptions = options->currentConversionOptions();
             delete options;
-            fileList->addFiles( k_urls, conversionOptions );
+            if( conversionOptions )
+            {
+                fileList->addFiles( k_urls, conversionOptions, notifyCommand );
+            }
+            else
+            {
+                // FIXME error message, null pointer for conversion options
+//                 KMessageBox::error( this, i18n("Sorry, this shouldn't happen.\n\nPlease report this bug and attach the following error message:\n\nsoundKonverterView::addConvertFiles; Options::currentConversionOptions returned 0"), i18n("Internal error") );
+                KMessageBox::error( this, "Sorry, this shouldn't happen.\n\nPlease report this bug and attach the following error message:\n\nsoundKonverterView::addConvertFiles; Options::currentConversionOptions returned 0", "Internal error" );
+            }
         }
         else
         {
@@ -503,6 +505,7 @@ void soundKonverterView::addConvertFiles( const KUrl::List& urls, QString _profi
             if( !profile.isEmpty() ) optionsLayer->setProfile( profile );
             if( !format.isEmpty() ) optionsLayer->setFormat( format );
             if( !directory.isEmpty() ) optionsLayer->setOutputDirectory( directory );
+            if( !notifyCommand.isEmpty() ) optionsLayer->setCommand( notifyCommand );
             optionsLayer->fadeIn();
         }
     }

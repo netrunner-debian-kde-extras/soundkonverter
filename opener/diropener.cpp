@@ -14,7 +14,7 @@
 #include <KIcon>
 #include <KListWidget>
 #include <KUrlRequester>
-#include <QMessageBox>
+#include <KMessageBox>
 
 
 DirOpener::DirOpener( Config *_config, Mode _mode, QWidget *parent, Qt::WFlags f )
@@ -175,17 +175,29 @@ void DirOpener::addClicked()
     QStringList selectedCodecs;
     for( int i = 0; i < fileTypes->count(); i++ )
     {
-        if( fileTypes->item(i)->checkState() == Qt::Checked ) selectedCodecs += fileTypes->item(i)->text();
+        if( fileTypes->item(i)->checkState() == Qt::Checked )
+            selectedCodecs += fileTypes->item(i)->text();
     }
 
-    emit accept();
+//     emit accept();
     if( mode == Convert )
     {
-        emit done( uDirectory->url(), cRecursive->checkState() == Qt::Checked, selectedCodecs, options->currentConversionOptions() );
+        if( options->currentConversionOptions() )
+        {
+            hide();
+            emit done( uDirectory->url(), cRecursive->checkState() == Qt::Checked, selectedCodecs, options->currentConversionOptions() );
+            accept();
+        }
+        else
+        {
+            KMessageBox::error( this, i18n("No conversion options selected.") );
+        }
     }
     else if( mode == ReplayGain )
     {
+        hide();
         emit done( uDirectory->url(), cRecursive->checkState() == Qt::Checked, selectedCodecs );
+        accept();
     }
 }
 

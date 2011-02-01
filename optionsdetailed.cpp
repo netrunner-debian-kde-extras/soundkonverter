@@ -90,9 +90,9 @@ OptionsDetailed::OptionsDetailed( Config* _config, QWidget* parent )
     bottomBox->addWidget( cReplayGain );
     //connect( cReplayGain, SIGNAL(toggled(bool)), this, SLOT(somethingChanged()) );
     bottomBox->addSpacing( 12 );
-    cBpm = new QCheckBox( i18n("Calculate BPM tags"), this );
-    cBpm->hide();
-    bottomBox->addWidget( cBpm );
+//     cBpm = new QCheckBox( i18n("Calculate BPM tags"), this );
+//     cBpm->hide();
+//     bottomBox->addWidget( cBpm );
     //connect( cBpm, SIGNAL(toggled(bool)), this, SLOT(somethingChanged()) );
     bottomBox->addStretch();
     lEstimSize = new QLabel( QString(QChar(8776))+"? B / min." );
@@ -136,7 +136,8 @@ OptionsDetailed::OptionsDetailed( Config* _config, QWidget* parent )
         plugins.at(i)->deleteCodecWidget( widgets.at(i) );
     }
 */
-//     formatChanged( cFormat->currentText() );
+    cFormat->setCurrentIndex( 0 );
+    formatChanged( cFormat->currentText() );
 }
 
 
@@ -191,7 +192,7 @@ void OptionsDetailed::updateProfiles()
 
 void OptionsDetailed::formatChanged( const QString& format )
 {
-    QString oldEncoder = cPlugin->currentText();
+    const QString oldEncoder = cPlugin->currentText();
 
     cPlugin->clear();
     //if( format != "wav" ) // TODO make it nicer if wav is selected
@@ -202,10 +203,17 @@ void OptionsDetailed::formatChanged( const QString& format )
             cPlugin->addItems( config->data.backends.codecs.at(i).encoders );
         }
     }
+    cPlugin->setCurrentIndex( 0 );
 //     cPlugin->setEnabled( format != "wav" );
 
-    if( cPlugin->currentText() != oldEncoder ) encoderChanged( cPlugin->currentText() );
-    else if( wPlugin ) qobject_cast<CodecWidget*>(wPlugin)->setCurrentFormat( cFormat->currentText() );
+    if( cPlugin->currentText() != oldEncoder )
+    {
+        encoderChanged( cPlugin->currentText() );
+    }
+    else if( wPlugin )
+    {
+        qobject_cast<CodecWidget*>(wPlugin)->setCurrentFormat( cFormat->currentText() );
+    }
 
     somethingChanged();
 }
@@ -213,7 +221,12 @@ void OptionsDetailed::formatChanged( const QString& format )
 void OptionsDetailed::encoderChanged( const QString& encoder )
 {
     CodecPlugin *plugin = config->pluginLoader()->codecPluginByName( encoder );
-    if( !plugin ) return; // TODO error message
+    if( !plugin )
+    {
+//         TODO leads to crashes
+//         KMessageBox::error( this, i18n("Sorry, this shouldn't happen.\n\nPlease report this bug and attach the following error message:\n\nOptionsDetailed::encoderChanged; PluginLoader::codecPluginByName returned 0 for encoder: '%1'").arg(encoder), i18n("Internal error") );
+        return;
+    }
     currentPlugin = plugin;
     if( wPlugin )
     {
@@ -277,17 +290,18 @@ void OptionsDetailed::somethingChanged()
 ConversionOptions *OptionsDetailed::currentConversionOptions()
 {
     ConversionOptions *options = 0;
-    if( wPlugin )
+    if( wPlugin && currentPlugin )
     {
         options = qobject_cast<CodecWidget*>(wPlugin)->currentConversionOptions();
         if( options )
         {
             options->codecName = cFormat->currentText();
+            options->pluginName = currentPlugin->name();
             options->profile = qobject_cast<CodecWidget*>(wPlugin)->currentProfile();
             options->outputDirectoryMode = outputDirectory->mode();
             options->outputDirectory = outputDirectory->directory();
             options->replaygain = cReplayGain->isChecked();
-            options->bpm = cBpm->isChecked();
+//             options->bpm = cBpm->isChecked();
         }
     }
     config->data.general.lastFormat = cFormat->currentText();
@@ -303,7 +317,7 @@ bool OptionsDetailed::setCurrentConversionOptions( ConversionOptions *options )
     cPlugin->setCurrentIndex( cPlugin->findText(options->pluginName) );
     encoderChanged( cPlugin->currentText() );
     cReplayGain->setChecked( options->replaygain );
-    cBpm->setChecked( options->bpm );
+//     cBpm->setChecked( options->bpm );
 
     if( wPlugin ) return qobject_cast<CodecWidget*>(wPlugin)->setCurrentConversionOptions( options );
     else return false;
@@ -472,7 +486,7 @@ QString OptionsDetailed::currentFormat()
 
 void OptionsDetailed::setCurrentFormat( const QString& format )
 {
-    if( cFormat->currentText() != format )
+    if( !format.isEmpty() && format != cFormat->currentText() )
     {
         cFormat->setCurrentIndex( cFormat->findText(format) );
         formatChanged( cFormat->currentText() );

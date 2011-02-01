@@ -11,6 +11,7 @@ class QSpinBox;
 class QCheckBox;
 class QLabel;
 class QSlider;
+class KLineEdit;
 
 class LameCodecWidget : public CodecWidget
 {
@@ -30,7 +31,6 @@ public:
 
 private:
     // preset selection
-    QLabel *lPreset;
     KComboBox *cPreset;
     QSpinBox *iPresetBitrate;
     QCheckBox *cPresetBitrateCbr;
@@ -45,6 +45,8 @@ private:
     KComboBox *cChannels;
     QCheckBox *chSamplerate;
     KComboBox *cSamplerate;
+    QCheckBox *cCmdArguments;
+    KLineEdit *lCmdArguments;
 
     QString currentFormat; // holds the current output file format
 
@@ -59,8 +61,6 @@ private slots:
     void modeChanged( int mode );
     void qualitySliderChanged( int quality );
     void qualitySpinBoxChanged( int quality );
-    void channelsToggled( bool enabled );
-    void samplerateToggled( bool enabled );
 
 signals:
     void somethingChanged();

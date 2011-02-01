@@ -7,8 +7,29 @@ CMakeDir=/usr/share/cmake/Modules
 Current CMake Binary=file:///usr/bin/cmake
 CurrentBuildDir=file:///home/daniel/Entwicklung/Projekte/soundkonverter/build
 CurrentBuildType=Debug
-CurrentInstallDir=file:///home/daniel/kde
+CurrentInstallDir=file:///home/daniel/Entwicklung/local
 ProjectRootRelative=./
+
+[Launch]
+Launch Configurations=Launch Configuration 0
+
+[Launch][Launch Configuration 0]
+Configured Launch Modes=execute
+Configured Launchers=nativeAppLauncher
+Name=Neue Native Anwendung-Konfiguration
+Type=Native Application
+
+[Launch][Launch Configuration 0][Data]
+Arguments=
+Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
+Dependency Action=Nothing
+EnvironmentGroup=default
+Executable=file:///home/daniel/Entwicklung/local/bin/soundkonverter
+Working Directory=
+isExecutable=true
 
 [MakeBuilder]
 Number Of Jobs=1
+
+[Project]
+VersionControlSupport=kdevgit

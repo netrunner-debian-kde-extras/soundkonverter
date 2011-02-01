@@ -27,6 +27,9 @@
 #include <knuminput.h>
 #include <ktextedit.h>
 
+
+// TODO use QPointer or QSharedPointer
+
 OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     : KPageDialog( parent ),
     config( _config )
@@ -277,14 +280,16 @@ void OptionsEditor::setTagInputEnabled( bool enabled )
     }
 }
 
-// FIXME maybe buggy
 void OptionsEditor::itemsSelected( QList<FileListItem*> items )
 {
     applyChanges();
     
-    for( QList<FileListItem*>::Iterator it = items.begin(); it != items.end(); ) {
-        if( (*it)->converting || (*it) == 0 ) it = items.erase( it );
-        else it++;
+    for( QList<FileListItem*>::Iterator it = items.begin(); it != items.end(); )
+    {
+        if( (*it)->state == FileListItem::Ripping || (*it)->state == FileListItem::Converting || (*it)->state == FileListItem::ApplyingReplayGain )
+            it = items.erase( it );
+        else
+            it++;
     }
 
     selectedItems = items;
@@ -314,8 +319,9 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
 //         disconnect( options, SIGNAL(optionsChanged()), 0, 0 );
 //         options->setCurrentOptions( items.first()->options );
 //         connect( options, SIGNAL(optionsChanged()), this, SLOT(optionsChanged()) );
-        options->setCurrentConversionOptions( config->conversionOptionsManager()->getConversionOptions(selectedItems.first()->conversionOptionsId) );
-
+        const bool success = options->setCurrentConversionOptions( config->conversionOptionsManager()->getConversionOptions(selectedItems.first()->conversionOptionsId) );
+        options->setEnabled( success );
+        // TODO show error message
 
         // info tab
         ConversionOptions *conversionOptions = config->conversionOptionsManager()->getConversionOptions(items.first()->conversionOptionsId);
@@ -503,9 +509,25 @@ void OptionsEditor::itemRemoved( FileListItem *item )
 
 void OptionsEditor::applyChanges()
 {
+    ConversionOptions *newConversionOptions = options->currentConversionOptions();
+    
     for( int i=0; i<selectedItems.count(); i++ )
     {
-        selectedItems.at(i)->conversionOptionsId = config->conversionOptionsManager()->updateConversionOptions( selectedItems.at(i)->conversionOptionsId, options->currentConversionOptions() );
+        if( !selectedItems.at(i) )
+        {
+            // FIXME error message, null pointer for file list item
+            continue;
+        }
+        
+        if( newConversionOptions )
+        {
+            selectedItems.at(i)->conversionOptionsId = config->conversionOptionsManager()->updateConversionOptions( selectedItems.at(i)->conversionOptionsId, newConversionOptions );
+        }
+        else
+        {
+            // TODO error message
+        }
+        
         if( selectedItems.at(i)->tags )
         {
             selectedItems.at(i)->tags->title = lTitle->text();
