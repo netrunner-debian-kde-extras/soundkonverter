@@ -1,3 +1,9 @@
+soundkonverter (0.9.94-2) unstable; urgency=low
+
+  * Made build system cope with upcoming linker changes.
+
+ -- Michael Meskes <meskes@debian.org>  Fri, 11 Feb 2011 11:02:10 +0100
+
 soundkonverter (0.9.94-1) unstable; urgency=low
 
   * Imported Upstream version 0.9.94 (Closes: #595372, #602691)
