@@ -1,7 +1,7 @@
 //
 // C++ Implementation: optionseditor
 //
-// Description: 
+// Description:
 //
 //
 // Author: Daniel Faust <hessijames@gmail.com>, (C) 2008
@@ -43,7 +43,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     setButtonIcon( KDialog::User1, KIcon("go-next") );
     connect( this, SIGNAL(applyClicked()), this, SLOT(applyChanges()) );
     connect( this, SIGNAL(okClicked()), this, SLOT(applyChanges()) );
-    
+
     button(KDialog::User2)->setAutoRepeat(true);
     button(KDialog::User1)->setAutoRepeat(true);
 
@@ -67,7 +67,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pEditOptions->setFixedWidth( pEditOptions->sizeHint().width() );
     conversionOptionsGridLayout->addWidget( pEditOptions, 3, 0, Qt::AlignHCenter );
     pEditOptions->hide();
-//     connect( pEditOptions, SIGNAL(clicked()), this, SLOT(editOptionsClicked()) );
+    connect( pEditOptions, SIGNAL(clicked()), this, SLOT(editOptionsClicked()) );
 
 
 
@@ -93,7 +93,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pTitleEdit->setFixedSize( lTitle->sizeHint().height(), lTitle->sizeHint().height() );
     pTitleEdit->hide();
     titleBox->addWidget( pTitleEdit );
-//     connect( pTitleEdit, SIGNAL(clicked()), this, SLOT(editTitleClicked()) );
+    connect( pTitleEdit, SIGNAL(clicked()), this, SLOT(editTitleClicked()) );
     lNumberLabel = new QLabel( i18n("Track No.:"), tagsWidget );
     titleBox->addWidget( lNumberLabel );
     iNumber = new KIntSpinBox( 0, 999, 1, 1, tagsWidget );
@@ -104,7 +104,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pNumberEdit->setFixedSize( iNumber->sizeHint().height(), iNumber->sizeHint().height() );
     pNumberEdit->hide();
     titleBox->addWidget( pNumberEdit );
-//     connect( pNumberEdit, SIGNAL(clicked()), this, SLOT(editNumberClicked()) );
+    connect( pNumberEdit, SIGNAL(clicked()), this, SLOT(editNumberClicked()) );
 
     // add a horizontal box layout for the artist and the composer
     QHBoxLayout *artistBox = new QHBoxLayout();
@@ -120,7 +120,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pArtistEdit->setFixedSize( lArtist->sizeHint().height(), lArtist->sizeHint().height() );
     pArtistEdit->hide();
     artistBox->addWidget( pArtistEdit );
-//     connect( pArtistEdit, SIGNAL(clicked()), this, SLOT(editArtistClicked()) );
+    connect( pArtistEdit, SIGNAL(clicked()), this, SLOT(editArtistClicked()) );
     lComposerLabel = new QLabel( i18n("Composer:"), tagsWidget );
     artistBox->addWidget( lComposerLabel );
     lComposer = new KLineEdit( tagsWidget );
@@ -131,7 +131,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pComposerEdit->setFixedSize( lComposer->sizeHint().height(), lComposer->sizeHint().height() );
     pComposerEdit->hide();
     artistBox->addWidget( pComposerEdit );
-//     connect( pComposerEdit, SIGNAL(clicked()), this, SLOT(editComposerClicked()) );
+    connect( pComposerEdit, SIGNAL(clicked()), this, SLOT(editComposerClicked()) );
 
     // add a horizontal box layout for the album
     QHBoxLayout *albumBox = new QHBoxLayout();
@@ -147,7 +147,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pAlbumEdit->setFixedSize( lAlbum->sizeHint().height(), lAlbum->sizeHint().height() );
     pAlbumEdit->hide();
     albumBox->addWidget( pAlbumEdit );
-//     connect( pAlbumEdit, SIGNAL(clicked()), this, SLOT(editAlbumClicked()) );
+    connect( pAlbumEdit, SIGNAL(clicked()), this, SLOT(editAlbumClicked()) );
 
     // add a horizontal box layout for the disc number, year and genre
     QHBoxLayout *albumdataBox = new QHBoxLayout();
@@ -163,7 +163,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pDiscEdit->setFixedSize( iDisc->sizeHint().height(), iDisc->sizeHint().height() );
     pDiscEdit->hide();
     albumdataBox->addWidget( pDiscEdit );
-//     connect( pDiscEdit, SIGNAL(clicked()), this, SLOT(editDiscClicked()) );
+    connect( pDiscEdit, SIGNAL(clicked()), this, SLOT(editDiscClicked()) );
     albumdataBox->addStretch();
     lYearLabel = new QLabel( i18n("Year:"), tagsWidget );
     albumdataBox->addWidget( lYearLabel );
@@ -175,7 +175,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pYearEdit->setFixedSize( iYear->sizeHint().height(), iYear->sizeHint().height() );
     pYearEdit->hide();
     albumdataBox->addWidget( pYearEdit );
-//     connect( pYearEdit, SIGNAL(clicked()), this, SLOT(editYearClicked()) );
+    connect( pYearEdit, SIGNAL(clicked()), this, SLOT(editYearClicked()) );
     albumdataBox->addStretch();
     lGenreLabel = new QLabel( i18n("Genre:"), tagsWidget );
     albumdataBox->addWidget( lGenreLabel );
@@ -192,7 +192,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pGenreEdit->setFixedSize( cGenre->sizeHint().height(), cGenre->sizeHint().height() );
     pGenreEdit->hide();
     albumdataBox->addWidget( pGenreEdit );
-//     connect( pGenreEdit, SIGNAL(clicked()), this, SLOT(editGenreClicked()) );
+    connect( pGenreEdit, SIGNAL(clicked()), this, SLOT(editGenreClicked()) );
 
     // add a horizontal box layout for the comment
     QHBoxLayout *commentBox = new QHBoxLayout();
@@ -208,7 +208,7 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pCommentEdit->setFixedSize( lTitle->sizeHint().height(), lTitle->sizeHint().height() );
     pCommentEdit->hide();
     commentBox->addWidget( pCommentEdit );
-//     connect( pCommentEdit, SIGNAL(clicked()), this, SLOT(editCommentClicked()) );
+    connect( pCommentEdit, SIGNAL(clicked()), this, SLOT(editCommentClicked()) );
     tagsGridLayout->setRowStretch( 4, 1 );
 
     lEditTags = new QLabel( "", tagsWidget );
@@ -283,7 +283,7 @@ void OptionsEditor::setTagInputEnabled( bool enabled )
 void OptionsEditor::itemsSelected( QList<FileListItem*> items )
 {
     applyChanges();
-    
+
     for( QList<FileListItem*>::Iterator it = items.begin(); it != items.end(); )
     {
         if( (*it)->state == FileListItem::Ripping || (*it)->state == FileListItem::Converting || (*it)->state == FileListItem::ApplyingReplayGain )
@@ -294,7 +294,8 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
 
     selectedItems = items;
 
-    if( selectedItems.count() == 0 ) {
+    if( selectedItems.count() == 0 )
+    {
         setCaption( i18n("No file selected") );
         options->setEnabled( false );
         lEditOptions->hide();
@@ -312,7 +313,8 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
     lEditTags->hide();
     pEditTags->hide();
 
-    if( selectedItems.count() == 1 ) {
+    if( selectedItems.count() == 1 )
+    {
         setCaption( selectedItems.first()->url.fileName() );
         // HACK ...but seems to work...
         // FIXME directory does get set properly
@@ -325,26 +327,28 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
 
         // info tab
         ConversionOptions *conversionOptions = config->conversionOptionsManager()->getConversionOptions(items.first()->conversionOptionsId);
-        lPipes->setText("");
+        QString pipes_text;
         if( conversionOptions )
         {
-            QString inputCodec = config->pluginLoader()->getCodecFromFile( items.first()->url );
-            QList<ConversionPipe> pipes = config->pluginLoader()->getConversionPipes( inputCodec, conversionOptions->codecName, conversionOptions->pluginName );
-            for( int i=0; i<pipes.size(); i++ )
+            pipes_text = i18n("Possible conversion strategies:");
+            const QString inputCodec = config->pluginLoader()->getCodecFromFile( items.first()->url );
+            QList<ConversionPipe> conversionPipes = config->pluginLoader()->getConversionPipes( inputCodec, conversionOptions->codecName, conversionOptions->pluginName );
+            for( int i=0; i<conversionPipes.size(); i++ )
             {
-                if( pipes.at(i).trunks.count() == 1 )
+                QStringList pipe_str;
+
+                for( int j=0; j<conversionPipes.at(i).trunks.size(); j++ )
                 {
-                    lPipes->setText( lPipes->text() + QString::number(i+1) + ": " + pipes.at(i).trunks.at(0).plugin->name() + " (rating: " + QString::number(pipes.at(i).trunks.at(0).rating) + ")\n" );
+                    pipe_str += QString("%1 %2 %3 (%4)").arg(conversionPipes.at(i).trunks.at(j).codecFrom).arg("->").arg(conversionPipes.at(i).trunks.at(j).codecTo).arg(conversionPipes.at(i).trunks.at(j).plugin->name());
                 }
-                else if( pipes.at(i).trunks.count() == 2 )
-                {
-                    lPipes->setText( lPipes->text() + QString::number(i+1) + ": " + pipes.at(i).trunks.at(0).plugin->name() + " > " + pipes.at(i).trunks.at(1).plugin->name() + " (rating: " + QString::number(pipes.at(i).trunks.at(0).rating) + " & " + QString::number(pipes.at(i).trunks.at(1).rating) + ")\n" );
-                }
+
+                pipes_text += "\n" + pipe_str.join(", ");
             }
         }
+        lPipes->setText( pipes_text );
 
-
-        if( items.first()->tags == 0 && !items.first()->local ) {
+        if( items.first()->tags == 0 && !items.first()->local )
+        {
             setTagInputEnabled( false );
             lEditTags->setText( i18n("The tags could not be read, because this is not a local file.\n"
                     "soundKonverter will try to read the tags, when it is about to convert the file.\n"
@@ -353,7 +357,8 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
             lEditTags->show();
             pEditTags->show();
         }
-        else if( items.first()->tags == 0 ) {
+        else if( items.first()->tags == 0 )
+        {
             setTagInputEnabled( false );
             lEditTags->setText( i18n("Reading the tags of this file failed.\n"
                     "soundKonverter will try to read the tags a second time, when it is about to convert the file.\n"
@@ -362,7 +367,8 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
             lEditTags->show();
             pEditTags->show();
         }
-        else {
+        else
+        {
             lTitle->setText( items.first()->tags->title );
             iNumber->setValue( items.first()->tags->track );
             lArtist->setText( items.first()->tags->artist );
@@ -374,27 +380,32 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
             tComment->setText( items.first()->tags->comment );
         }
     }
-    else {
+    else
+    {
         setCaption( i18n("%1 Files").arg(items.count()) );
         QList<FileListItem*>::Iterator it = items.begin();
-//         ConversionOptions cOptions = (*it)->options;
-        QString title = ( (*it)->tags == 0 ) ? "" : (*it)->tags->title;
-        int number = ( (*it)->tags == 0 ) ? 0 : (*it)->tags->track;
-        QString artist = ( (*it)->tags == 0 ) ? "" : (*it)->tags->artist;
-        QString composer = ( (*it)->tags == 0 ) ? "" : (*it)->tags->composer;
-        QString album = ( (*it)->tags == 0 ) ? "" : (*it)->tags->album;
-        int disc = ( (*it)->tags == 0 ) ? 0 : (*it)->tags->disc;
-        int year = ( (*it)->tags == 0 ) ? 0 : (*it)->tags->year;
-        QString genre = ( (*it)->tags == 0 ) ? "" : (*it)->tags->genre;
-        QString comment = ( (*it)->tags == 0 ) ? "" : (*it)->tags->comment;
-        while( it != items.end() ) {
-/*            if( !cOptions.nearlyEqual((*it)->options) ) {
+        const int conversionOptionsId = (*it)->conversionOptionsId;
+        const QString title = ( (*it)->tags == 0 ) ? "" : (*it)->tags->title;
+        const int number = ( (*it)->tags == 0 ) ? 0 : (*it)->tags->track;
+        const QString artist = ( (*it)->tags == 0 ) ? "" : (*it)->tags->artist;
+        const QString composer = ( (*it)->tags == 0 ) ? "" : (*it)->tags->composer;
+        const QString album = ( (*it)->tags == 0 ) ? "" : (*it)->tags->album;
+        const int disc = ( (*it)->tags == 0 ) ? 0 : (*it)->tags->disc;
+        const int year = ( (*it)->tags == 0 ) ? 0 : (*it)->tags->year;
+        const QString genre = ( (*it)->tags == 0 ) ? "" : (*it)->tags->genre;
+        const QString comment = ( (*it)->tags == 0 ) ? "" : (*it)->tags->comment;
+        while( it != items.end() )
+        {
+            if( (*it)->conversionOptionsId != conversionOptionsId )
+            {
                 options->setEnabled( false );
                 lEditOptions->setText( i18n("You have selected multiple files with different conversion options.\nYou can change the options of all files by hitting the button below.") );
                 lEditOptions->show();
                 pEditOptions->show();
-            }*/
-            if( (*it)->tags == 0 ) {
+            }
+
+            if( (*it)->tags == 0 )
+            {
                 setTagInputEnabled( false );
                 lEditTags->setText( i18n("Reading the tags of one or more files failed.\n"
                         "soundKonverter will try to read the tags a second time, when it is about to convert the files.\n"
@@ -405,47 +416,57 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
                 it++;
                 continue;
             }
-            if( title != (*it)->tags->title && lTitle->isEnabled() ) {
+
+            if( title != (*it)->tags->title && lTitle->isEnabled() )
+            {
                 lTitle->setEnabled( false );
                 lTitle->setText( "" );
                 pTitleEdit->show();
             }
-            if( number != (*it)->tags->track && iNumber->isEnabled() ) {
+            if( number != (*it)->tags->track && iNumber->isEnabled() )
+            {
                 iNumber->setEnabled( false );
                 iNumber->setValue( 1 );
                 pNumberEdit->show();
             }
-            if( artist != (*it)->tags->artist && lArtist->isEnabled() ) {
+            if( artist != (*it)->tags->artist && lArtist->isEnabled() )
+            {
                 lArtist->setEnabled( false );
                 lArtist->setText( "" );
                 pArtistEdit->show();
             }
-            if( composer != (*it)->tags->composer && lComposer->isEnabled() ) {
+            if( composer != (*it)->tags->composer && lComposer->isEnabled() )
+            {
                 lComposer->setEnabled( false );
                 lComposer->setText( "" );
                 pComposerEdit->show();
             }
-            if( album != (*it)->tags->album && lAlbum->isEnabled() ) {
+            if( album != (*it)->tags->album && lAlbum->isEnabled() )
+            {
                 lAlbum->setEnabled( false );
                 lAlbum->setText( "" );
                 pAlbumEdit->show();
             }
-            if( disc != (*it)->tags->disc && iDisc->isEnabled() ) {
+            if( disc != (*it)->tags->disc && iDisc->isEnabled() )
+            {
                 iDisc->setEnabled( false );
                 iDisc->setValue( 1 );
                 pDiscEdit->show();
             }
-            if( year != (*it)->tags->year && iYear->isEnabled() ) {
+            if( year != (*it)->tags->year && iYear->isEnabled() )
+            {
                 iYear->setEnabled( false );
                 iYear->setValue( QDate::currentDate().year() );
                 pYearEdit->show();
             }
-            if( genre != (*it)->tags->genre && cGenre->isEnabled() ) {
+            if( genre != (*it)->tags->genre && cGenre->isEnabled() )
+            {
                 cGenre->setEnabled( false );
                 cGenre->setEditText( "" );
                 pGenreEdit->show();
             }
-            if( comment != (*it)->tags->comment && tComment->isEnabled() ) {
+            if( comment != (*it)->tags->comment && tComment->isEnabled() )
+            {
                 tComment->setEnabled( false );
                 tComment->setReadOnly( true );
                 tComment->setText( "" );
@@ -453,40 +474,44 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
             }
             it++;
         }
-        if( options->isEnabled() ) {
+
+        if( options->isEnabled() )
+        {
             // HACK ...but seems to work...
             // FIXME directory does get set properly
 //             disconnect( options, SIGNAL(optionsChanged()), 0, 0 );
 //             options->setCurrentOptions( items.first()->options );
 //             connect( options, SIGNAL(optionsChanged()), this, SLOT(optionsChanged()) );
+            const bool success = options->setCurrentConversionOptions( config->conversionOptionsManager()->getConversionOptions(conversionOptionsId) );
+            options->setEnabled( success );
         }
-        if( lTitle->isEnabled() ) {
+
+        if( lTitle->isEnabled() )
             lTitle->setText( title );
-        }
-        if( iNumber->isEnabled() ) {
+
+        if( iNumber->isEnabled() )
             iNumber->setValue( number );
-        }
-        if( lArtist->isEnabled() ) {
+
+        if( lArtist->isEnabled() )
             lArtist->setText( artist );
-        }
-        if( lComposer->isEnabled() ) {
+
+        if( lComposer->isEnabled() )
             lComposer->setText( composer );
-        }
-        if( lAlbum->isEnabled() ) {
+
+        if( lAlbum->isEnabled() )
             lAlbum->setText( album );
-        }
-        if( iDisc->isEnabled() ) {
+
+        if( iDisc->isEnabled() )
             iDisc->setValue( disc );
-        }
-        if( iYear->isEnabled() ) {
+
+        if( iYear->isEnabled() )
             iYear->setValue( year );
-        }
-        if( cGenre->isEnabled() ) {
+
+        if( cGenre->isEnabled() )
             cGenre->setEditText( genre );
-        }
-        if( tComment->isEnabled() ) {
+
+        if( tComment->isEnabled() )
             tComment->setText( comment );
-        }
     }
 }
 
@@ -510,7 +535,7 @@ void OptionsEditor::itemRemoved( FileListItem *item )
 void OptionsEditor::applyChanges()
 {
     ConversionOptions *newConversionOptions = options->currentConversionOptions();
-    
+
     for( int i=0; i<selectedItems.count(); i++ )
     {
         if( !selectedItems.at(i) )
@@ -518,8 +543,8 @@ void OptionsEditor::applyChanges()
             // FIXME error message, null pointer for file list item
             continue;
         }
-        
-        if( newConversionOptions )
+
+        if( newConversionOptions && options->isEnabled() )
         {
             selectedItems.at(i)->conversionOptionsId = config->conversionOptionsManager()->updateConversionOptions( selectedItems.at(i)->conversionOptionsId, newConversionOptions );
         }
@@ -527,22 +552,55 @@ void OptionsEditor::applyChanges()
         {
             // TODO error message
         }
-        
+
         if( selectedItems.at(i)->tags )
         {
-            selectedItems.at(i)->tags->title = lTitle->text();
-            selectedItems.at(i)->tags->track = iNumber->value();
-            selectedItems.at(i)->tags->artist = lArtist->text();
-            selectedItems.at(i)->tags->composer = lComposer->text();
-            selectedItems.at(i)->tags->album = lAlbum->text();
-            selectedItems.at(i)->tags->disc = iDisc->value();
-            selectedItems.at(i)->tags->year = iYear->value();
-            selectedItems.at(i)->tags->genre = cGenre->currentText();
-            selectedItems.at(i)->tags->comment = tComment->toPlainText();
+            if( lTitle->isEnabled() )
+                selectedItems.at(i)->tags->title = lTitle->text();
+
+            if( iNumber->isEnabled() )
+                selectedItems.at(i)->tags->track = iNumber->value();
+
+            if( lArtist->isEnabled() )
+                selectedItems.at(i)->tags->artist = lArtist->text();
+
+            if( lComposer->isEnabled() )
+                selectedItems.at(i)->tags->composer = lComposer->text();
+
+            if( lAlbum->isEnabled() )
+                selectedItems.at(i)->tags->album = lAlbum->text();
+
+            if( iDisc->isEnabled() )
+                selectedItems.at(i)->tags->disc = iDisc->value();
+
+            if( iYear->isEnabled() )
+                selectedItems.at(i)->tags->year = iYear->value();
+
+            if( cGenre->isEnabled() )
+                selectedItems.at(i)->tags->genre = cGenre->currentText();
+
+            if( tComment->isEnabled() )
+                selectedItems.at(i)->tags->comment = tComment->toPlainText();
         }
     }
-    
+
+    options->accepted();
+
     emit updateFileListItems( selectedItems );
+}
+
+void OptionsEditor::editOptionsClicked()
+{
+    options->setEnabled( true );
+    lEditOptions->hide();
+    pEditOptions->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() )
+    {
+        ConversionOptions *conversionOptions = config->conversionOptionsManager()->getConversionOptions( selectedItems.first()->conversionOptionsId );
+        if( conversionOptions )
+            options->setCurrentConversionOptions( conversionOptions );
+    }
 }
 
 void OptionsEditor::editTagsClicked()
@@ -552,6 +610,127 @@ void OptionsEditor::editTagsClicked()
         selectedItems.at(i)->tags = new TagData();
     }
 
-    itemsSelected( selectedItems );
+//     itemsSelected( selectedItems );
+
+    editTitleClicked();
+    editNumberClicked();
+    editArtistClicked();
+    editComposerClicked();
+    editAlbumClicked();
+    editDiscClicked();
+    editYearClicked();
+    editGenreClicked();
+    editCommentClicked();
 }
+
+void OptionsEditor::editTitleClicked()
+{
+    lTitle->setEnabled( true );
+    lTitle->setFocus();
+    pTitleEdit->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
+    {
+        lTitle->setText( selectedItems.first()->tags->title );
+    }
+}
+
+void OptionsEditor::editNumberClicked()
+{
+    iNumber->setEnabled( true );
+    iNumber->setFocus();
+    pNumberEdit->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
+    {
+        iNumber->setValue( selectedItems.first()->tags->track );
+    }
+}
+
+void OptionsEditor::editArtistClicked()
+{
+    lArtist->setEnabled( true );
+    lArtist->setFocus();
+    pArtistEdit->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
+    {
+        lArtist->setText( selectedItems.first()->tags->artist );
+    }
+}
+
+void OptionsEditor::editComposerClicked()
+{
+    lComposer->setEnabled( true );
+    lComposer->setFocus();
+    pComposerEdit->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
+    {
+        lComposer->setText( selectedItems.first()->tags->composer );
+    }
+}
+
+void OptionsEditor::editAlbumClicked()
+{
+    lAlbum->setEnabled( true );
+    lAlbum->setFocus();
+    pAlbumEdit->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
+    {
+        lAlbum->setText( selectedItems.first()->tags->album );
+    }
+}
+
+void OptionsEditor::editDiscClicked()
+{
+    iDisc->setEnabled( true );
+    iDisc->setFocus();
+    pDiscEdit->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
+    {
+        iDisc->setValue( selectedItems.first()->tags->disc );
+    }
+}
+
+void OptionsEditor::editYearClicked()
+{
+    iYear->setEnabled( true );
+    iYear->setFocus();
+    pYearEdit->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
+    {
+        iYear->setValue( selectedItems.first()->tags->year );
+    }
+}
+
+void OptionsEditor::editGenreClicked()
+{
+    cGenre->setEnabled( true );
+    cGenre->setFocus();
+    pGenreEdit->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
+    {
+        cGenre->setCurrentItem( selectedItems.first()->tags->genre );
+    }
+}
+
+void OptionsEditor::editCommentClicked()
+{
+    tComment->setEnabled( true );
+    tComment->setReadOnly( false );
+    tComment->setFocus();
+    pCommentEdit->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
+    {
+        tComment->setPlainText( selectedItems.first()->tags->comment );
+    }
+}
+
+
 

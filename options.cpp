@@ -13,8 +13,8 @@
 #include <KLocale>
 #include <KTabWidget>
 #include <KPushButton>
-// #include <kiconloader.h>
 #include <KStandardDirs>
+
 
 // FIXME prevent converting wav files to wav
 
@@ -22,10 +22,6 @@ Options::Options( Config *_config, const QString& text, QWidget *parent )
     : QWidget( parent ),
     config( _config )
 {
-//     connect( config, SIGNAL(configChanged()),
-//                this, SLOT(configChanged())
-//              );
-
     QGridLayout *gridLayout = new QGridLayout( this );
     gridLayout->setContentsMargins( 0, 0, 0, 0 );
 
@@ -33,23 +29,21 @@ Options::Options( Config *_config, const QString& text, QWidget *parent )
     gridLayout->addWidget( tab, 0, 0 );
     connect( tab, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)) );
 
-//     optionsDetailed = new OptionsDetailed( config, this );
     optionsSimple = new OptionsSimple( config, /*optionsDetailed,*/ text, this );
     connect( optionsSimple, SIGNAL(optionsChanged()), this, SLOT(simpleOptionsChanged()) );
     connect( optionsSimple->outputDirectory, SIGNAL(modeChanged(int)), this, SLOT(simpleOutputDirectoryModeChanged(int)) );
     connect( optionsSimple->outputDirectory, SIGNAL(directoryChanged(const QString&)), this, SLOT(simpleOutputDirectoryChanged(const QString&)) );
 
     optionsDetailed = new OptionsDetailed( config, this );
-//     connect( optionsDetailed, SIGNAL(optionsChanged()), this, SLOT(detailedOptionsChanged()) );
     connect( optionsDetailed->outputDirectory, SIGNAL(modeChanged(int)), this, SLOT(detailedOutputDirectoryModeChanged(int)) );
     connect( optionsDetailed->outputDirectory, SIGNAL(directoryChanged(const QString&)), this, SLOT(detailedOutputDirectoryChanged(const QString&)) );
     connect( optionsDetailed, SIGNAL(currentDataRateChanged(int)), optionsSimple, SLOT(currentDataRateChanged(int)) );
-//     optionsDetailed->somethingChanged();
 
     connect( optionsDetailed, SIGNAL(customProfilesEdited()), optionsSimple, SLOT(updateProfiles()) );
     connect( optionsSimple, SIGNAL(customProfilesEdited()), optionsDetailed, SLOT(updateProfiles()) );
 
     QString format;
+    const QStringList formats = config->pluginLoader()->formatList(PluginLoader::Encode,PluginLoader::CompressionType(PluginLoader::Lossy|PluginLoader::Lossless|PluginLoader::Hybrid));
     if( config->data.general.defaultFormat == i18n("Last used") )
     {
         format = config->data.general.lastFormat;
@@ -58,13 +52,13 @@ Options::Options( Config *_config, const QString& text, QWidget *parent )
     {
         format = config->data.general.defaultFormat;
     }
-    if( format.isEmpty() )
+    if( !formats.contains(format) )
     {
-        const QStringList formats = config->pluginLoader()->formatList(PluginLoader::Encode,PluginLoader::Lossy);
-        if( formats.count() > 0 )
-        {
-            format = formats.at(0);
-        }
+        format.clear();
+    }
+    if( format.isEmpty() && formats.count() > 0 )
+    {
+        format = formats.at(0);
     }
     optionsDetailed->setCurrentFormat( format );
 
@@ -89,18 +83,13 @@ Options::Options( Config *_config, const QString& text, QWidget *parent )
     {
         optionsDetailed->setCurrentProfile( profile );
     }
-    
-    int startTab = ( config->data.general.startTab == 0 ) ? config->data.general.lastTab : config->data.general.startTab - 1;
+
+    const int startTab = ( config->data.general.startTab == 0 ) ? config->data.general.lastTab : config->data.general.startTab - 1;
 
     tab->addTab( optionsSimple, i18n("Simple") );
     tab->addTab( optionsDetailed, i18n("Detailed") );
-    
+
     tab->setCurrentIndex( startTab );
-
-
-//     KTabWidget *tab2 = new KTabWidget( this );
-//     gridLayout->addWidget( tab2, 0, 1 );
-//     tab2->addTab( optionsDetailed, i18n("Detailed") );
 }
 
 Options::~Options()
@@ -158,12 +147,10 @@ void Options::detailedOutputDirectoryModeChanged( const int mode )
 
 void Options::detailedOutputDirectoryChanged( const QString& directory )
 {
+    Q_UNUSED(directory)
+
 //     if(optionsSimple && optionsSimple->outputDirectory) optionsSimple->outputDirectory->setDirectory( directory );
 }
-
-// void Options::detailedOptionsChanged()
-// {
-// }
 
 void Options::tabChanged( const int pageIndex )
 {
@@ -186,7 +173,7 @@ void Options::tabChanged( const int pageIndex )
         optionsSimple->setReplayGainChecked( replaygainChecked );
 //         optionsSimple->setBpmChecked( bpm );
         optionsSimple->setCurrentPlugin( optionsDetailed->getCurrentPlugin() );
-        
+
         optionsSimple->outputDirectory->setMode( optionsDetailed->outputDirectory->mode() );
         optionsSimple->outputDirectory->setDirectory( optionsDetailed->outputDirectory->directory() );
 
@@ -194,10 +181,7 @@ void Options::tabChanged( const int pageIndex )
         connect( optionsSimple->outputDirectory, SIGNAL(modeChanged(int)), this, SLOT(simpleOutputDirectoryModeChanged(int)) );
         connect( optionsSimple->outputDirectory, SIGNAL(directoryChanged(const QString&)), this, SLOT(simpleOutputDirectoryChanged(const QString&)) );
     }
-//     else
-//     {
-        //pAdvancedOptionsToggle->show();
-//     }
+
     config->data.general.lastTab = tab->currentIndex();
 }
 
@@ -234,11 +218,45 @@ void Options::setOutputDirectory( const QString& directory )
     simpleOutputDirectoryChanged( directory );
 }
 
+void Options::accepted()
+{
+    const OutputDirectory::Mode mode = (OutputDirectory::Mode)config->data.general.lastOutputDirectoryMode;
+
+    if( mode == OutputDirectory::MetaData )
+    {
+        const QString path = config->data.general.metaDataOutputDirectory;
+        if( config->data.general.lastMetaDataOutputDirectoryPaths.contains(path) )
+            config->data.general.lastMetaDataOutputDirectoryPaths.removeAll( path );
+        else if( config->data.general.lastMetaDataOutputDirectoryPaths.size() >= 5 )
+            config->data.general.lastMetaDataOutputDirectoryPaths.removeLast();
+        config->data.general.lastMetaDataOutputDirectoryPaths.prepend( path );
+    }
+    else if( mode == OutputDirectory::Specify )
+    {
+        const QString path = config->data.general.specifyOutputDirectory;
+        if( config->data.general.lastNormalOutputDirectoryPaths.contains(path) )
+            config->data.general.lastNormalOutputDirectoryPaths.removeAll( path );
+        else if( !config->data.general.lastNormalOutputDirectoryPaths.size() >= 5 )
+            config->data.general.lastNormalOutputDirectoryPaths.removeLast();
+        config->data.general.lastNormalOutputDirectoryPaths.prepend( path );
+    }
+    else if( mode == OutputDirectory::CopyStructure )
+    {
+        const QString path = config->data.general.copyStructureOutputDirectory;
+        if( config->data.general.lastNormalOutputDirectoryPaths.contains(path) )
+            config->data.general.lastNormalOutputDirectoryPaths.removeAll( path );
+        else if( !config->data.general.lastNormalOutputDirectoryPaths.size() >= 5 )
+            config->data.general.lastNormalOutputDirectoryPaths.removeLast();
+        config->data.general.lastNormalOutputDirectoryPaths.prepend( path );
+    }
+}
+
+
 // void Options::somethingChanged()
 // {
 //     emit optionsChanged();
 // }
-// 
+//
 // // TODO right this way? - seems to work
 // void Options::configChanged()
 // {

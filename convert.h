@@ -5,9 +5,6 @@
 
 #include "pluginloader.h"
 
-//#include <kio/jobclasses.h>
-// #include <kio/job.h>
-// #include <kio/copyjob.h>
 #include <kio/job.h>
 #include <kio/jobclasses.h>
 
@@ -15,6 +12,7 @@
 #include <QList>
 #include <QTime>
 #include <QTimer>
+#include <QWeakPointer>
 
 #include <KProcess>
 #include <KTemporaryFile>
@@ -26,24 +24,6 @@ class FileList;
 class FileListItem;
 class ReplayGain;
 class Logger;
-
-//class KProcess;
-
-/*class RatedListItem
-{
-public:
-    RatedListItem( CodecPlugin *_plugin1, CodecPlugin *_plugin2, int _rating ) { plugin1 = _plugin1; plugin2 = _plugin2; rating = _rating; }
-    ~RatedListItem() {}
-
-    CodecPlugin *plugin1;
-    CodecPlugin *plugin2;
-    int rating;
-
-    bool operator<(RatedListItem const& b)
-    {
-        return this->rating < b.rating;
-    }
-};*/
 
 /**
  * @short The items for the conversion (for every active file)
@@ -70,9 +50,6 @@ public:
         //remove_temp       = 0x0400  // Remove the downloaded temp file
     };
 
-    /** Default Constructor */
-    ConvertItem();
-
     /** Constructor, @p item A pointer to the file list item */
     ConvertItem( FileListItem *item );
 
@@ -92,9 +69,9 @@ public:
     int lastTake;
 
     /** for the conversion and moving the file to a temporary place */
-    KProcess *process;
+    QWeakPointer<KProcess> process;
     /** for moving the file to the temporary directory */
-    KIO::FileCopyJob *kioCopyJob;
+    QWeakPointer<KIO::FileCopyJob> kioCopyJob;
     /** the id from the plugin (-1 if false) */
     int convertID;
     /** the id from the plugin (-1 if false) */
@@ -116,9 +93,9 @@ public:
     KUrl tempInputUrl;
     /** the temp file for the pipe */
     KUrl tempConvertUrl;
-    
+
 //     void generateTempUrl( const QString& extension );
-    KUrl generateTempUrl( const QString& prefix, const QString& extension );
+    KUrl generateTempUrl( const QString& prefix, const QString& extension, bool useSharedMemory = false );
 
     /** what shall we do with the file? */
     Mode mode;
@@ -135,14 +112,14 @@ public:
     float encodeTime;
     float replaygainTime;
     float bpmTime;
-    
+
     float finishedTime; // the time of the finished conversion steps
-    
+
     void updateTimes();
 
     /** the current conversion progress */
     float progress;
-    
+
     QTime progressedTime;
 };
 
@@ -170,7 +147,7 @@ private:
 
     /** Convert the file */
     void convert( ConvertItem *item );
-    
+
     /** Encode the file after it has been decoded in convert() */
     void encode( ConvertItem *item );
 
@@ -195,9 +172,6 @@ private:
     /** Remove item @p item and emit the state @p state */
     void remove( ConvertItem *item, int state = 0 );
 
-    /** build all possible conversion pipes */
-    //void calcPipes( ConvertItem *item );
-
     /** holds all active files */
     QList<ConvertItem*> items;
 
@@ -206,13 +180,13 @@ private:
     FileList *fileList;
     Logger* logger;
     QMap<int,QString> usedOutputNames;
-    
+
     struct LogQueue {
         int id;
         BackendPlugin *plugin;
         QStringList messages;
     };
-    
+
     QList<LogQueue> pluginLogQueue;
 
     QTimer updateTimer;
@@ -250,7 +224,14 @@ public slots:
 
 signals:
     // connected to FileList
-    /** The conversion of an item has finished and the state is reported ( 0 = ok, -1 = error, 1 = aborted ) */
+    /**
+     * The conversion of an item has finished and the state is reported:
+     * 0   = ok
+     * -1  = error
+     * 1   = aborted
+     * 100 = backend needs configuration
+     * 101 = disc is full
+     */
     void finished( FileListItem *item, int state );
     /** The next track from the device can be ripped while the track is being encoded */
     void rippingFinished( const QString& device );

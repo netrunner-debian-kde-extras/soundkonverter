@@ -65,7 +65,7 @@ OptionsSimple::OptionsSimple( Config *_config, /*OptionsDetailed* _optionsDetail
 //     cFormat->setFixedHeight( pFormatInfo->minimumSizeHint().height() );
     connect( pFormatInfo, SIGNAL(clicked()), this, SLOT(formatInfo()) );
     topBox->addSpacing( 3 );
-    QLabel *formatHelp = new QLabel( i18n("<a href=\"format-help\">More</a>"), this );
+    QLabel *formatHelp = new QLabel( "<a href=\"format-help\">" + i18n("More") + "</a>", this );
     topBox->addWidget( formatHelp );
     connect( formatHelp, SIGNAL(linkActivated(const QString&)), this, SLOT(showHelp()) );
     topBox->addStretch( );
@@ -82,6 +82,7 @@ OptionsSimple::OptionsSimple( Config *_config, /*OptionsDetailed* _optionsDetail
     grid->addLayout( estimSizeBox, 2, 0 );
     estimSizeBox->addStretch();
     lEstimSize = new QLabel( QString(QChar(8776))+"? B / min." );
+    lEstimSize->hide(); // hide for now because most plugins report inaccurate data
     estimSizeBox->addWidget( lEstimSize );
 
     QHBoxLayout *optionalBox = new QHBoxLayout();
@@ -148,18 +149,18 @@ void OptionsSimple::updateProfiles()
     QString lastProfile = cProfile->currentText();
     QStringList sProfile;
     cProfile->clear();
-    
+
     sProfile += i18n("Very low");
     sProfile += i18n("Low");
     sProfile += i18n("Medium");
     sProfile += i18n("High");
     sProfile += i18n("Very high");
     sProfile += i18n("Lossless");
-    sProfile += i18n("Hybrid");
+//     sProfile += i18n("Hybrid"); // currently unused
     sProfile += config->customProfiles();
     sProfile += i18n("User defined");
     cProfile->addItems( sProfile );
-    
+
     if( cProfile->findText(lastProfile) != -1 )
     {
         cProfile->setCurrentIndex( cProfile->findText(lastProfile) );
@@ -253,7 +254,7 @@ void OptionsSimple::formatInfo()
 {
     QString format = cFormat->currentText();
     QString info = config->pluginLoader()->codecDescription(format);
-    
+
     if( !info.isEmpty() )
     {
         KMessageBox::information( this, info, i18n("Format info for %1",format), QString(), KMessageBox::Notify | KMessageBox::AllowLink );
@@ -374,12 +375,13 @@ void OptionsSimple::somethingChanged()
     emit optionsChanged();
 }
 
-void OptionsSimple::currentDataRateChanged( int rate )
+void OptionsSimple::currentDataRateChanged( int dataRate )
 {
-    if( rate > 0 )
+    if( dataRate > 0 )
     {
-        lEstimSize->setText( QString(QChar(8776))+" "+Global::prettyNumber(rate,"B")+" / min." );
-        lEstimSize->setToolTip( i18n("Using the current conversion options will create files with approximately %1 per minute.").arg(Global::prettyNumber(rate,"B")) );
+        const QString dataRateString = Global::prettyNumber(dataRate,"B");
+        lEstimSize->setText( QString(QChar(8776))+" "+dataRateString+" / min." );
+        lEstimSize->setToolTip( i18n("Using the current conversion options will create files with approximately %1 per minute.").arg(dataRateString) );
     }
     else
     {
