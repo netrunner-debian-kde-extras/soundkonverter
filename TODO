@@ -1,11 +1,12 @@
 ### Prio 1 ###
 
-disable logging
+flac piping
+
 cdtext
 user scripts
 edit ripper parameters
 edit encoder parameters [/]
-copy custom tags / lyrics, covers
+copy custom tags / lyrics
 cover downloading
 musicbrianz
 
@@ -71,6 +72,8 @@ changing default decoder only takes effect after restart
 ### Code ###
 
 KShell::quoteArg
+
+https://code.google.com/r/johntyree-gogglesmm/source/browse/src/GMTag.cpp?r=744628216e15f5804ff69b767d46405aa77e8ae8
 
 ### main.cpp ###
 

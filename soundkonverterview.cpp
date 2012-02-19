@@ -62,7 +62,6 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     optionsLayer = new OptionsLayer( config, this );
     fileList->setOptionsLayer( optionsLayer );
     optionsLayer->hide();
-//     optionsLayer->fadeIn();
     gridLayout->addWidget( optionsLayer, 1, 0 );
     connect( optionsLayer, SIGNAL(done(const KUrl::List&,ConversionOptions*,const QString&)), fileList, SLOT(addFiles(const KUrl::List&,ConversionOptions*,const QString&)) );
 
@@ -519,6 +518,11 @@ void soundKonverterView::addConvertFiles( const KUrl::List& urls, QString _profi
 void soundKonverterView::startConversion()
 {
     fileList->startConversion();
+}
+
+void soundKonverterView::killConversion()
+{
+    fileList->killConversion();
 }
 
 void soundKonverterView::fileCountChanged( int count )

@@ -17,7 +17,6 @@
 #include <kicon.h>
 #include <klocale.h>
 
-#include <qlayout.h>
 #include <qlabel.h>
 #include <qdatetime.h>
 
@@ -26,6 +25,7 @@
 #include <kcombobox.h>
 #include <knuminput.h>
 #include <ktextedit.h>
+#include "global.h"
 
 
 // TODO use QPointer or QSharedPointer
@@ -79,12 +79,22 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     QGridLayout* tagsGridLayout = new QGridLayout( tagsWidget );
 
     // add the inputs
+    // add a horizontal box layout for the covers
+    QHBoxLayout *coversBox = new QHBoxLayout();
+    tagsGridLayout->addLayout( coversBox, 0, 1 );
+    // and fill it up
+    lCoversLabel = new QLabel( i18n("Covers:"), tagsWidget );
+    tagsGridLayout->addWidget( lCoversLabel, 0, 0 );
+    bCovers = new QHBoxLayout();
+    coversBox->addLayout( bCovers );
+    coversBox->addStretch();
+
     // add a horizontal box layout for the title and track number
     QHBoxLayout *titleBox = new QHBoxLayout();
-    tagsGridLayout->addLayout( titleBox, 0, 1 );
+    tagsGridLayout->addLayout( titleBox, 1, 1 );
     // and fill it up
     lTitleLabel = new QLabel( i18n("Title:"), tagsWidget );
-    tagsGridLayout->addWidget( lTitleLabel, 0, 0 );
+    tagsGridLayout->addWidget( lTitleLabel, 1, 0 );
     lTitle = new KLineEdit( tagsWidget );
     titleBox->addWidget( lTitle );
 //     connect( lTitle, SIGNAL(textChanged(const QString&)), this, SLOT(titleChanged(const QString&)) );
@@ -108,10 +118,10 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
 
     // add a horizontal box layout for the artist and the composer
     QHBoxLayout *artistBox = new QHBoxLayout();
-    tagsGridLayout->addLayout( artistBox, 1, 1 );
+    tagsGridLayout->addLayout( artistBox, 2, 1 );
     // and fill it up
     lArtistLabel = new QLabel( i18n("Artist:"), tagsWidget );
-    tagsGridLayout->addWidget( lArtistLabel, 1, 0 );
+    tagsGridLayout->addWidget( lArtistLabel, 2, 0 );
     lArtist = new KLineEdit( tagsWidget );
     artistBox->addWidget( lArtist );
 //     connect( lArtist, SIGNAL(textChanged(const QString&)), this, SLOT(artistChanged(const QString&)) );
@@ -135,10 +145,10 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
 
     // add a horizontal box layout for the album
     QHBoxLayout *albumBox = new QHBoxLayout();
-    tagsGridLayout->addLayout( albumBox, 2, 1 );
+    tagsGridLayout->addLayout( albumBox, 3, 1 );
     // and fill it up
     lAlbumLabel = new QLabel( i18n("Album:"), tagsWidget );
-    tagsGridLayout->addWidget( lAlbumLabel, 2, 0 );
+    tagsGridLayout->addWidget( lAlbumLabel, 3, 0 );
     lAlbum = new KLineEdit( tagsWidget );
     albumBox->addWidget( lAlbum );
 //     connect( lAlbum, SIGNAL(textChanged(const QString&)), this, SLOT(albumChanged(const QString&)) );
@@ -151,10 +161,10 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
 
     // add a horizontal box layout for the disc number, year and genre
     QHBoxLayout *albumdataBox = new QHBoxLayout();
-    tagsGridLayout->addLayout( albumdataBox, 3, 1 );
+    tagsGridLayout->addLayout( albumdataBox, 4, 1 );
     // and fill it up
     lDiscLabel = new QLabel( i18n("Disc No.:"), tagsWidget );
-    tagsGridLayout->addWidget( lDiscLabel, 3, 0 );
+    tagsGridLayout->addWidget( lDiscLabel, 4, 0 );
     iDisc = new KIntSpinBox( 0, 99, 1, 1, tagsWidget );
     albumdataBox->addWidget( iDisc );
 //     connect( iDisc, SIGNAL(valueChanged(int)), this, SLOT(discChanged(int)) );
@@ -164,6 +174,17 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pDiscEdit->hide();
     albumdataBox->addWidget( pDiscEdit );
     connect( pDiscEdit, SIGNAL(clicked()), this, SLOT(editDiscClicked()) );
+    lDiscTotalLabel = new QLabel( i18nc("Disc No. x of y","of"), tagsWidget );
+    albumdataBox->addWidget( lDiscTotalLabel );
+    iDiscTotal = new KIntSpinBox( 0, 99, 1, 1, tagsWidget );
+    albumdataBox->addWidget( iDiscTotal );
+//     connect( iDisc, SIGNAL(valueChanged(int)), this, SLOT(discChanged(int)) );
+    pDiscTotalEdit = new KPushButton( " ", tagsWidget );
+    pDiscTotalEdit->setIcon( KIcon("edit-rename") );
+    pDiscTotalEdit->setFixedSize( iDisc->sizeHint().height(), iDisc->sizeHint().height() );
+    pDiscTotalEdit->hide();
+    albumdataBox->addWidget( pDiscTotalEdit );
+    connect( pDiscTotalEdit, SIGNAL(clicked()), this, SLOT(editDiscTotalClicked()) );
     albumdataBox->addStretch();
     lYearLabel = new QLabel( i18n("Year:"), tagsWidget );
     albumdataBox->addWidget( lYearLabel );
@@ -196,10 +217,10 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
 
     // add a horizontal box layout for the comment
     QHBoxLayout *commentBox = new QHBoxLayout();
-    tagsGridLayout->addLayout( commentBox, 4, 1 );
+    tagsGridLayout->addLayout( commentBox, 5, 1 );
     // and fill it up
     lCommentLabel = new QLabel( i18n("Comment:"), tagsWidget );
-    tagsGridLayout->addWidget( lCommentLabel, 4, 0 );
+    tagsGridLayout->addWidget( lCommentLabel, 5, 0 );
     tComment = new KTextEdit( tagsWidget );
     commentBox->addWidget( tComment );
 //     connect( tComment, SIGNAL(textChanged()), this, SLOT(commentChanged()) );
@@ -209,15 +230,15 @@ OptionsEditor::OptionsEditor( Config *_config, QWidget *parent )
     pCommentEdit->hide();
     commentBox->addWidget( pCommentEdit );
     connect( pCommentEdit, SIGNAL(clicked()), this, SLOT(editCommentClicked()) );
-    tagsGridLayout->setRowStretch( 4, 1 );
+    tagsGridLayout->setRowStretch( 5, 1 );
 
     lEditTags = new QLabel( "", tagsWidget );
-    tagsGridLayout->addWidget( lEditTags, 5, 1 );
+    tagsGridLayout->addWidget( lEditTags, 6, 1 );
     lEditTags->setAlignment( Qt::AlignHCenter );
     lEditTags->hide();
     pEditTags = new KPushButton( i18n("Edit tags"), tagsWidget );
     pEditTags->setFixedWidth( pEditTags->sizeHint().width() );
-    tagsGridLayout->addWidget( pEditTags, 6, 1, Qt::AlignHCenter );
+    tagsGridLayout->addWidget( pEditTags, 7, 1, Qt::AlignHCenter );
     pEditTags->hide();
     connect( pEditTags, SIGNAL(clicked()), this, SLOT(editTagsClicked()) );
 
@@ -255,6 +276,8 @@ void OptionsEditor::setTagInputEnabled( bool enabled )
     pAlbumEdit->hide();
     lDiscLabel->setEnabled( enabled );
     iDisc->setEnabled( enabled );
+    lDiscTotalLabel->setEnabled( enabled );
+    iDiscTotal->setEnabled( enabled );
     pDiscEdit->hide();
     lYearLabel->setEnabled( enabled );
     iYear->setEnabled( enabled );
@@ -267,13 +290,15 @@ void OptionsEditor::setTagInputEnabled( bool enabled )
     tComment->setReadOnly( !enabled );
     pCommentEdit->hide();
 
-    if( !enabled ) {
+    if( !enabled )
+    {
         lTitle->setText( "" );
         iNumber->setValue( 0 );
         lArtist->setText( "" );
         lComposer->setText( "" );
         lAlbum->setText( "" );
         iDisc->setValue( 0 );
+        iDiscTotal->setValue( 0 );
         iYear->setValue( 0 );
         cGenre->setEditText( "" );
         tComment->setText( "" );
@@ -294,6 +319,15 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
 
     selectedItems = items;
 
+    // remove all cover widgets
+    foreach( QLabel* label, lCovers )
+    {
+        bCovers->removeWidget( label );
+        label->deleteLater();
+    }
+    lCovers.clear();
+    lCoversLabel->setEnabled( false );
+
     if( selectedItems.count() == 0 )
     {
         setCaption( i18n("No file selected") );
@@ -303,6 +337,7 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
         setTagInputEnabled( false );
         lEditTags->hide();
         pEditTags->hide();
+
         return;
     }
 
@@ -369,18 +404,48 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
         }
         else
         {
+            if( !items.first()->tags->coversRead )
+            {
+                items.first()->tags->covers = tagEngine->readCovers( items.first()->url );
+                items.first()->tags->coversRead = true;
+            }
+            foreach( CoverData* cover, items.first()->tags->covers )
+            {
+                QPixmap pixmap;
+                pixmap.loadFromData( cover->data );
+
+                QLabel *label = new QLabel();
+                label->setFrameShape( QFrame::StyledPanel );
+                label->setFrameShadow( QFrame::Raised );
+                QString toolTip;
+                toolTip += "<span style='white-space:pre'><table>";
+                toolTip += "<tr><td>" + i18nc("cover tooltip","Cover type:") + "</td><td>" + CoverData::roleName(cover->role) + "</td></tr>";
+                if( !cover->description.isEmpty() )
+                    toolTip += "<tr><td>" + i18nc("cover tooltip","Description:") + "</td><td>" + cover->description + "</td></tr>";
+                toolTip += "<tr><td>" + i18nc("cover tooltip","Size:") + "</td><td>" + i18nc("cover tooltip","%1 x %2 pixels (%3)",pixmap.width(),pixmap.height(),Global::prettyNumber(cover->data.size(),"B")) + "</td></tr>";
+                if( !cover->mimeType.isEmpty() )
+                    toolTip += "<tr><td>" + i18nc("cover tooltip","Mime type:") + "</td><td>" + cover->mimeType + "</td></tr>";
+                toolTip += "</table></span>";
+                label->setToolTip( toolTip );
+                bCovers->addWidget( label );
+                lCovers.append( label );
+
+                label->setPixmap( pixmap.scaledToHeight( 48, Qt::SmoothTransformation ) );
+            }
+            lCoversLabel->setEnabled( items.first()->tags->covers.count() > 0 );
             lTitle->setText( items.first()->tags->title );
             iNumber->setValue( items.first()->tags->track );
             lArtist->setText( items.first()->tags->artist );
             lComposer->setText( items.first()->tags->composer );
             lAlbum->setText( items.first()->tags->album );
             iDisc->setValue( items.first()->tags->disc );
+            iDiscTotal->setValue( items.first()->tags->discTotal );
             iYear->setValue( items.first()->tags->year );
             cGenre->setEditText( items.first()->tags->genre );
             tComment->setText( items.first()->tags->comment );
         }
     }
-    else
+    else // selectedItems.count() > 1
     {
         setCaption( i18n("%1 Files").arg(items.count()) );
         QList<FileListItem*>::Iterator it = items.begin();
@@ -391,6 +456,7 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
         const QString composer = ( (*it)->tags == 0 ) ? "" : (*it)->tags->composer;
         const QString album = ( (*it)->tags == 0 ) ? "" : (*it)->tags->album;
         const int disc = ( (*it)->tags == 0 ) ? 0 : (*it)->tags->disc;
+        const int discTotal = ( (*it)->tags == 0 ) ? 0 : (*it)->tags->discTotal;
         const int year = ( (*it)->tags == 0 ) ? 0 : (*it)->tags->year;
         const QString genre = ( (*it)->tags == 0 ) ? "" : (*it)->tags->genre;
         const QString comment = ( (*it)->tags == 0 ) ? "" : (*it)->tags->comment;
@@ -453,6 +519,12 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
                 iDisc->setValue( 1 );
                 pDiscEdit->show();
             }
+            if( discTotal != (*it)->tags->discTotal && iDiscTotal->isEnabled() )
+            {
+                iDiscTotal->setEnabled( false );
+                iDiscTotal->setValue( 1 );
+                pDiscTotalEdit->show();
+            }
             if( year != (*it)->tags->year && iYear->isEnabled() )
             {
                 iYear->setEnabled( false );
@@ -503,6 +575,9 @@ void OptionsEditor::itemsSelected( QList<FileListItem*> items )
 
         if( iDisc->isEnabled() )
             iDisc->setValue( disc );
+
+        if( iDiscTotal->isEnabled() )
+            iDiscTotal->setValue( discTotal );
 
         if( iYear->isEnabled() )
             iYear->setValue( year );
@@ -573,6 +648,9 @@ void OptionsEditor::applyChanges()
             if( iDisc->isEnabled() )
                 selectedItems.at(i)->tags->disc = iDisc->value();
 
+            if( iDiscTotal->isEnabled() )
+                selectedItems.at(i)->tags->discTotal= iDiscTotal->value();
+
             if( iYear->isEnabled() )
                 selectedItems.at(i)->tags->year = iYear->value();
 
@@ -618,6 +696,7 @@ void OptionsEditor::editTagsClicked()
     editComposerClicked();
     editAlbumClicked();
     editDiscClicked();
+    editDiscTotalClicked();
     editYearClicked();
     editGenreClicked();
     editCommentClicked();
@@ -692,6 +771,18 @@ void OptionsEditor::editDiscClicked()
     if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
     {
         iDisc->setValue( selectedItems.first()->tags->disc );
+    }
+}
+
+void OptionsEditor::editDiscTotalClicked()
+{
+    iDiscTotal->setEnabled( true );
+    iDiscTotal->setFocus();
+    pDiscTotalEdit->hide();
+
+    if( selectedItems.count() > 0 && selectedItems.first() && selectedItems.first()->tags )
+    {
+        iDiscTotal->setValue( selectedItems.first()->tags->discTotal );
     }
 }
 
