@@ -63,8 +63,6 @@ soundKonverter::soundKonverter()
     // toolbar position, icon size, etc.
     setupGUI( ToolBar | Keys | Save | Create );
 
-//     helpMenu()->addTitle(i18n("About plugins"));
-
     // clean up old files from previous soundKonverter versions
     if( config->data.app.configVersion < 1001 )
     {
@@ -121,14 +119,9 @@ void soundKonverter::saveProperties( KConfigGroup& configGroup )
 {
     Q_UNUSED(configGroup)
 
+    m_view->killConversion();
+
     m_view->saveFileList( false );
-}
-
-void soundKonverter::readProperties( const KConfigGroup& configGroup )
-{
-    Q_UNUSED(configGroup)
-
-    m_view->loadFileList( false );
 }
 
 void soundKonverter::showSystemTray()

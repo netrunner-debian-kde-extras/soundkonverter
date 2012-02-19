@@ -14,6 +14,7 @@
 
 // #include <KPageWidget>
 #include <KPageDialog>
+#include <qlayout.h>
 
 class Options;
 class Config;
@@ -49,6 +50,10 @@ private:
     Options *options;
 
 
+    /** A list of all covers */
+    QLabel* lCoversLabel;
+    QHBoxLayout *bCovers;
+    QList<QLabel*> lCovers;
     /** A lineedit for entering the title of track */
     QLabel* lTitleLabel;
     KLineEdit* lTitle;
@@ -73,6 +78,10 @@ private:
     QLabel* lDiscLabel;
     KIntSpinBox* iDisc;
     KPushButton* pDiscEdit;
+    /** A spinbox for entering or selecting the total disc number */
+    QLabel* lDiscTotalLabel;
+    KIntSpinBox* iDiscTotal;
+    KPushButton* pDiscTotalEdit;
     /** A spinbox for entering or selecting the year of the album */
     QLabel* lYearLabel;
     KIntSpinBox* iYear;
@@ -119,6 +128,7 @@ private slots:
     void editComposerClicked();
     void editAlbumClicked();
     void editDiscClicked();
+    void editDiscTotalClicked();
     void editYearClicked();
     void editGenreClicked();
     void editCommentClicked();
