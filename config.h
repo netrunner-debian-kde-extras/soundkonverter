@@ -59,6 +59,7 @@ public:
 //             int priority;
             bool waitForAlbumGain;
             bool useVFATNames;
+            bool writeLogFiles;
             enum ConflictHandling
             {
                 NewFileName = 0,
@@ -87,6 +88,11 @@ public:
             int maxSizeForSharedMemoryTempFiles; // maximum file size for storing in shared memory [MiB]
             int sharedMemorySize; // the size of the tmpfs [MiB]
         } advanced;
+
+        struct CoverArt
+        {
+            int writeCovers;
+        } coverArt;
 
         struct Backends
         {
@@ -128,6 +134,10 @@ public:
 public slots:
     /// Optimize backend settings according to the user input
     void doOptimizations( const QList<CodecOptimizations::Optimization>& optimizationList );
+
+signals:
+    /// connected to logger
+    void updateWriteLogFilesSetting( bool writeLogFiles );
 
 private:
     Logger *logger;

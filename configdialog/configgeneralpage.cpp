@@ -19,6 +19,7 @@
 #include <KPushButton>
 #include <KFileDialog>
 #include <KIntSpinBox>
+#include <KStandardDirs>
 
 #include <QLayout>
 #include <QLabel>
@@ -28,7 +29,6 @@
 #include <solid/device.h>
 #include <solid/storagevolume.h>
 
-// ### soundkonverter 0.4: add an option to use vfat save names when the output device is vfat
 
 ConfigGeneralPage::ConfigGeneralPage( Config *_config, QWidget *parent )
     : ConfigPageBase( parent ),
@@ -124,6 +124,17 @@ ConfigGeneralPage::ConfigGeneralPage( Config *_config, QWidget *parent )
 
     box->addSpacing( 5 );
 
+//     QHBoxLayout *waitForAlbumGainBox = new QHBoxLayout( 0 );
+//     box->addLayout( waitForAlbumGainBox );
+    cWaitForAlbumGain = new QCheckBox( i18n("Apply album gain to converted files"), this );
+    cWaitForAlbumGain->setToolTip( i18n("Keep songs of the same album waiting in file list in order to apply album gain to all files.") );
+    cWaitForAlbumGain->setChecked( config->data.general.waitForAlbumGain );
+    cWaitForAlbumGain->hide();
+//     waitForAlbumGainBox->addWidget( cWaitForAlbumGain );
+//     connect( cWaitForAlbumGain, SIGNAL(toggled(bool)), this, SIGNAL(configChanged()) );
+
+//     box->addSpacing( 5 );
+
     QHBoxLayout *createActionsMenuBox = new QHBoxLayout( 0 );
     box->addLayout( createActionsMenuBox );
     cCreateActionsMenu = new QCheckBox( i18n("Create actions menus for the file manager"), this );
@@ -131,6 +142,16 @@ ConfigGeneralPage::ConfigGeneralPage( Config *_config, QWidget *parent )
     cCreateActionsMenu->setChecked( config->data.general.createActionsMenu );
     createActionsMenuBox->addWidget( cCreateActionsMenu );
     connect( cCreateActionsMenu, SIGNAL(toggled(bool)), this, SIGNAL(configChanged()) );
+
+    box->addSpacing( 5 );
+
+    QHBoxLayout *writeLogFilesBox = new QHBoxLayout( 0 );
+    box->addLayout( writeLogFilesBox );
+    cWriteLogFiles = new QCheckBox( i18n("Write log files to disc"), this );
+    cWriteLogFiles->setToolTip( i18n("Write log files to the hard drive while converting.\nThis can be useful if a crash occurs and you can't access the log file using the log viewer.\nLog files will be written to %1",KStandardDirs::locateLocal("data","soundkonverter/log/")) );
+    cWriteLogFiles->setChecked( config->data.general.writeLogFiles );
+    writeLogFilesBox->addWidget( cWriteLogFiles );
+    connect( cWriteLogFiles, SIGNAL(toggled(bool)), this, SIGNAL(configChanged()) );
 
     box->addSpacing( 20 );
 
@@ -161,7 +182,9 @@ void ConfigGeneralPage::resetDefaults()
     cConflictHandling->setCurrentIndex( 0 );
     QList<Solid::Device> processors = Solid::Device::listFromType(Solid::DeviceInterface::Processor, QString());
     iNumFiles->setValue( ( processors.count() > 0 ) ? processors.count() : 1 );
+    cWaitForAlbumGain->setChecked( true );
     cCreateActionsMenu->setChecked( true );
+    cWriteLogFiles->setChecked( false );
     cReplayGainGrouping->setCurrentIndex( 0 );
 
     emit configChanged( true );
@@ -175,15 +198,18 @@ void ConfigGeneralPage::saveSettings()
 //     config->data.general.priority = cPriority->currentIndex() * 10; // NOTE that just works for 'normal' and 'low'
     config->data.general.conflictHandling = (Config::Data::General::ConflictHandling)cConflictHandling->currentIndex();
     config->data.general.numFiles = iNumFiles->value();
+    config->data.general.waitForAlbumGain = cWaitForAlbumGain->isChecked();
     config->data.general.createActionsMenu = cCreateActionsMenu->isChecked();
+    config->data.general.writeLogFiles = cWriteLogFiles->isChecked();
     config->data.general.replayGainGrouping = (Config::Data::General::ReplayGainGrouping)cReplayGainGrouping->currentIndex();
 }
 
 void ConfigGeneralPage::profileChanged()
 {
-    QString profile = cDefaultProfile->currentText();
+    const QString profile = cDefaultProfile->currentText();
     QString lastFormat = cDefaultFormat->currentText();
-    if( lastFormat.isEmpty() ) lastFormat = config->data.general.defaultFormat;
+    if( lastFormat.isEmpty() )
+        lastFormat = config->data.general.defaultFormat;
 
     cDefaultFormat->clear();
 
@@ -217,5 +243,6 @@ void ConfigGeneralPage::profileChanged()
         }
     }
 
-    if( cDefaultFormat->findText(lastFormat) != -1 ) cDefaultFormat->setCurrentIndex( cDefaultFormat->findText(lastFormat) );
+    if( cDefaultFormat->findText(lastFormat) != -1 )
+        cDefaultFormat->setCurrentIndex( cDefaultFormat->findText(lastFormat) );
 }

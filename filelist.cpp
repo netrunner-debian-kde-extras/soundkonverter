@@ -9,6 +9,7 @@
 #include "outputdirectory.h"
 #include "codecproblems.h"
 
+#include <KApplication>
 #include <KLocale>
 #include <KIcon>
 #include <KAction>
@@ -104,8 +105,11 @@ FileList::~FileList()
 {
     // NOTE no cleanup needed since it all gets cleand up in other classes
 
-    QFile listFile( KStandardDirs::locateLocal("data","soundkonverter/filelist_autosave.xml") );
-    listFile.remove();
+    if( !KApplication::kApplication()->sessionSaving() )
+    {
+        QFile listFile( KStandardDirs::locateLocal("data","soundkonverter/filelist_autosave.xml") );
+        listFile.remove();
+    }
 }
 
 void FileList::dragEnterEvent( QDragEnterEvent *event )
@@ -694,26 +698,27 @@ int FileList::convertingCount()
 
 void FileList::itemFinished( FileListItem *item, int state )
 {
+    bool calculatingAlbumGain = false;
+
     if( item )
     {
-        bool waitForAlbumGain = false;
-//         if( !config->data.general.waitForAlbumGain )
-//             waitForAlbumGain = false;
-//         // TODO check if item has to wait for others of the same album
-
         if( state == 0 )
         {
-            if( !waitForAlbumGain )
-            {
-                config->conversionOptionsManager()->removeConversionOptions( item->conversionOptionsId );
-                emit itemRemoved( item );
-                delete item;
-    //         itemsSelected();
-            }
-            else
+            ConversionOptions *conversionOptions = config->conversionOptionsManager()->getConversionOptions(item->conversionOptionsId);
+            if( conversionOptions && conversionOptions->replaygain && config->data.general.waitForAlbumGain )
             {
                 item->state = FileListItem::WaitingForAlbumGain;
                 updateItem( item );
+                calculatingAlbumGain = checkWaitingForAlbumGain();
+            }
+            else
+            {
+                config->conversionOptionsManager()->removeConversionOptions( item->conversionOptionsId );
+                emit itemRemoved( item );
+                if( item->tags )
+                    delete item->tags;
+                delete item;
+    //         itemsSelected();
             }
         }
         else if( state == 1 )
@@ -745,7 +750,7 @@ void FileList::itemFinished( FileListItem *item, int state )
     {
         convertNextItem();
     }
-    else if( convertingCount() == 0 )
+    else if( convertingCount() == 0 && !calculatingAlbumGain )
     {
         queue = false;
         save( false );
@@ -761,6 +766,136 @@ void FileList::itemFinished( FileListItem *item, int state )
         emit conversionStopped( state );
         emit fileCountChanged( topLevelItemCount() );
     }
+}
+
+bool FileList::checkWaitingForAlbumGain()
+{
+    QString albumName;
+    QString codecName;
+    QList<FileListItem*> items;
+
+    for( int i=0; i<topLevelItemCount(); i++ )
+    {
+        FileListItem *item = topLevelItem( i );
+        if( item->state == FileListItem::WaitingForAlbumGain )
+        {
+            ConversionOptions *conversionOptions = config->conversionOptionsManager()->getConversionOptions(item->conversionOptionsId);
+
+            if( item->tags )
+            {
+                if( albumName.isEmpty() )
+                    albumName = item->tags.data()->album;
+
+                if( codecName.isEmpty() )
+                    codecName = conversionOptions->codecName;
+
+                if( item->tags.data()->album == albumName && conversionOptions->codecName == codecName )
+                {
+                    items.append( item );
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                items.append( item );
+                break;
+            }
+        }
+        else if( item->state == FileListItem::WaitingForConversion || item->state == FileListItem::Ripping || item->state == FileListItem::Converting || item->state == FileListItem::ApplyingReplayGain )
+        {
+            if( item->tags )
+            {
+                ConversionOptions *conversionOptions = config->conversionOptionsManager()->getConversionOptions(item->conversionOptionsId);
+
+                if( items.isEmpty() )
+                {
+                    continue;
+                }
+                else if( item->tags.data()->album == albumName && conversionOptions->codecName == codecName )
+                {
+                    albumName.clear();
+                    codecName.clear();
+                    items.clear();
+                    break; // NOTE this way album gain will be worked off in the order of the file list, not which album finishes conversion first but it is faster with big file lists
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                if( albumName.isEmpty() )
+                {
+                    continue;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    if( items.count() > 0 )
+    {
+        for( int i=0; i<items.count(); i++ )
+        {
+            items[i]->state = FileListItem::ApplyingReplayGain;
+            updateItem( items.at(i) );
+        }
+        emit replaygainItems( items );
+        return true;
+    }
+    else
+    {
+        // tigger conversion of the next item
+        itemFinished( 0, 0 );
+    }
+
+    return false;
+}
+
+void FileList::replaygainFinished( QList<FileListItem*> items, int state )
+{
+    // TODO check for errors
+    for( int i=0; i<items.count(); i++ )
+    {
+        if( state == 0 )
+        {
+            config->conversionOptionsManager()->removeConversionOptions( items.at(i)->conversionOptionsId );
+            emit itemRemoved( items.at(i) );
+            if( items.at(i)->tags )
+                delete items.at(i)->tags;
+            delete items.at(i);
+//             itemsSelected();
+        }
+        else if( state == 1 )
+        {
+            items[i]->state = FileListItem::Stopped;
+            updateItem( items.at(i) );
+        }
+        else if( state == 100 )
+        {
+            items[i]->state = FileListItem::BackendNeedsConfiguration;
+            updateItem( items.at(i) );
+        }
+        else if( state == 101 )
+        {
+            items[i]->state = FileListItem::DiscFull;
+            updateItem( items.at(i) );
+        }
+        else
+        {
+            items[i]->state = FileListItem::Failed;
+            updateItem( items.at(i) );
+        }
+    }
+
+    checkWaitingForAlbumGain();
 }
 
 void FileList::rippingFinished( const QString& device )
@@ -901,6 +1036,7 @@ void FileList::removeSelectedItems()
         item = (FileListItem*)items.at(i);
         if( item && item->isSelected() &&
             ( item->state == FileListItem::WaitingForConversion ||
+              item->state == FileListItem::WaitingForAlbumGain ||
               item->state == FileListItem::Stopped ||
               item->state == FileListItem::Failed
             )
@@ -909,6 +1045,8 @@ void FileList::removeSelectedItems()
             emit timeChanged( -item->length );
             config->conversionOptionsManager()->removeConversionOptions( item->conversionOptionsId );
             emit itemRemoved( item );
+            if( item->tags )
+                delete item->tags;
             delete item;
         }
     }
@@ -995,6 +1133,7 @@ void FileList::load( bool user )
             {
                 item = topLevelItem(i);
                 if( item->state == FileListItem::WaitingForConversion ||
+                    item->state == FileListItem::WaitingForAlbumGain ||
                     item->state == FileListItem::Stopped ||
                     item->state == FileListItem::BackendNeedsConfiguration ||
                     item->state == FileListItem::DiscFull ||
@@ -1003,6 +1142,8 @@ void FileList::load( bool user )
                 {
                     config->conversionOptionsManager()->removeConversionOptions( item->conversionOptionsId );
                     emit itemRemoved( item );
+                    if( item->tags )
+                        delete item->tags;
                     delete item;
                     i--;
                 }
@@ -1037,6 +1178,8 @@ void FileList::load( bool user )
                     FileListItem *item = new FileListItem( this );
                     item->url = KUrl(file.attribute("url"));
                     item->outputUrl = KUrl(file.attribute("outputUrl"));
+                    if( item->url == item->outputUrl )
+                        item->state = FileListItem::WaitingForAlbumGain;
                     item->codecName = file.attribute("codecName");
                     item->conversionOptionsId = conversionOptionsIds[file.attribute("conversionOptionsId").toInt()];
                     item->local = file.attribute("local").toInt();
@@ -1079,6 +1222,10 @@ void FileList::load( bool user )
 
 void FileList::save( bool user )
 {
+    // assume it's a misclick if there's nothing to save
+    if( user && topLevelItemCount() == 0 )
+        return;
+
     QTime time;
     time.start();
 
@@ -1139,7 +1286,7 @@ void FileList::save( bool user )
         }
     }
 
-    QString fileName = user ? "filelist.xml" : "filelist_autosave.xml";
+    const QString fileName = user ? "filelist.xml" : "filelist_autosave.xml";
     QFile listFile( KStandardDirs::locateLocal("data","soundkonverter/"+fileName) );
     if( listFile.open( QIODevice::WriteOnly ) )
     {

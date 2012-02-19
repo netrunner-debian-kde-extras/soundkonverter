@@ -42,7 +42,9 @@ private:
 //     QStringList sPriority;
     KComboBox *cConflictHandling;
     KIntSpinBox *iNumFiles;
+    QCheckBox *cWaitForAlbumGain;
     QCheckBox *cCreateActionsMenu;
+    QCheckBox *cWriteLogFiles;
     KComboBox *cReplayGainGrouping;
 
     Config *config;

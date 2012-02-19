@@ -23,6 +23,19 @@
 ConvertItem::ConvertItem( FileListItem *item )
 {
     fileListItem = item;
+    fileListItems.clear();
+    getTime = convertTime = decodeTime = encodeTime = replaygainTime = bpmTime = 0.0f;
+    encodePlugin = 0;
+    convertID = -1;
+    replaygainID = -1;
+    take = 0;
+    killed = false;
+}
+
+ConvertItem::ConvertItem( QList<FileListItem*> items )
+{
+    fileListItem = 0;
+    fileListItems = items;
     getTime = convertTime = decodeTime = encodeTime = replaygainTime = bpmTime = 0.0f;
     encodePlugin = 0;
     convertID = -1;
@@ -56,8 +69,8 @@ KUrl ConvertItem::generateTempUrl( const QString& trunk, const QString& extensio
 void ConvertItem::updateTimes()
 {
     getTime = ( mode & ConvertItem::get ) ? 0.8f : 0.0f;            // TODO file size? connection speed?
-    convertTime = ( mode & ConvertItem::convert ) ? 1.4f : 0.0f;    // NOTE either convert OR decode & encode is used!
-    if( fileListItem->track == -1 )
+    convertTime = ( mode & ConvertItem::convert ) ? 1.4f : 0.0f;    // NOTE either convert OR decode & encode is used --- or only replay gain
+    if( fileListItem && fileListItem->track == -1 )
     {
         decodeTime = ( mode & ConvertItem::decode ) ? 0.4f : 0.0f;
         encodeTime = ( mode & ConvertItem::encode ) ? 1.0f : 0.0f;
@@ -72,12 +85,24 @@ void ConvertItem::updateTimes()
 
     const float sum = getTime + convertTime + decodeTime + encodeTime + replaygainTime + bpmTime;
 
-    getTime *= fileListItem->length/sum;
-    convertTime *= fileListItem->length/sum;
-    decodeTime *= fileListItem->length/sum;
-    encodeTime *= fileListItem->length/sum;
-    replaygainTime *= fileListItem->length/sum;
-    bpmTime *= fileListItem->length/sum;
+    float length = 0;
+    if( fileListItem )
+    {
+        length = fileListItem->length;
+    }
+    else if( fileListItems.count() > 0 )
+    {
+        for( int i=0; i<fileListItems.count(); i++ )
+        {
+            length += fileListItems.at(i)->length;
+        }
+    }
+    getTime *= length/sum;
+    convertTime *= length/sum;
+    decodeTime *= length/sum;
+    encodeTime *= length/sum;
+    replaygainTime *= length/sum;
+    bpmTime *= length/sum;
 
     finishedTime = 0.0f;
     switch( state )
@@ -121,7 +146,9 @@ Convert::Convert( Config *_config, FileList *_fileList, Logger *_logger )
 {
     connect( fileList, SIGNAL(convertItem(FileListItem*)), this, SLOT(add(FileListItem*)) );
     connect( fileList, SIGNAL(killItem(FileListItem*)), this, SLOT(kill(FileListItem*)) );
+    connect( fileList, SIGNAL(replaygainItems(QList<FileListItem*>)), this, SLOT(replaygain(QList<FileListItem*>)) );
     connect( this, SIGNAL(finished(FileListItem*,int)), fileList, SLOT(itemFinished(FileListItem*,int)) );
+    connect( this, SIGNAL(replaygainFinished(QList<FileListItem*>,int)), fileList, SLOT(replaygainFinished(QList<FileListItem*>,int)) );
     connect( this, SIGNAL(rippingFinished(const QString&)), fileList, SLOT(rippingFinished(const QString&)) );
     connect( this, SIGNAL(finishedProcess(int,int)), logger, SLOT(processCompleted(int,int)) );
 
@@ -256,15 +283,15 @@ void Convert::convert( ConvertItem *item )
         QStringList command1, command2;
         if( plugin1->type() == "codec" )
         {
-            command1 = qobject_cast<CodecPlugin*>(plugin1)->convertCommand( inputUrl, KUrl("-"), item->conversionPipes.at(item->take).trunks.at(0).codecFrom, item->conversionPipes.at(item->take).trunks.at(0).codecTo, conversionOptions, item->fileListItem->tags );
+            command1 = qobject_cast<CodecPlugin*>(plugin1)->convertCommand( inputUrl, KUrl(), item->conversionPipes.at(item->take).trunks.at(0).codecFrom, item->conversionPipes.at(item->take).trunks.at(0).codecTo, conversionOptions, item->fileListItem->tags );
         }
         else if( plugin1->type() == "ripper" )
         {
             item->fileListItem->state = FileListItem::Ripping;
-            command1 = qobject_cast<RipperPlugin*>(plugin1)->ripCommand( item->fileListItem->device, item->fileListItem->track, item->fileListItem->tracks, KUrl("-") );
+            command1 = qobject_cast<RipperPlugin*>(plugin1)->ripCommand( item->fileListItem->device, item->fileListItem->track, item->fileListItem->tracks, KUrl() );
         }
         const bool replaygain = ( item->conversionPipes.at(item->take).trunks.at(1).data.hasInternalReplayGain && item->mode & ConvertItem::replaygain );
-        command2 = plugin2->convertCommand( KUrl("-"), item->outputUrl, item->conversionPipes.at(item->take).trunks.at(1).codecFrom, item->conversionPipes.at(item->take).trunks.at(1).codecTo, conversionOptions, item->fileListItem->tags, replaygain );
+        command2 = plugin2->convertCommand( KUrl(), item->outputUrl, item->conversionPipes.at(item->take).trunks.at(1).codecFrom, item->conversionPipes.at(item->take).trunks.at(1).codecTo, conversionOptions, item->fileListItem->tags, replaygain );
         if( !command1.isEmpty() && !command2.isEmpty() )
         {
             // both plugins support pipes
@@ -369,13 +396,34 @@ void Convert::replaygain( ConvertItem *item )
     if( item->take > item->replaygainPipes.count() - 1 )
     {
         logger->log( item->logID, "\t" + i18n("No more backends left to try :(") );
-        remove( item, -1 );
+
+        if( item->fileListItem )
+        {
+            remove( item, -1 );
+        }
+        else
+        {
+            removeAlbumGainItem( item, -1 );
+        }
+
         return;
     }
 
     item->state = ConvertItem::replaygain;
     item->replaygainPlugin = item->replaygainPipes.at(item->take).plugin;
-    item->replaygainID = item->replaygainPlugin->apply( item->outputUrl );
+    if( item->fileListItem ) // normal conversion item
+    {
+        item->replaygainID = item->replaygainPlugin->apply( item->outputUrl );
+    }
+    else // album gain item
+    {
+        KUrl::List fileList;
+        for( int i=0; i<items.count(); i++ )
+        {
+            fileList.append( items.at(i)->outputUrl );
+        }
+        item->replaygainID = item->replaygainPlugin->apply( fileList );
+    }
 
     if( !updateTimer.isActive() )
         updateTimer.start( config->data.general.updateDelay );
@@ -383,13 +431,32 @@ void Convert::replaygain( ConvertItem *item )
 
 void Convert::writeTags( ConvertItem *item )
 {
+    if( !item || !item->fileListItem || !item->fileListItem->tags )
+        return;
+
     logger->log( item->logID, i18n("Writing tags") );
 //     item->state = ConvertItem::write_tags;
-
-    config->tagEngine()->writeTags( item->outputUrl, item->fileListItem->tags );
 //     item->fileListItem->setText( 0, i18n("Writing tags")+"... 00 %" );
 
-//     executeNextStep( item );
+    config->tagEngine()->writeTags( item->outputUrl, item->fileListItem->tags );
+
+    KUrl inputUrl;
+    if( !item->tempInputUrl.toLocalFile().isEmpty() )
+        inputUrl = item->tempInputUrl;
+    else
+        inputUrl = item->inputUrl;
+
+    if( !item->fileListItem->tags->coversRead )
+    {
+        item->fileListItem->tags->covers = config->tagEngine()->readCovers( inputUrl );
+        item->fileListItem->tags->coversRead = true;
+    }
+
+    const bool success = config->tagEngine()->writeCovers( item->outputUrl, item->fileListItem->tags->covers );
+    if( config->data.coverArt.writeCovers == 0 || ( config->data.coverArt.writeCovers == 1 && !success ) )
+    {
+        config->tagEngine()->writeCoversToDirectory( item->outputUrl.directory(), item->fileListItem->tags->covers );
+    }
 }
 
 void Convert::put( ConvertItem *item )
@@ -742,7 +809,7 @@ void Convert::pluginProcessFinished( int id, int exitCode )
                     items.at(i)->fileListItem->state = FileListItem::Converting;
                     emit rippingFinished( items.at(i)->fileListItem->device );
                 }
-                if( items.at(i)->conversionPipes.at(items.at(i)->take).trunks.at(0).data.hasInternalReplayGain && items.at(i)->mode & ConvertItem::replaygain )
+                if( items.at(i)->conversionPipes.count() > items.at(i)->take && items.at(i)->conversionPipes.at(items.at(i)->take).trunks.at(0).data.hasInternalReplayGain && items.at(i)->mode & ConvertItem::replaygain )
                 {
                     items.at(i)->mode = ConvertItem::Mode( items.at(i)->mode ^ ConvertItem::replaygain );
                 }
@@ -771,6 +838,32 @@ void Convert::pluginProcessFinished( int id, int exitCode )
             }
         }
     }
+
+    for( int i=0; i<albumGainItems.size(); i++ )
+    {
+        if( albumGainItems.at(i)->replaygainPlugin && albumGainItems.at(i)->replaygainPlugin == QObject::sender() && albumGainItems.at(i)->replaygainID == id )
+        {
+            albumGainItems.at(i)->replaygainID = -1;
+
+            if( albumGainItems.at(i)->killed )
+            {
+                removeAlbumGainItem( albumGainItems.at(i), 1 );
+                return;
+            }
+
+            if( exitCode == 0 )
+            {
+                albumGainItems.at(i)->finishedTime += albumGainItems.at(i)->replaygainTime;
+                removeAlbumGainItem( albumGainItems.at(i), 0 );
+                return;
+            }
+            else
+            {
+                logger->log( albumGainItems.at(i)->logID, "\t" + i18n("Calculating Replay Gain failed. Exit code: %1",exitCode) );
+                executeSameStep( albumGainItems.at(i) );
+            }
+        }
+    }
 }
 
 void Convert::pluginLog( int id, const QString& message )
@@ -792,6 +885,20 @@ void Convert::pluginLog( int id, const QString& message )
                 break;
             }
         }
+
+        for( int j=0; j<albumGainItems.size(); j++ )
+        {
+            if( albumGainItems.at(j)->replaygainPlugin && albumGainItems.at(j)->replaygainPlugin == pluginLogQueue.at(i).plugin && albumGainItems.at(j)->replaygainID == pluginLogQueue.at(i).id )
+            {
+                for( int k=0; k<pluginLogQueue.at(i).messages.size(); k++ )
+                {
+                    logger->log( albumGainItems.at(j)->logID, "\t" + pluginLogQueue.at(i).messages.at(k).trimmed().replace("\n","\n\t") );
+                }
+                pluginLogQueue.removeAt(i);
+                i--;
+                break;
+            }
+        }
     }
 
     if( message.trimmed().isEmpty() )
@@ -804,6 +911,16 @@ void Convert::pluginLog( int id, const QString& message )
             ( items.at(i)->replaygainPlugin && items.at(i)->replaygainPlugin == QObject::sender() && items.at(i)->replaygainID == id ) )
         {
             logger->log( items.at(i)->logID, "\t" + message.trimmed().replace("\n","\n\t") );
+            return;
+        }
+    }
+
+    // search the matching process
+    for( int i=0; i<albumGainItems.size(); i++ )
+    {
+        if( albumGainItems.at(i)->replaygainPlugin && albumGainItems.at(i)->replaygainPlugin == QObject::sender() && albumGainItems.at(i)->replaygainID == id )
+        {
+            logger->log( albumGainItems.at(i)->logID, "\t" + message.trimmed().replace("\n","\n\t") );
             return;
         }
     }
@@ -848,7 +965,6 @@ void Convert::add( FileListItem* item )
     }
     logger->log( 1000, i18n("Adding new item to conversion list: '%1'",fileName.pathOrUrl()) );
 
-    // append the item to the item list and store the iterator
     ConvertItem *newItem = new ConvertItem( item );
     items.append( newItem );
 
@@ -904,7 +1020,7 @@ void Convert::add( FileListItem* item )
 
     newItem->mode = ConvertItem::Mode( newItem->mode | ConvertItem::convert );
 
-    if( conversionOptions->replaygain )
+    if( conversionOptions->replaygain && !config->data.general.waitForAlbumGain )
     {
         newItem->replaygainPipes = config->pluginLoader()->getReplayGainPipes( conversionOptions->codecName );
         newItem->mode = ConvertItem::Mode( newItem->mode | ConvertItem::replaygain );
@@ -976,9 +1092,10 @@ void Convert::remove( ConvertItem *item, int state )
     if( state == 0 )
     {
         writeTags( item );
+        item->fileListItem->url = item->outputUrl;
     }
 
-    if( !item->fileListItem->notifyCommand.isEmpty() )
+    if( !item->fileListItem->notifyCommand.isEmpty() && ( !config->data.general.waitForAlbumGain || !conversionOptions->replaygain ) )
     {
         QString command = item->fileListItem->notifyCommand;
 //         command.replace( "%u", item->fileListItem->url );
@@ -989,6 +1106,7 @@ void Convert::remove( ConvertItem *item, int state )
         QProcess::startDetached( command );
     }
 
+    // remove temp/failed files
     if( QFile::exists(item->tempInputUrl.toLocalFile()) )
     {
         QFile::remove(item->tempInputUrl.toLocalFile());
@@ -1024,7 +1142,54 @@ void Convert::remove( ConvertItem *item, int state )
     items.removeAll( item );
     delete item;
 
-    if( items.size() == 0 )
+    if( items.size() == 0 && albumGainItems.size() == 0 )
+        updateTimer.stop();
+}
+
+void Convert::removeAlbumGainItem( ConvertItem *item, int state )
+{
+    // TODO "remove" (re-add) the times to the progress indicator
+    //emit uncountTime( item->getTime + item->getCorrectionTime + item->ripTime +
+    //                  item->decodeTime + item->encodeTime + item->replaygainTime );
+
+    QString exitMessage;
+
+    if( state == 0 )
+        exitMessage = i18nc("Conversion exit status","Normal exit");
+    else if( state == 1 )
+        exitMessage = i18nc("Conversion exit status","Aborted by the user");
+    else if( state == 100 )
+        exitMessage = i18nc("Conversion exit status","Backend needs configuration");
+    else
+        exitMessage = i18nc("Conversion exit status","An error occured");
+
+    for( int i=0; i<item->fileListItems.count(); i++ )
+    {
+        if( !item->fileListItems.at(i)->notifyCommand.isEmpty() )
+        {
+            QString command = item->fileListItems.at(i)->notifyCommand;
+//             command.replace( "%u", item->fileListItems.at(i)->url );
+            command.replace( "%i", item->fileListItems.at(i)->url.toLocalFile() );
+            command.replace( "%o", item->fileListItems.at(i)->outputUrl.toLocalFile() );
+            logger->log( item->logID, i18n("Executing command: \"%1\"",command) );
+
+            QProcess::startDetached( command );
+        }
+    }
+
+    logger->log( item->logID, i18n("Removing file from conversion list. Exit code %1 (%2)",state,exitMessage) );
+
+    logger->log( item->logID, "\t" + i18n("Conversion time") + ": " + Global::prettyNumber(item->progressedTime.elapsed(),"ms") );
+
+    emit timeFinished( item->finishedTime );
+
+    emit replaygainFinished( item->fileListItems, state ); // send signal to FileList
+    emit finishedProcess( item->logID, state );            // send signal to Logger
+
+    albumGainItems.removeAll( item );
+    delete item;
+
+    if( items.size() == 0 && albumGainItems.size() == 0 )
         updateTimer.stop();
 }
 
@@ -1035,16 +1200,72 @@ void Convert::kill( FileListItem *item )
         if( items.at(i)->fileListItem == item )
         {
             items.at(i)->killed = true;
+
             if( items.at(i)->convertID != -1 && items.at(i)->convertPlugin )
+            {
                 items.at(i)->convertPlugin->kill( items.at(i)->convertID );
+            }
             else if( items.at(i)->replaygainID != -1 && items.at(i)->replaygainPlugin )
+            {
                 items.at(i)->replaygainPlugin->kill( items.at(i)->replaygainID );
+            }
             else if( items.at(i)->process.data() != 0 )
+            {
                 items.at(i)->process.data()->kill();
+            }
             else if( items.at(i)->kioCopyJob.data() != 0 )
+            {
                 items.at(i)->kioCopyJob.data()->kill( KJob::EmitResult );
+            }
         }
     }
+
+//     for( int i=0; i<albumGainItems.size(); i++ )
+//     {
+//         for( int j=0; j<albumGainItems.at(i)->fileListItems.count(); j++ )
+//         {
+//             if( albumGainItems.at(i)->fileListItems.at(j) == item && !albumGainItems.at(i)->killed )
+//             {
+//                 albumGainItems.at(i)->killed = true;
+//
+//                 if( albumGainItems.at(i)->replaygainID != -1 && albumGainItems.at(i)->replaygainPlugin )
+//                 {
+//                     albumGainItems.at(i)->replaygainPlugin->kill( albumGainItems.at(i)->replaygainID );
+//                 }
+//
+//                 break;
+//             }
+//         }
+//     }
+}
+
+void Convert::replaygain( QList<FileListItem*> items )
+{
+    if( items.isEmpty() )
+        return;
+
+    const QString albumName = items.at(0)->tags ? items.at(0)->tags->album : i18n("Unknown Album");
+
+    logger->log( 1000, i18n("Adding new item to conversion list: '%1'",i18n("Replay Gain for album: %1",albumName)) );
+
+    ConvertItem *newItem = new ConvertItem( items );
+    albumGainItems.append( newItem );
+
+    // register at the logger
+    newItem->logID = logger->registerProcess( KUrl(i18n("Replay Gain for album: %1",albumName)) );
+    logger->log( 1000, "\t" + i18n("Got log ID: %1",newItem->logID) );
+
+    // set some variables to default values
+    newItem->mode = ConvertItem::replaygain;
+    newItem->state = (ConvertItem::Mode)0x0000;
+    newItem->updateTimes();
+
+    ConversionOptions *conversionOptions = config->conversionOptionsManager()->getConversionOptions( items.at(0)->conversionOptionsId );
+    newItem->replaygainPipes = config->pluginLoader()->getReplayGainPipes( conversionOptions->codecName );
+
+    newItem->progressedTime.start();
+
+    replaygain( newItem );
 }
 
 void Convert::updateProgress()
@@ -1114,6 +1335,37 @@ void Convert::updateProgress()
         time += items.at(i)->finishedTime + fileProgress * fileTime / 100.0f;
         logger->log( items.at(i)->logID, i18n("Progress: %1",fileProgress) );
     }
+
+    for( int i=0; i<albumGainItems.size(); i++ )
+    {
+        if( albumGainItems.at(i)->replaygainID != -1 && albumGainItems.at(i)->replaygainPlugin )
+        {
+            fileProgress = albumGainItems.at(i)->replaygainPlugin->progress( albumGainItems.at(i)->replaygainID );
+        }
+        else
+        {
+            fileProgress = albumGainItems.at(i)->progress;
+        }
+
+        if( fileProgress >= 0 )
+        {
+            fileProgressString = Global::prettyNumber(fileProgress,"%");
+        }
+        else
+        {
+            fileProgressString = i18nc("The conversion progress can't be determined","Unknown");
+            fileProgress = 0; // make it a valid value so the calculations below work
+        }
+
+        for( int j=0; j<albumGainItems.at(i)->fileListItems.count(); j++ )
+        {
+            albumGainItems.at(i)->fileListItems[j]->setText( 0, i18n("Replay Gain")+"... "+fileProgressString );
+        }
+
+        time += albumGainItems.at(i)->finishedTime + fileProgress * albumGainItems.at(i)->replaygainTime / 100.0f;
+        logger->log( albumGainItems.at(i)->logID, i18n("Progress: %1",fileProgress) );
+    }
+
     emit updateTime( time );
 }
 
