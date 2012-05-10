@@ -55,8 +55,7 @@ void Config::load()
     data.general.copyStructureOutputDirectory = group.readEntry( "copyStructureOutputDirectory", QDir::homePath() + "/soundKonverter" );
     data.general.lastMetaDataOutputDirectoryPaths = group.readEntry( "lastMetaDataOutputDirectoryPaths", QStringList() );
     data.general.lastNormalOutputDirectoryPaths = group.readEntry( "lastNormalOutputDirectoryPaths", QStringList() );
-//     data.general.waitForAlbumGain = group.readEntry( "waitForAlbumGain", true );
-    data.general.waitForAlbumGain = false;
+    data.general.waitForAlbumGain = group.readEntry( "waitForAlbumGain", true );
     data.general.useVFATNames = group.readEntry( "useVFATNames", false );
     data.general.writeLogFiles = group.readEntry( "writeLogFiles", false );
     data.general.conflictHandling = (Config::Data::General::ConflictHandling)group.readEntry( "conflictHandling", 0 );
@@ -97,6 +96,7 @@ void Config::load()
         chkdf.remove();
     }
     data.advanced.maxSizeForSharedMemoryTempFiles = group.readEntry( "maxSizeForSharedMemoryTempFiles", data.advanced.sharedMemorySize / 2 );
+    data.advanced.usePipes = group.readEntry( "usePipes", false );
 
     group = conf->group( "CoverArt" );
     data.coverArt.writeCovers = group.readEntry( "writeCovers", 1 );
@@ -116,8 +116,6 @@ void Config::load()
 
     pPluginLoader->load();
 
-    QList<CodecPlugin*> codecPlugins;
-    QList<ReplayGainPlugin*> replaygainPlugins;
     QString pluginName;
     bool found;
     QStringList enabledPlugins;
@@ -445,7 +443,7 @@ void Config::save()
     group.writeEntry( "copyStructureOutputDirectory", data.general.copyStructureOutputDirectory );
     group.writeEntry( "lastMetaDataOutputDirectoryPaths", data.general.lastMetaDataOutputDirectoryPaths );
     group.writeEntry( "lastNormalOutputDirectoryPaths", data.general.lastNormalOutputDirectoryPaths );
-//     group.writeEntry( "waitForAlbumGain", data.general.waitForAlbumGain );
+    group.writeEntry( "waitForAlbumGain", data.general.waitForAlbumGain );
     group.writeEntry( "useVFATNames", data.general.useVFATNames );
     group.writeEntry( "writeLogFiles", data.general.writeLogFiles );
     group.writeEntry( "conflictHandling", (int)data.general.conflictHandling );
@@ -463,6 +461,7 @@ void Config::save()
     group = conf->group( "Advanced" );
     group.writeEntry( "useSharedMemoryForTempFiles", data.advanced.useSharedMemoryForTempFiles );
     group.writeEntry( "maxSizeForSharedMemoryTempFiles", data.advanced.maxSizeForSharedMemoryTempFiles );
+    group.writeEntry( "usePipes", data.advanced.usePipes );
 
     group = conf->group( "CoverArt" );
     group.writeEntry( "writeCovers", data.coverArt.writeCovers );
@@ -596,6 +595,9 @@ QStringList Config::customProfiles()
 
     for( int i=0; i<data.profiles.count(); i++ )
     {
+        if( data.profiles.at(i).profileName == "soundkonverter_last_used" )
+            continue;
+
         QList<CodecPlugin*> plugins = pPluginLoader->encodersForCodec( data.profiles.at(i).codecName );
 
         for( int j=0; j<plugins.count(); j++ )

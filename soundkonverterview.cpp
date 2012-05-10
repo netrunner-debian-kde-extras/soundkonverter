@@ -26,7 +26,6 @@
 #include <KMenu>
 #include <KAction>
 #include <KActionMenu>
-#include <KStandardDirs>
 
 #include <QLabel>
 #include <QLayout>
@@ -64,6 +63,7 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     optionsLayer->hide();
     gridLayout->addWidget( optionsLayer, 1, 0 );
     connect( optionsLayer, SIGNAL(done(const KUrl::List&,ConversionOptions*,const QString&)), fileList, SLOT(addFiles(const KUrl::List&,ConversionOptions*,const QString&)) );
+    connect( optionsLayer, SIGNAL(saveFileList()), fileList, SLOT(save()) );
 
 
     // add a horizontal box layout for the add combobutton to the grid
@@ -130,9 +130,6 @@ soundKonverterView::soundKonverterView( Logger *_logger, Config *_config, CDMana
     Convert *convert = new Convert( config, fileList, logger );
     connect( convert, SIGNAL(updateTime(float)), progressIndicator, SLOT(update(float)) );
     connect( convert, SIGNAL(timeFinished(float)), progressIndicator, SLOT(timeFinished(float)) );
-
-    if( QFile::exists(KStandardDirs::locateLocal("data","soundkonverter/filelist_autosave.xml")) )
-        fileList->load( false );
 }
 
 soundKonverterView::~soundKonverterView()
@@ -513,6 +510,11 @@ void soundKonverterView::addConvertFiles( const KUrl::List& urls, QString _profi
     }
 
     fileList->save( false );
+}
+
+void soundKonverterView::loadAutosaveFileList()
+{
+    fileList->load( false );
 }
 
 void soundKonverterView::startConversion()
