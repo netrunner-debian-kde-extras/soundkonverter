@@ -1,3 +1,31 @@
+1.5.0:
+-Add: Update translations
+
+1.4.90 (1.5.0 rc1):
+-Add: Copy embedded covers for wma files
+-Add: Calculate Album Gain for albums in the conversion list
+-Add: Russian translation
+-Change: Replace Spanish Argentinan translation (es_AR) with Spanish (es) since KDE isn't able to use es_AR translations
+-Fix: Cdrom drive detection would fail with Ubuntu 12.04 (patch by Eike Thaden)
+-Fix: Musicbrainz lookup not working if data track present (patch by Eike Thaden)
+-Fix: Don't show data tracks in the CD ripper UI (patch by Eike Thaden)
+-Fix: Musicbrainz lookup would only work through the freedb gateway (patch by Eike Thaden)
+
+1.4.0:
+-Add: Show progress bar when loading file lists
+
+1.3.90 (1.4.0 rc1):
+-Add: TTA Enc plugin
+-Add: sad (Black & White audio file) support
+-Add: Improved saving of the last used conversion profile
+-Change: Reduce amount of alerts when dropping unsupported file types (like images) on the file list
+-Fix: Files added with "add directory" could fail
+
+1.3.3:
+-Change: Piping is disabled by default, it can be activated in the config dialog though
+-Fix: Some piping bugs with vorbistools and ffmpeg
+-Fix: Crash when adding a directory
+
 1.3.2:
 -Fix: Crash when trying to write covers (attempt #2)
 
