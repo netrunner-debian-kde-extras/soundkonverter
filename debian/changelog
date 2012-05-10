@@ -2,6 +2,7 @@ soundkonverter (1.5.0-1) unstable; urgency=low
 
   * Imported Upstream version 1.5.0
   * Bumped Standards-Version to 3.9.3, no changes needed.
+  * Removed watch file again, because it no longer works.
 
  -- Michael Meskes <meskes@debian.org>  Thu, 10 May 2012 15:06:06 +0200
 
