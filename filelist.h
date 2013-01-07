@@ -63,8 +63,8 @@ private:
     /** Update timer for the scan status */
     QTime tScanStatus;
 
-    int TimeCount;
-    QTime Time;
+//     int TimeCount;
+//     QTime Time;
 
     void convertNextItem();
     int waitingCount();
@@ -117,7 +117,7 @@ private slots:
     void selectPreviousItem();
     void selectNextItem();
 
-//     bool checkWaitingForAlbumGain();
+    void showLogClicked( const QString& logIdString );
 
 public slots:
     // connected to soundKonverterView
@@ -156,6 +156,7 @@ signals:
     void conversionStarted();
     void conversionStopped( int state );
     void queueModeChanged( bool enabled );
+    void showLog( const int logId );
 
 //     void stopClicked();
 //     void continueClicked();
