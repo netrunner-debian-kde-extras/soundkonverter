@@ -38,7 +38,7 @@ ConfigAdvancedPage::ConfigAdvancedPage( Config *_config, QWidget *parent )
     cPreferredOggVorbisExtension->addItem( "oga" );
     cPreferredOggVorbisExtension->setCurrentIndex( config->data.general.preferredOggVorbisExtension == "ogg" ? 0 : 1 );
     preferredOggVorbisExtensionBox->addWidget( cPreferredOggVorbisExtension );
-    connect( cPreferredOggVorbisExtension, SIGNAL(activated(int)), this, SIGNAL(configChanged()) );
+    connect( cPreferredOggVorbisExtension, SIGNAL(activated(int)), this, SLOT(somethingChanged()) );
     preferredOggVorbisExtensionBox->setStretch( 0, 3 );
     preferredOggVorbisExtensionBox->setStretch( 1, 1 );
 
@@ -53,7 +53,7 @@ ConfigAdvancedPage::ConfigAdvancedPage( Config *_config, QWidget *parent )
     iUpdateDelay->setSuffix( " " + i18nc("milliseconds","ms") );
     iUpdateDelay->setValue( config->data.general.updateDelay );
     updateDelayBox->addWidget( iUpdateDelay );
-    connect( iUpdateDelay, SIGNAL(valueChanged(int)), this, SIGNAL(configChanged()) );
+    connect( iUpdateDelay, SIGNAL(valueChanged(int)), this, SLOT(somethingChanged()) );
     updateDelayBox->setStretch( 0, 3 );
     updateDelayBox->setStretch( 1, 1 );
 
@@ -62,10 +62,10 @@ ConfigAdvancedPage::ConfigAdvancedPage( Config *_config, QWidget *parent )
     QHBoxLayout *useVFATNamesBox = new QHBoxLayout( 0 );
     box->addLayout( useVFATNamesBox );
     cUseVFATNames = new QCheckBox( i18n("Always use FAT compatible output file names"), this );
-    cUseVFATNames->setToolTip( i18n("Replaces some special characters like \'?\' by \'_\'.\nIf the output directoy is on a FAT file system FAT compatible file names will automatically be used independently from this option.") );
+    cUseVFATNames->setToolTip( i18n("Replaces some special characters like \'?\' by \'_\'.\nIf the output directory is on a FAT file system FAT compatible file names will automatically be used independently from this option.") );
     cUseVFATNames->setChecked( config->data.general.useVFATNames );
     useVFATNamesBox->addWidget( cUseVFATNames );
-    connect( cUseVFATNames, SIGNAL(toggled(bool)), this, SIGNAL(configChanged()) );
+    connect( cUseVFATNames, SIGNAL(toggled(bool)), this, SLOT(somethingChanged()) );
 
     box->addSpacing( 20 );
 
@@ -75,7 +75,7 @@ ConfigAdvancedPage::ConfigAdvancedPage( Config *_config, QWidget *parent )
     cWriteLogFiles->setToolTip( i18n("Write log files to the hard drive while converting.\nThis can be useful if a crash occurs and you can't access the log file using the log viewer.\nLog files will be written to %1",KStandardDirs::locateLocal("data","soundkonverter/log/")) );
     cWriteLogFiles->setChecked( config->data.general.writeLogFiles );
     writeLogFilesBox->addWidget( cWriteLogFiles );
-    connect( cWriteLogFiles, SIGNAL(toggled(bool)), this, SIGNAL(configChanged()) );
+    connect( cWriteLogFiles, SIGNAL(toggled(bool)), this, SLOT(somethingChanged()) );
 
     box->addSpacing( 5 );
 
@@ -85,13 +85,13 @@ ConfigAdvancedPage::ConfigAdvancedPage( Config *_config, QWidget *parent )
     cRemoveFailedFiles->setToolTip( i18n("Disable this for debugging or if you are sure the files get converted correctly.") );
     cRemoveFailedFiles->setChecked( config->data.general.removeFailedFiles );
     removeFailedFilesBox->addWidget( cRemoveFailedFiles );
-    connect( cRemoveFailedFiles, SIGNAL(toggled(bool)), this, SIGNAL(configChanged()) );
+    connect( cRemoveFailedFiles, SIGNAL(toggled(bool)), this, SLOT(somethingChanged()) );
 
     box->addSpacing( 20 );
 
     QHBoxLayout *useSharedMemoryForTempFilesBox = new QHBoxLayout( 0 );
     box->addLayout( useSharedMemoryForTempFilesBox );
-    cUseSharedMemoryForTempFiles = new QCheckBox( i18n("Store temporary files in memory unless the estimted size is more than")+":", this );
+    cUseSharedMemoryForTempFiles = new QCheckBox( i18n("Store temporary files in memory unless the estimated size is more than")+":", this );
     cUseSharedMemoryForTempFiles->setChecked( config->data.advanced.useSharedMemoryForTempFiles );
     useSharedMemoryForTempFilesBox->addWidget( cUseSharedMemoryForTempFiles );
     iMaxSizeForSharedMemoryTempFiles = new KIntSpinBox( 1, config->data.advanced.sharedMemorySize, 1, config->data.advanced.sharedMemorySize / 2, this );
@@ -106,8 +106,9 @@ ConfigAdvancedPage::ConfigAdvancedPage( Config *_config, QWidget *parent )
         cUseSharedMemoryForTempFiles->setToolTip( i18n("It seems there's no filesystem mounted on /dev/shm") );
     }
     iMaxSizeForSharedMemoryTempFiles->setEnabled( cUseSharedMemoryForTempFiles->isChecked() );
-    connect( cUseSharedMemoryForTempFiles, SIGNAL(toggled(bool)), this, SIGNAL(configChanged()) );
+    connect( cUseSharedMemoryForTempFiles, SIGNAL(toggled(bool)), this, SLOT(somethingChanged()) );
     connect( cUseSharedMemoryForTempFiles, SIGNAL(toggled(bool)), iMaxSizeForSharedMemoryTempFiles, SLOT(setEnabled(bool)) );
+    connect( iMaxSizeForSharedMemoryTempFiles, SIGNAL(valueChanged(int)), this, SLOT(somethingChanged()) );
     useSharedMemoryForTempFilesBox->setStretch( 0, 3 );
     useSharedMemoryForTempFilesBox->setStretch( 1, 1 );
 
@@ -119,7 +120,7 @@ ConfigAdvancedPage::ConfigAdvancedPage( Config *_config, QWidget *parent )
     cUsePipes->setToolTip( i18n("Pipes make it unnecessary to use temporary files, therefore increasing the performance.\nBut some backends cause errors in this mode so be cautious.") );
     cUsePipes->setChecked( config->data.advanced.usePipes );
     usePipesBox->addWidget( cUsePipes );
-    connect( cUsePipes, SIGNAL(toggled(bool)), this, SIGNAL(configChanged()) );
+    connect( cUsePipes, SIGNAL(toggled(bool)), this, SLOT(somethingChanged()) );
 
     box->addStretch();
 }
@@ -151,5 +152,19 @@ void ConfigAdvancedPage::saveSettings()
     config->data.advanced.useSharedMemoryForTempFiles = cUseSharedMemoryForTempFiles->isEnabled() && cUseSharedMemoryForTempFiles->isChecked();
     config->data.advanced.maxSizeForSharedMemoryTempFiles = iMaxSizeForSharedMemoryTempFiles->value();
     config->data.advanced.usePipes = cUsePipes->isChecked();
+}
+
+void ConfigAdvancedPage::somethingChanged()
+{
+    const bool changed = cPreferredOggVorbisExtension->currentText() != config->data.general.preferredOggVorbisExtension ||
+                         iUpdateDelay->value() != config->data.general.updateDelay ||
+                         cUseVFATNames->isChecked() != config->data.general.useVFATNames ||
+                         cWriteLogFiles->isChecked() != config->data.general.writeLogFiles ||
+                         cRemoveFailedFiles->isChecked() != config->data.general.removeFailedFiles ||
+                         cUseSharedMemoryForTempFiles->isChecked() != config->data.advanced.useSharedMemoryForTempFiles ||
+                         iMaxSizeForSharedMemoryTempFiles->value() != config->data.advanced.maxSizeForSharedMemoryTempFiles ||
+                         cUsePipes->isChecked() != config->data.advanced.usePipes;
+
+    emit configChanged( changed );
 }
 

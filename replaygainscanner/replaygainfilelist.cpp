@@ -179,9 +179,10 @@ void ReplayGainFileList::dropEvent( QDropEvent *event )
     {
         for( int i=0; i<q_urls.size(); i++ )
         {
-            QString codecName = config->pluginLoader()->getCodecFromFile( q_urls.at(i) );
+            QString mimeType;
+            QString codecName = config->pluginLoader()->getCodecFromFile( q_urls.at(i), &mimeType );
 
-            if( codecName == "inode/directory" )
+            if( mimeType == "inode/directory" )
             {
                 k_urls_dirs += q_urls.at(i);
             }
@@ -191,23 +192,28 @@ void ReplayGainFileList::dropEvent( QDropEvent *event )
             }
             else
             {
-                if( !codecName.startsWith("audio") && !codecName.startsWith("video") && !codecName.startsWith("application") )
+                if( codecName.isEmpty() && !mimeType.startsWith("audio") && !mimeType.startsWith("video") && !mimeType.startsWith("application") )
                     continue;
 
-                if( codecName == "application/x-ole-storage" || // Thumbs.db
-                    codecName == "application/x-wine-extension-ini" ||
-                    codecName == "application/x-cue" ||
-                    codecName == "application/x-k3b" ||
-                    codecName == "application/pdf" ||
-                    codecName == "application/x-trash" ||
-                    codecName.startsWith("application/vnd.oasis.opendocument") ||
-                    codecName.startsWith("application/vnd.openxmlformats-officedocument") ||
-                    codecName.startsWith("application/vnd.sun.xml")
+                if( mimeType == "application/x-ole-storage" || // Thumbs.db
+                    mimeType == "application/x-wine-extension-ini" ||
+                    mimeType == "application/x-cue" ||
+                    mimeType == "application/x-k3b" ||
+                    mimeType == "application/pdf" ||
+                    mimeType == "application/x-trash" ||
+                    mimeType.startsWith("application/vnd.oasis.opendocument") ||
+                    mimeType.startsWith("application/vnd.openxmlformats-officedocument") ||
+                    mimeType.startsWith("application/vnd.sun.xml")
                 )
                     continue;
 
                 fileName = KUrl(q_urls.at(i)).pathOrUrl();
-                if( codecName.isEmpty() ) codecName = fileName.right(fileName.length()-fileName.lastIndexOf(".")-1);
+
+                if( codecName.isEmpty() )
+                    codecName = mimeType;
+                if( codecName.isEmpty() )
+                    codecName = fileName.right(fileName.length()-fileName.lastIndexOf(".")-1);
+
                 if( problems.value(codecName).count() < 2 )
                 {
                     problems[codecName] += QStringList();
@@ -451,7 +457,7 @@ void ReplayGainFileList::addFiles( const KUrl::List& fileList, const QString& _c
 
         totalTime += newItem->time;
 
-        updateItem( newItem );
+        updateItem( newItem, true );
 
 //         emit timeChanged( newItem->time );
     }
@@ -509,7 +515,7 @@ void ReplayGainFileList::removeSelectedItems()
     }
 }
 
-void ReplayGainFileList::updateItem( ReplayGainFileListItem *item )
+void ReplayGainFileList::updateItem( ReplayGainFileListItem *item, bool initialUpdate )
 {
     if( !item )
         return;
@@ -539,9 +545,13 @@ void ReplayGainFileList::updateItem( ReplayGainFileListItem *item )
             item->setText( Column_Album, "?" );
         }
     }
-    update( indexFromItem( item, 0 ) );
-    update( indexFromItem( item, 1 ) );
-    update( indexFromItem( item, 2 ) );
+
+    if( !initialUpdate )
+    {
+        update( indexFromItem( item, 0 ) );
+        update( indexFromItem( item, 1 ) );
+        update( indexFromItem( item, 2 ) );
+    }
 }
 
 void ReplayGainFileList::processItems( const QList<ReplayGainFileListItem*>& itemList )
@@ -576,6 +586,22 @@ void ReplayGainFileList::processItems( const QList<ReplayGainFileListItem*>& ite
     }
 
     currentId = currentPlugin->apply( urls, mode );
+    if( currentId < 0 )
+    {
+        for( int i=0; i<itemList.count(); i++ )
+        {
+            itemList.at(i)->state = ReplayGainFileListItem::Failed;
+            updateItem( itemList.at(i) );
+            parent = (ReplayGainFileListItem*)itemList.at(i)->parent();
+            if( parent )
+            {
+                parent->state = ReplayGainFileListItem::Failed;
+                updateItem( parent );
+            }
+        }
+        processNextFile();
+        return;
+    }
 
     currentTime = 0;
     for( int i=0; i<itemList.count(); i++ )

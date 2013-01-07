@@ -39,7 +39,7 @@ QList<ConversionPipeTrunk> soundkonverter_codec_neroaac::codecTable()
     newTrunk.codecTo = "m4a";
     newTrunk.rating = 90;
     newTrunk.enabled = ( binaries["neroAacEnc"] != "" );
-    newTrunk.problemInfo = standardMessage( "encode_codec,backend", "m4a", "neroAacEnc" ) + "\n" + i18n( "You can download '%1' at '%2' after entering an email adress.", QString("neroAacEnc"), QString("http://www.nero.com/enu/downloads-nerodigital-nero-aac-codec.php") );
+    newTrunk.problemInfo = standardMessage( "encode_codec,backend", "m4a", "neroAacEnc" ) + "\n" + i18n( "You can download '%1' at '%2' after entering an email address.", QString("neroAacEnc"), QString("http://www.nero.com/enu/downloads-nerodigital-nero-aac-codec.php") );
     newTrunk.data.hasInternalReplayGain = false;
     table.append( newTrunk );
 
@@ -47,7 +47,7 @@ QList<ConversionPipeTrunk> soundkonverter_codec_neroaac::codecTable()
     newTrunk.codecTo = "wav";
     newTrunk.rating = 90;
     newTrunk.enabled = ( binaries["neroAacDec"] != "" );
-    newTrunk.problemInfo = standardMessage( "decode_codec,backend", "m4a", "neroAacDec" ) + "\n" + i18n( "You can download '%1' at '%2' after entering an email adress.", QString("neroAacDec"), QString("http://www.nero.com/enu/downloads-nerodigital-nero-aac-codec.php") );
+    newTrunk.problemInfo = standardMessage( "decode_codec,backend", "m4a", "neroAacDec" ) + "\n" + i18n( "You can download '%1' at '%2' after entering an email address.", QString("neroAacDec"), QString("http://www.nero.com/enu/downloads-nerodigital-nero-aac-codec.php") );
     newTrunk.data.hasInternalReplayGain = false;
     table.append( newTrunk );
 
@@ -55,7 +55,7 @@ QList<ConversionPipeTrunk> soundkonverter_codec_neroaac::codecTable()
     newTrunk.codecTo = "wav";
     newTrunk.rating = 90;
     newTrunk.enabled = ( binaries["neroAacDec"] != "" );
-    newTrunk.problemInfo = standardMessage( "decode_codec,backend", "mp4", "neroAacDec" ) + "\n" + i18n( "You can download '%1' at '%2' after entering an email adress.", QString("neroAacDec"), QString("http://www.nero.com/enu/downloads-nerodigital-nero-aac-codec.php") );
+    newTrunk.problemInfo = standardMessage( "decode_codec,backend", "mp4", "neroAacDec" ) + "\n" + i18n( "You can download '%1' at '%2' after entering an email address.", QString("neroAacDec"), QString("http://www.nero.com/enu/downloads-nerodigital-nero-aac-codec.php") );
     newTrunk.data.hasInternalReplayGain = false;
     table.append( newTrunk );
 
@@ -117,7 +117,7 @@ int soundkonverter_codec_neroaac::convert( const KUrl& inputFile, const KUrl& ou
     newItem->process->setShellCommand( command.join(" ") );
     newItem->process->start();
 
-    emit log( newItem->id, command.join(" ") );
+    logCommand( newItem->id, command.join(" ") );
 
     backendItems.append( newItem );
     return newItem->id;
@@ -208,7 +208,7 @@ void soundkonverter_codec_neroaac::processOutput()
             pluginItem = qobject_cast<CodecPluginItem*>(backendItems.at(i));
             progress = parseOutput( output, pluginItem->data.length );
             if( progress == -1 && !output.simplified().isEmpty() )
-                emit log( backendItems.at(i)->id, output );
+                logOutput( backendItems.at(i)->id, output );
             if( progress > backendItems.at(i)->progress )
                 backendItems.at(i)->progress = progress;
             return;
