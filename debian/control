@@ -12,7 +12,7 @@ Vcs-Browser: http://git.debian.org/?p=pkg-kde/kde-extras/soundconverter.git
 Package: soundkonverter
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: cdda2wav, cdparanoia, faad, ffmpeg, flac,
+Recommends: cdparanoia, faad, ffmpeg, flac,
  kdemultimedia-kio-plugins, mp3gain, mplayer, mppenc, speex, timidity,
  vorbis-tools, vorbisgain, wavpack
 Description: audio converter frontend for KDE
