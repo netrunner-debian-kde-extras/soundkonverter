@@ -1,3 +1,9 @@
+soundkonverter (1.9.90-1) unstable; urgency=low
+
+  * Imported Upstream version 1.9.90
+
+ -- Michael Meskes <meskes@debian.org>  Tue, 26 Feb 2013 14:25:14 +0100
+
 soundkonverter (1.9.80-1) unstable; urgency=low
 
   * Imported Upstream version 1.9.80
