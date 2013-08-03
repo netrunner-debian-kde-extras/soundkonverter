@@ -16,5 +16,9 @@ Name[it]=Estrai CD audio con soundKonverter
 Name[pt]=Extrair um CD áudio com o soundKonverter
 Name[pt_BR]=Extrair um CD de áudio com o soundKonverter
 Name[ru]=Извлечь аудиоданные с CD с помощью soundKonverter
+<<<<<<< HEAD
+=======
+Name[sl]=Zajemi zvočni CD s soundKonverter-jem
+>>>>>>> upstream/2.0.4
 Icon=soundkonverter
 Exec=soundkonverter --rip %d

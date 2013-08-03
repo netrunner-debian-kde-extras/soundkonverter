@@ -15,7 +15,11 @@
 #include <QString>
 
 #define SOUNDKONVERTER_VERSION_NUMBER 1005
+<<<<<<< HEAD
 #define SOUNDKONVERTER_VERSION_STRING "2.0.3"
+=======
+#define SOUNDKONVERTER_VERSION_STRING "2.0.4"
+>>>>>>> upstream/2.0.4
 
 /**
 	@author Daniel Faust <hessijames@gmail.com>
