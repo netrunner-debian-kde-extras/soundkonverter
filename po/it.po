@@ -10,11 +10,7 @@ msgstr ""
 "Project-Id-Version: soundkonverter\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/ubuntu/%2Bsource/"
 "soundkonverter/\n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2013-05-04 10:49+0200\n"
-=======
 "POT-Creation-Date: 2013-07-19 20:32+0200\n"
->>>>>>> upstream/2.0.4
 "PO-Revision-Date: 2013-04-30 17:23+0000\n"
 "Last-Translator: FranzMari <franzmari@chakra-project.it>\n"
 "Language-Team: Italian (http://www.transifex.com/projects/p/soundkonverter/"
@@ -72,11 +68,7 @@ msgstr "Decodifica: %1"
 
 #: aboutplugins.cpp:240 configdialog/configbackendspage.cpp:163
 #: configdialog/configbackendspage.cpp:303
-<<<<<<< HEAD
-#: configdialog/configbackendspage.cpp:382 optionsdetailed.cpp:296
-=======
 #: configdialog/configbackendspage.cpp:382 optionsdetailed.cpp:295
->>>>>>> upstream/2.0.4
 msgid "Configure %1 ..."
 msgstr "Configura %1 ..."
 
@@ -198,22 +190,14 @@ msgstr "File interessati:"
 #: configdialog/configgeneralpage.cpp:258
 #: configdialog/configgeneralpage.cpp:263
 #: configdialog/configgeneralpage.cpp:268 options.cpp:43 options.cpp:64
-<<<<<<< HEAD
-#: optionsdetailed.cpp:469
-=======
 #: optionsdetailed.cpp:467
->>>>>>> upstream/2.0.4
 msgid "Last used"
 msgstr "Usato l'ultima volta"
 
 #: config.cpp:52 config.cpp:432 config.cpp:439 config.cpp:445
 #: configdialog/configgeneralpage.cpp:75
 #: configdialog/configgeneralpage.cpp:256 options.cpp:73
-<<<<<<< HEAD
-#: optionsdetailed.cpp:465 optionssimple.cpp:163 optionssimple.cpp:199
-=======
 #: optionsdetailed.cpp:463 optionssimple.cpp:163 optionssimple.cpp:199
->>>>>>> upstream/2.0.4
 #: optionssimple.cpp:297
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:169
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:206
@@ -257,11 +241,7 @@ msgid "Try internal"
 msgstr "Prova internamente"
 
 #: config.cpp:429 config.cpp:445 configdialog/configgeneralpage.cpp:72
-<<<<<<< HEAD
-#: configdialog/configgeneralpage.cpp:256 optionsdetailed.cpp:462
-=======
 #: configdialog/configgeneralpage.cpp:256 optionsdetailed.cpp:460
->>>>>>> upstream/2.0.4
 #: optionssimple.cpp:160 optionssimple.cpp:187 optionssimple.cpp:297
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:157
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:182
@@ -294,11 +274,7 @@ msgid "Very low"
 msgstr "Molto bassa"
 
 #: config.cpp:430 config.cpp:445 configdialog/configgeneralpage.cpp:73
-<<<<<<< HEAD
-#: configdialog/configgeneralpage.cpp:256 optionsdetailed.cpp:463
-=======
 #: configdialog/configgeneralpage.cpp:256 optionsdetailed.cpp:461
->>>>>>> upstream/2.0.4
 #: optionssimple.cpp:161 optionssimple.cpp:191 optionssimple.cpp:297
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:161
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:190
@@ -332,11 +308,7 @@ msgid "Low"
 msgstr "Bassa"
 
 #: config.cpp:431 config.cpp:445 configdialog/configgeneralpage.cpp:74
-<<<<<<< HEAD
-#: configdialog/configgeneralpage.cpp:256 optionsdetailed.cpp:464
-=======
 #: configdialog/configgeneralpage.cpp:256 optionsdetailed.cpp:462
->>>>>>> upstream/2.0.4
 #: optionssimple.cpp:162 optionssimple.cpp:195 optionssimple.cpp:297
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:165
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:198
@@ -370,11 +342,7 @@ msgid "Medium"
 msgstr "Media"
 
 #: config.cpp:433 config.cpp:445 configdialog/configgeneralpage.cpp:76
-<<<<<<< HEAD
-#: configdialog/configgeneralpage.cpp:256 optionsdetailed.cpp:466
-=======
 #: configdialog/configgeneralpage.cpp:256 optionsdetailed.cpp:464
->>>>>>> upstream/2.0.4
 #: optionssimple.cpp:164 optionssimple.cpp:203 optionssimple.cpp:297
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:173
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:214
@@ -408,11 +376,7 @@ msgid "Very high"
 msgstr "Molto alta"
 
 #: config.cpp:434 config.cpp:449 configdialog/configgeneralpage.cpp:77
-<<<<<<< HEAD
-#: configdialog/configgeneralpage.cpp:261 optionsdetailed.cpp:467
-=======
 #: configdialog/configgeneralpage.cpp:261 optionsdetailed.cpp:465
->>>>>>> upstream/2.0.4
 #: optionssimple.cpp:165 optionssimple.cpp:207 optionssimple.cpp:301
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:153
 #: plugins/soundkonverter_codec_faac/faaccodecwidget.cpp:128
@@ -447,20 +411,12 @@ msgid "Lossless"
 msgstr "Senza perdita"
 
 #: config.cpp:435 config.cpp:453 configdialog/configgeneralpage.cpp:266
-<<<<<<< HEAD
-#: optionsdetailed.cpp:468 optionssimple.cpp:211 optionssimple.cpp:305
-=======
 #: optionsdetailed.cpp:466 optionssimple.cpp:211 optionssimple.cpp:305
->>>>>>> upstream/2.0.4
 #: soundkonverterview.cpp:559 soundkonverterview.cpp:561
 msgid "Hybrid"
 msgstr "Ibrida"
 
-<<<<<<< HEAD
-#: config.cpp:457 optionsdetailed.cpp:471 optionssimple.cpp:168
-=======
 #: config.cpp:457 optionsdetailed.cpp:469 optionssimple.cpp:168
->>>>>>> upstream/2.0.4
 #: optionssimple.cpp:215 optionssimple.cpp:309 optionssimple.cpp:372
 #: plugins/soundkonverter_codec_aften/aftencodecwidget.cpp:176
 #: plugins/soundkonverter_codec_faac/faaccodecwidget.cpp:151
@@ -2129,25 +2085,6 @@ msgstr "Formato:"
 msgid "Use Plugin:"
 msgstr "Usa plugin:"
 
-<<<<<<< HEAD
-#: optionsdetailed.cpp:117 optionssimple.cpp:79
-msgid "Destination:"
-msgstr "Destinazione:"
-
-#: optionsdetailed.cpp:125 optionssimple.cpp:101
-msgid "Calculate Replay Gain tags"
-msgstr "Calcola i tag del Replay Gain"
-
-#: optionsdetailed.cpp:135
-msgid "Save current options as a profile"
-msgstr "Salva le opzioni attuali come un profilo"
-
-#: optionsdetailed.cpp:142
-msgid "Load saved profiles"
-msgstr "Carica profili salvati"
-
-#: optionsdetailed.cpp:253
-=======
 #: optionsdetailed.cpp:116 optionssimple.cpp:79
 msgid "Destination:"
 msgstr "Destinazione:"
@@ -2165,7 +2102,6 @@ msgid "Load saved profiles"
 msgstr "Carica profili salvati"
 
 #: optionsdetailed.cpp:252
->>>>>>> upstream/2.0.4
 msgid ""
 "Replay Gain is not supported for the %1 file format.\n"
 "Possible solutions are listed below."
@@ -2173,11 +2109,7 @@ msgstr ""
 "Il Replay Gain non è supportato per il formato %1.\n"
 "Possibili soluzioni sono elencate di seguito."
 
-<<<<<<< HEAD
-#: optionsdetailed.cpp:257
-=======
 #: optionsdetailed.cpp:256
->>>>>>> upstream/2.0.4
 msgid ""
 "Replay Gain is not supported for the %1 file format.\n"
 "Please check your distribution's package manager in order to install an "
@@ -2187,11 +2119,7 @@ msgstr ""
 "Dai un'occhiata al gestore di pacchetti della tua distribuzione per "
 "installare un plugin aggiuntivo per il Replay Gain."
 
-<<<<<<< HEAD
-#: optionsdetailed.cpp:263
-=======
 #: optionsdetailed.cpp:262
->>>>>>> upstream/2.0.4
 msgid ""
 "Replay Gain tags can tell your music player how loud a track is\n"
 "so it can adjust the volume to play all tracks with equal loudness."
@@ -2200,11 +2128,7 @@ msgstr ""
 "ciascuna traccia\n"
 "così che possa regolarlo per riprodurre tutte le tracce alla stessa altezza."
 
-<<<<<<< HEAD
-#: optionsdetailed.cpp:312 optionssimple.cpp:389
-=======
 #: optionsdetailed.cpp:311 optionssimple.cpp:389
->>>>>>> upstream/2.0.4
 msgid ""
 "Using the current conversion options will create files with approximately %1 "
 "per minute."
@@ -2212,33 +2136,6 @@ msgstr ""
 "Usando le opzioni di conversione attuali saranno creati approssimativamente "
 "%1 file al minuto"
 
-<<<<<<< HEAD
-#: optionsdetailed.cpp:450
-msgid "New profile"
-msgstr "Nuovo profilo"
-
-#: optionsdetailed.cpp:450
-msgid "Enter a name for the new profile:"
-msgstr "Inserisci un nome per il nuovo profilo:"
-
-#: optionsdetailed.cpp:457
-msgid "You cannot save a profile without a name."
-msgstr "Non puoi salvare un profilo senza nome."
-
-#: optionsdetailed.cpp:457
-msgid "Profile name is empty"
-msgstr "Il nome del profilo è vuoto"
-
-#: optionsdetailed.cpp:477
-msgid "You cannot overwrite the built-in profiles."
-msgstr "Non puoi sovrascrivere i profili integrati."
-
-#: optionsdetailed.cpp:477 optionsdetailed.cpp:502
-msgid "Profile already exists"
-msgstr "Profilo già esistente"
-
-#: optionsdetailed.cpp:502
-=======
 #: optionsdetailed.cpp:448
 msgid "New profile"
 msgstr "Nuovo profilo"
@@ -2264,7 +2161,6 @@ msgid "Profile already exists"
 msgstr "Profilo già esistente"
 
 #: optionsdetailed.cpp:500
->>>>>>> upstream/2.0.4
 msgid ""
 "A profile with this name already exists.\n"
 "\n"
@@ -3077,11 +2973,7 @@ msgstr "Qualità alta"
 msgid "Very high quality"
 msgstr "Qualità molto alta"
 
-<<<<<<< HEAD
-#: plugins/soundkonverter_filter_normalize/normalizefilterwidget.cpp:23
-=======
 #: plugins/soundkonverter_filter_normalize/normalizefilterwidget.cpp:24
->>>>>>> upstream/2.0.4
 msgid "Normalize"
 msgstr "Normalizza"
 
