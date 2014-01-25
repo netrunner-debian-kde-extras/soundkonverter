@@ -1,3 +1,11 @@
+soundkonverter (2.0.5-1) unstable; urgency=medium
+
+  * Imported Upstream version 2.0.5 (Closes: #736553)
+  * Recommend libav-tools instead of ffmpeg which no longer exists.
+    (Closes: #722428)
+
+ -- Michael Meskes <meskes@debian.org>  Sat, 25 Jan 2014 11:38:02 +0100
+
 soundkonverter (2.0.4-1) unstable; urgency=low
 
   * New Upstream Release
